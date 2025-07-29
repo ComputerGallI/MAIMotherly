@@ -1,0 +1,61 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #f4d9f9, #d6e0ff, #e1f8e0);
+  color: #333;
+}
+
+header {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid #ccc;
+}
+
+.subtitle {
+  font-style: italic;
+  margin-top: -1rem;
+  color: #666;
+}
+
+nav {
+  margin-top: 1rem;
+}
+
+button {
+  margin: 0.3rem;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 20px;
+  background-color: #9f86c0;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  background-color: #7e6bb6;
+}
+
+.home-banner {
+  text-align: center;
+  padding: 2rem;
+}
+
+.hero-img {
+  width: 70%;
+  max-width: 600px;
+  border-radius: 20px;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  color: #777;
+}
