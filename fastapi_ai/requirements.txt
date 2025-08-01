@@ -1,0 +1,25 @@
+fastapi==0.111.0
+uvicorn==0.30.1
+
+# Huggingface 
+transformers==4.41.2
+sentence-transformers==2.7.0
+
+#search
+faiss-cpu==1.8.0
+
+# Utilities
+numpy==1.26.4
+pydantic==2.7.1
+
+
+# For deployment goes over python framework, server to run it, the Bert model, and the database, also the need to add for the math in arrays later 
+
+#do this on your terminal cd fastapi_ai
+#python -m venv venv          
+#source venv/bin/activate     
+#pip install --upgrade pip
+#pip install -r requirements.txt  if its not working on your end 
+
+
+#Still getting an error? Will circle back not sure whats wrong 

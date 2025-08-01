@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAI - Motherly AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <a class="logo" href="index.html">MAI</a>
+  <button class="login-btn">Profile</button>
+</div>
+
+<div class="grid">
+
+  <!-- left column -->
+  <div class="panel">
+    <h2>Take a Quiz</h2>
+    <div class="quiz-buttons">
+      <button class="quiz-btn" onclick="startQuiz('personality')">😊 Personality</button>
+      <button class="quiz-btn" onclick="startQuiz('stress')">💖 Stress & Anxiety</button>
+      <button class="quiz-btn" onclick="startQuiz('love')">💌 Love Language</button>
+      <button class="quiz-btn" onclick="startQuiz('fun21')">❓ 21 Questions</button>
+    </div>
+    <button class="calendar-btn">🗓 Add to Calendar</button>
+  </div>
+
+  <!-- center column -->
+  <div class="center-column">
+
+    <div class="panel">
+      <h2>Quiz Results</h2>
+      <canvas id="quizChart"></canvas>
+    </div>
+
+    <div class="panel">
+      <h2>Reminders</h2>
+      <div class="reminders">
+        <p>✔ Drink some water</p>
+        <p>✔ Get 30 minutes of sunlight</p>
+        <p>✔ Organize your tasks</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- right column -->
+  <div class="panel profile-panel">
+    <h2>Your Profile</h2>
+    <p>Quiz History</p>
+    <p>AI Suggestions</p>
+  </div>
+
+</div>
+
+<!-- chat full width at bottom -->
+<div class="panel chat-panel">
+  <h2>Chat with MAI</h2>
+  <div id="chatWindow" class="chat-window"></div>
+  <input id="chatInput" placeholder="Enter a message...">
+  <button id="sendChat">Send</button>
+</div>
+
+<script src="scripts/chart.js"></script>
+<script src="scripts/chat.js"></script>
+
+</body>
+</html>

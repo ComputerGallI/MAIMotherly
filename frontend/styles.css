@@ -1,0 +1,116 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right,#f5e6ff,#e6f0ff);
+  color: #333;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .5rem 1rem;
+  background: rgba(255,255,255,0.8);
+  border-bottom: 1px solid #ccc;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 1.8rem;
+  color: #333;
+  text-decoration: none;
+}
+
+.login-btn {
+  background: #a58ed3;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: .5rem 1.2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.center-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.panel {
+  background: white;
+  border-radius: 15px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.quiz-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+
+.quiz-btn {
+  border: none;
+  border-radius: 15px;
+  padding: .8rem;
+  background: #f5e6ff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.quiz-btn:hover {
+  background: #e3d1ff;
+}
+
+.calendar-btn {
+  width: 100%;
+  border: none;
+  border-radius: 15px;
+  padding: .8rem;
+  background: #e6f0ff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.calendar-btn:hover {
+  background: #cfe0ff;
+}
+
+.chat-panel {
+  margin: 1rem;
+}
+
+.chat-window {
+  height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  margin: .5rem 0;
+  padding: .5rem;
+  border-radius: 6px;
+}
+
+.user {
+  background: #d9c7ff;
+  margin: .3rem 0;
+  padding: .2rem .4rem;
+  border-radius: 4px;
+}
+
+.bot {
+  background: #e6f0ff;
+  margin: .3rem 0;
+  padding: .2rem .4rem;
+  border-radius: 4px;
+}
