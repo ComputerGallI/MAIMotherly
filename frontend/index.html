@@ -7,46 +7,67 @@
   <link rel="stylesheet" href="styles.css">
   <script defer src="scripts/chart.js"></script>
   <script defer src="scripts/chat.js"></script>
-  <script defer src="scripts/quiz.js"></script>
 </head>
 <body>
-  <div id="logo" onclick="window.location.href='index.html'">MAI</div>
 
-  <div class="container">
+  <!-- Top Navigation -->
+  <header class="top-bar">
+    <div class="logo" onclick="goHome()">MAI</div>
+    <div class="nav-buttons">
+      <button class="top-btn" onclick="login()">Login</button>
+      <button class="top-btn" onclick="profile()">Profile</button>
+    </div>
+  </header>
 
-    <!-- QUIZ RESULTS BOX -->
-    <div class="box-section quiz-results-box">
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Quiz Results Left Box -->
+    <div class="box-section quiz-container">
       <h2>Quiz Results</h2>
       <div class="circle-container">
-        <div class="center-circle" onclick="window.location.href='login.html'">
-          Register or Log in
-        </div>
-        <!-- Floating Quiz Buttons -->
-        <button class="float-btn" onclick="window.location.href='quizzes/quiz_personality.html'">Personality</button>
-        <button class="float-btn" onclick="window.location.href='quizzes/quiz_stress.html'">Stress & Anxiety</button>
-        <button class="float-btn" onclick="window.location.href='quizzes/quiz_love.html'">Love Language</button>
-        <button class="float-btn" onclick="window.location.href='quizzes/quiz_21.html'">21 Questions</button>
+        <div class="circle" id="mainCircle">Register or Log in</div>
+        <button class="orbit-btn orbit1">Personality</button>
+        <button class="orbit-btn orbit2">Stress & Anxiety</button>
+        <button class="orbit-btn orbit3">Love Language</button>
+        <button class="orbit-btn orbit4">21 Questions</button>
       </div>
     </div>
 
-    <!-- REMINDERS BOX -->
-    <div class="box-section reminders-box">
+    <!-- Reminders Right Box -->
+    <div class="box-section reminders-container">
       <h2>Reminders</h2>
-      <p id="reminders">No reminders yet</p>
-      <button class="quiz-btn" onclick="addToCalendar()">Add to Calendar</button>
+      <p id="reminder-text">No reminders yet</p>
+      <button class="main-btn" onclick="addToCalendar()">Add to Calendar</button>
     </div>
 
-  </div>
+  </main>
 
-  <!-- CHATBOT BOX -->
-  <div class="box-section chatbot-box">
-    <h2 class="chat-title">Talk to MAI</h2>
-    <div id="chat-window"></div>
+  <!-- Chatbot Bottom Section -->
+  <section class="chat-section">
+    <h2>Talk to MAI</h2>
     <div class="chat-input-container">
-      <input type="text" id="chat-input" placeholder="Type your message here..." />
-      <button class="quiz-btn" onclick="sendMessage()">Send</button>
+      <input type="text" id="chat-input" placeholder="Type a message..." />
+      <button class="send-btn" onclick="sendMessage()">Send</button>
     </div>
-  </div>
+    <div id="chat-output"></div>
+  </section>
 
+  <script>
+    function goHome(){ window.location.href = 'index.html'; }
+    function login(){ alert('Login/Register modal placeholder'); }
+    function profile(){ alert('Profile page placeholder'); }
+    function addToCalendar(){ alert('Google Calendar API integration placeholder'); }
+    function sendMessage(){
+      const input = document.getElementById('chat-input');
+      const output = document.getElementById('chat-output');
+      if(input.value.trim()!==''){
+        const msg = document.createElement('p');
+        msg.textContent = "You: " + input.value;
+        output.appendChild(msg);
+        input.value = '';
+      }
+    }
+  </script>
 </body>
 </html>
