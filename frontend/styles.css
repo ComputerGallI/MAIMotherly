@@ -1,189 +1,143 @@
-/* general page */
 body {
   margin: 0;
-  font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg,#f8c0ff,#bfa6ff);
+  font-family: Arial, sans-serif;
+  background: linear-gradient(180deg, #f7c1ff, #b19cff);
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
 }
 
-/* header logo + buttons */
-#logo {
-  position: fixed;
-  top: 20px;
-  left: 20px;
+/* Top Bar */
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  position: sticky;
+  top: 0;
+}
+
+.logo {
+  font-size: 45px;
   font-weight: bold;
-  font-size: 24px;
   cursor: pointer;
+  color: white;
+  text-shadow: 0 0 2px #4B0082; /* dark purple outline */
 }
-#header-buttons {
-  position: fixed;
-  top: 20px;
-  right: 20px;
+
+.nav-buttons {
+  display: flex;
+  gap: 10px;
 }
-#header-buttons button {
-  margin-left: 10px;
+
+.top-btn {
+  background: linear-gradient(45deg, #f7c1ff, #b19cff);
+  color: white;
   border: none;
-  padding: 8px 15px;
+  padding: 8px 14px;
   border-radius: 20px;
-  background: linear-gradient(135deg,#f8c0ff,#bfa6ff);
-  color: white;
-  font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
+  transition: transform 0.3s;
 }
-#header-buttons button:hover {
-  transform: scale(1.1);
-}
+.top-btn:hover { transform: scale(1.05); }
 
-/* guest login circle */
-#loginCircle {
-  margin: 100px auto 30px auto;
-  width: 180px;
-  height: 180px;
-  background: linear-gradient(135deg,#f8c0ff,#bfa6ff);
-  color: white;
+/* Main Layout */
+.main-content {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-#loginCircle:hover {
-  transform: scale(1.05);
-}
-
-/* top row layout */
-#topRow {
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-start;
+  justify-content: space-between;
   width: 90%;
-  margin: 30px auto;
-  gap: 30px;
+  margin-top: 30px;
 }
 
-/* box layout for sections */
 .box-section {
-  flex: 1;
   background: white;
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  width: 45%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   text-align: center;
+}
+
+/* Circle and Orbit Buttons */
+.circle-container {
   position: relative;
-}
-
-/* quiz results circle + floating buttons */
-#visualizationCircle {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  margin: 20px auto;
-  border-radius: 50%;
-  border: 3px dashed #d2a8ff;
-  animation: spin 20s linear infinite;
-}
-.float-btn {
-  position: absolute;
-  padding: 8px 12px;
-  border-radius: 20px;
-  background: linear-gradient(135deg,#f8c0ff,#bfa6ff);
-  color: white;
-  border: none;
-  cursor: pointer;
-  animation: float 3s ease-in-out infinite alternate;
-  transition: transform 0.3s;
-}
-.float-btn:hover {
-  transform: scale(1.1);
-}
-
-/* subtle float animation */
-@keyframes float {
-  from { transform: translateY(-3px); }
-  to { transform: translateY(3px); }
-}
-
-/* reminders box */
-#remindersList {
-  list-style-type: none;
-  padding: 0;
-}
-#remindersList li {
-  margin: 10px 0;
-  font-size: 1rem;
-}
-#remindersBox button {
-  margin-top: 15px;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 20px;
-  background: linear-gradient(135deg,#f8c0ff,#bfa6ff);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-#remindersBox button:hover {
-  transform: scale(1.1);
-}
-
-/* chat section */
-#chatSection {
-  width: 90%;
   margin: 30px auto;
-}
-#chatSection h2 {
-  text-align: center;
-}
-#chatOutput {
-  width: 100%;
-  height: 200px;
-  background: #f9f9f9;
-  border-radius: 15px;
-  padding: 10px;
-  margin-bottom: 10px;
-  overflow-y: auto;
-}
-#chatInput {
-  width: 90%;
-  padding: 12px;
-  border-radius: 25px;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
-  font-size: 1rem;
-}
-#chatSection button {
-  border: none;
-  padding: 10px 15px;
-  border-radius: 20px;
-  background: linear-gradient(135deg,#f8c0ff,#bfa6ff);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-#chatSection button:hover {
-  transform: scale(1.1);
+  width: 300px;
+  height: 300px;
 }
 
-/* quiz page buttons */
-.quiz-btn {
+.circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #f7c1ff, #b19cff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  position: absolute;
+  left: 75px;
+  top: 75px;
+}
+
+/* Orbit Buttons */
+.orbit-btn {
+  position: absolute;
+  background: linear-gradient(45deg, #f7c1ff, #b19cff);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.3s;
+  animation: floatInPlace 3s ease-in-out infinite;
+}
+
+.orbit1 { top: -40px; left: 120px; }
+.orbit2 { top: 120px; left: -70px; }
+.orbit3 { top: 120px; right: -70px; }
+.orbit4 { bottom: -40px; left: 120px; }
+
+@keyframes floatInPlace {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Buttons */
+.main-btn, .send-btn {
+  background: linear-gradient(45deg, #f7c1ff, #b19cff);
+  color: white;
   border: none;
   padding: 10px 20px;
-  margin: 10px;
-  border-radius: 20px;
-  background: linear-gradient(135deg,#f8c0ff,#bfa6ff);
-  color: white;
-  font-weight: bold;
+  border-radius: 25px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: transform 0.3s;
+  margin-top: 20px;
 }
-.quiz-btn:hover {
-  transform: scale(1.1);
+.main-btn:hover, .send-btn:hover { transform: scale(1.05); }
+
+/* Chat Section */
+.chat-section {
+  margin-top: 30px;
+  width: 70%;
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.chat-input-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  gap: 10px;
+}
+
+.chat-input-container input {
+  width: 60%;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
 }
