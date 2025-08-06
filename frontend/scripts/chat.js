@@ -1,32 +1,25 @@
-const chatWindow=document.getElementById('chatWindow')
-const chatInput=document.getElementById('chatInput')
-const sendBtn=document.getElementById('sendChat')
+// simple chat
+async function sendMessage(){
+  let input=document.getElementById('userInput')
+  let msg=input.value.trim()
+  if(!msg)return
+  addMessage('You: '+msg)
+  input.value=''
 
-function appendChat(sender,text){
-  let div=document.createElement('div')
-  div.className=sender
-  div.textContent=text
-  chatWindow.appendChild(div)
-  chatWindow.scrollTop=chatWindow.scrollHeight
-}
-
-appendChat('bot',"Hello, I can't wait to get to know you. Take a quiz or talk to me?")
-
-sendBtn.onclick=()=>{
-  const msg=chatInput.value
-  if(!msg.trim())return
-  appendChat('user',msg)
-  chatInput.value=''
-
-  fetch('/api/chat',{
+  let res=await fetch('http://localhost:5000/api/chat',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({userId:'IndieMovies',user_input:msg})
   })
-  .then(r=>r.json())
-  .then(d=>appendChat('bot',d.response||'...'))
+  let data=await res.json()
+  addMessage('MAI: '+data.response)
 }
 
-function startQuiz(type){
-  appendChat('bot',`Starting the ${type} quiz now!`)
+// helper to show msg
+function addMessage(text){
+  let win=document.getElementById('chat-window')
+  let div=document.createElement('div')
+  div.textContent=text
+  win.appendChild(div)
+  win.scrollTop=win.scrollHeight
 }
