@@ -1,17 +1,21 @@
-fetch('/api/quiz/latest-summary?userId=IndieMovies')
-.then(r=>r.json())
-.then(d=>{
-  let ctx=document.getElementById('quizChart')
+// chart for quiz results
+document.addEventListener('DOMContentLoaded',()=>{
+  let ctx=document.getElementById('resultsChart')
+  if(!ctx)return
+
   new Chart(ctx,{
-    type:'bar',
+    type:'radar',
     data:{
-      labels:d.types||["Personality","Stress","Love","21Q"],
+      labels:['Personality','Stress','Love','21Q'],
       datasets:[{
-        label:"Scores",
-        data:d.scores||[1,2,3,4],
-        backgroundColor:'rgba(153,102,255,0.6)'
+        label:'Your Results',
+        data:[0,0,0,0],
+        backgroundColor:'rgba(174,120,255,0.3)',
+        borderColor:'#ae78ff'
       }]
     },
-    options:{responsive:true,scales:{y:{beginAtZero:true}}}
+    options:{
+      scales:{r:{beginAtZero:true,max:10}}
+    }
   })
 })
