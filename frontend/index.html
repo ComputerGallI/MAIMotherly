@@ -1,72 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAI - Motherly AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAI - Motherly AI</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="scripts/chart.js"></script>
+  <script defer src="scripts/chat.js"></script>
+  <script defer src="scripts/quiz.js"></script>
 </head>
 <body>
+  <div id="logo" onclick="window.location.href='index.html'">MAI</div>
 
-<div class="top-bar">
-  <a class="logo" href="index.html">MAI</a>
-  <button class="login-btn">Profile</button>
-</div>
+  <div class="container">
 
-<div class="grid">
-
-  <!-- left column -->
-  <div class="panel">
-    <h2>Take a Quiz</h2>
-    <div class="quiz-buttons">
-      <button class="quiz-btn" onclick="startQuiz('personality')">😊 Personality</button>
-      <button class="quiz-btn" onclick="startQuiz('stress')">💖 Stress & Anxiety</button>
-      <button class="quiz-btn" onclick="startQuiz('love')">💌 Love Language</button>
-      <button class="quiz-btn" onclick="startQuiz('fun21')">❓ 21 Questions</button>
-    </div>
-    <button class="calendar-btn">🗓 Add to Calendar</button>
-  </div>
-
-  <!-- center column -->
-  <div class="center-column">
-
-    <div class="panel">
+    <!-- QUIZ RESULTS BOX -->
+    <div class="box-section quiz-results-box">
       <h2>Quiz Results</h2>
-      <canvas id="quizChart"></canvas>
-    </div>
-
-    <div class="panel">
-      <h2>Reminders</h2>
-      <div class="reminders">
-        <p>✔ Drink some water</p>
-        <p>✔ Get 30 minutes of sunlight</p>
-        <p>✔ Organize your tasks</p>
+      <div class="circle-container">
+        <div class="center-circle" onclick="window.location.href='login.html'">
+          Register or Log in
+        </div>
+        <!-- Floating Quiz Buttons -->
+        <button class="float-btn" onclick="window.location.href='quizzes/quiz_personality.html'">Personality</button>
+        <button class="float-btn" onclick="window.location.href='quizzes/quiz_stress.html'">Stress & Anxiety</button>
+        <button class="float-btn" onclick="window.location.href='quizzes/quiz_love.html'">Love Language</button>
+        <button class="float-btn" onclick="window.location.href='quizzes/quiz_21.html'">21 Questions</button>
       </div>
     </div>
 
+    <!-- REMINDERS BOX -->
+    <div class="box-section reminders-box">
+      <h2>Reminders</h2>
+      <p id="reminders">No reminders yet</p>
+      <button class="quiz-btn" onclick="addToCalendar()">Add to Calendar</button>
+    </div>
+
   </div>
 
-  <!-- right column -->
-  <div class="panel profile-panel">
-    <h2>Your Profile</h2>
-    <p>Quiz History</p>
-    <p>AI Suggestions</p>
+  <!-- CHATBOT BOX -->
+  <div class="box-section chatbot-box">
+    <h2 class="chat-title">Talk to MAI</h2>
+    <div id="chat-window"></div>
+    <div class="chat-input-container">
+      <input type="text" id="chat-input" placeholder="Type your message here..." />
+      <button class="quiz-btn" onclick="sendMessage()">Send</button>
+    </div>
   </div>
-
-</div>
-
-<!-- chat full width at bottom -->
-<div class="panel chat-panel">
-  <h2>Chat with MAI</h2>
-  <div id="chatWindow" class="chat-window"></div>
-  <input id="chatInput" placeholder="Enter a message...">
-  <button id="sendChat">Send</button>
-</div>
-
-<script src="scripts/chart.js"></script>
-<script src="scripts/chat.js"></script>
 
 </body>
 </html>
