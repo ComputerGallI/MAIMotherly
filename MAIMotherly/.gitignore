@@ -1,0 +1,7 @@
+# Root .gitignore
+MAIMotherly/backend/node_modules/
+MAIMotherly/backend/.env
+MAIMotherly/fastapi_ai/.env
+__pycache__/
+*.pyc
+.env
