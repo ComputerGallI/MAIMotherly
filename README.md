@@ -16,7 +16,7 @@ The goal is to  make you feel heard, understood, and supported.
 ---
 
 ## Target Audience
-Anyone who wants:
+
 - A kind daily check-in
 - Easy going emotional wellness tracking
 - Easy, actionable self-care reminders that make your life better. 
