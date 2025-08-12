@@ -11,7 +11,7 @@ You can:
 - **Take short quizzes** to help MAI understand your personality, stress level, love language, and what makes you "tick" 
 - **Get gentle reminders** like “get 30 mins of sunlight” or “schedule a massage” — and add them to your Google Calendar so you can actually implement them into your life. 
 
-Our goal? To make you feel heard, understood, and supported.
+The goal is to  make you feel heard, understood, and supported.
 
 ---
 
