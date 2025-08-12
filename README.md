@@ -15,7 +15,7 @@ Our goal? To make you feel heard, understood, and supported.
 
 ---
 
-## 🎯 Target Audience
+## Target Audience
 Anyone who wants:
 - A kind daily check-in
 - Easy going emotional wellness tracking
@@ -23,7 +23,7 @@ Anyone who wants:
 
 ---
 
-## 🛠 How MAI Works
+##  How MAI Grabs info
 We use **RAG (Retrieval-Augmented Generation)** with **affect computing** to give responses that feel right for you.
 
 **Tech Stack:**
