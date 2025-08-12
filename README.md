@@ -34,9 +34,9 @@ We use **RAG (Retrieval-Augmented Generation)** with **affect computing** to giv
 - **Model Training:** Google Colab with datasets from Kaggle & GoEmotions, Mental Health counseling conversations from Huggingface
 
 **Main Flow:**
-1. **User Login/Register** → Info stored securely in MongoDB  
-2. **Quiz or Chat** → Quizzes saved in MongoDB or localStorage  
-3. **AI Processing** → RAG pipeline retrieves and generates responses  
-4. **Reminders & Visualization** → Results shown as charts; reminders can be added to Google Calendar  
+1. **User Login/Register** Info stored securely in MongoDB  
+2. **Quiz or Chat**  Quizzes saved in MongoDB or localStorage  
+3. **AI Processing** RAG pipeline retrieves and generates responses  
+4. **Reminders & Visualization**  Results shown as charts; reminders can be added to Google Calendar  
 
 ---
