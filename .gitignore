@@ -69,7 +69,7 @@ coverage/
 temp/
 tmp/
 
-# Google credentials 
+# Google credentials (if you add them later)
 google-credentials.json
 credentials.json
 token.json
@@ -81,5 +81,5 @@ token.json
 checkpoint-*/
 runs/
 
-# Jupyter notebooks 
+# Jupyter notebooks (if you create any)
 .ipynb_checkpoints/
