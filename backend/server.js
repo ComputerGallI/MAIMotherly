@@ -31,4 +31,9 @@ app.get('/', (req, res) => res.send('mai backend running'))
 
 // hook up all our routes
 app.use('/api/users', require('./routes/userRoutes'))
-app.use('/api/chat', require('./routes/chatRou
+app.use('/api/chat', require('./routes/chatRoutes'))
+app.use('/api/reminders', require('./routes/reminderRoutes'))
+app.use('/api/calendar', require('./routes/calendarRoutes'))
+
+const PORT = process.env.PORT || 5000
+app.listen(PORT, () => console.log(`server running on port ${PORT}`))
