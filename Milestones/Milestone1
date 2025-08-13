@@ -1,0 +1,35 @@
+Project Proposal: MAI – Motherly AI with Hugging Face Integration
+1. Project Overview
+MAI, short for Motherly AI, is an emotionally-aware app companion designed to support  a person checking in with themselves, staying organized, and feeling encouraged. It combines modern AI tools with a warm, human-centered experience. Users can either chat with MAI to reflect on their mood or take a short quiz that gives them insight into their well-being. The app allows them to create a profile where they can track their emotional check-ins and quiz results over time, with a stretch goal of being able to incorporate the persons info to make better predictive alerts and calendar updates for the user. 
+2. The Problem We’re Addressing
+People today are balancing a lot. Whether it’s work, caregiving, school, or just trying to stay afloat, many don’t have time to pause and reflect on how they’re actually doing. Most productivity apps focus on tasks and lists but don’t create space for emotional awareness. MAI was created to gently fill that gap. It doesn’t just ask what needs to be done, it asks how the user is doing and makes suggestions in real time that help support mental health. 
+3. How MAI Works
+When a user  visits the homepage, they are given two choices. They can either start a conversation with MAI immediately or take a quick quiz. If they choose to talk, they type in how they’re feeling, and MAI responds with encouragement based on the tone of their message. If they take the quiz, they answer a few questions about their current habits, stress, or emotions, and receive feedback that can help them understand where they are emotionally.
+Once they finish either path, they are given the option to create a profile. This allows them to save their responses, review past moods or quiz scores, and start seeing patterns over time. All user data is private and secure.
+SG: The app will offer different quizzes to “get to know” the user and build a background for personalized alerts. 
+4. Frontend Experience
+The frontend is built with React. It provides a simple, welcoming user interface. The homepage presents two clearly labeled buttons that guide users to either the chat feature or the quiz. The chat screen includes a text input and displays MAI’s responses in a conversational format. The quiz screen presents one question at a time and gives a score at the end.
+Users can log in  through a profile screen. Once signed in, they can view a history of their mood check-ins and quiz results. The layout is soft, intuitive, and calming, designed to feel more like a conversation and less like a form.
+5. Backend Design
+The backend is built using FastAPI, a Python framework known for speed and clarity. When a user sends a message through the chatbot, the backend sends that message to a sentiment analysis model hosted on Hugging Face. The model analyzes the tone and returns a sentiment label like positive, neutral, or negative. Based on this, MAI responds with an appropriate message.
+The quiz feature is processed similarly. User answers are scored based on category. All interactions are optionally saved to the database when a user is logged in.
+6. Database Structure
+User data is stored in MongoDB Atlas, a free, cloud-hosted NoSQL database. The database includes three collections.
+The users collection stores email, username, and a securely hashed password. The moodLogs collection saves each mood check-in, including the original message, the sentiment label, and the time it was submitted. The quizScores collection tracks quiz results by category, score, and date.
+All of this is linked to the user’s account using a secure ID. Authentication is handled with JSON Web Tokens, so users stay safely logged in without exposing personal data.
+7. Inputs and Outputs
+Users submit either text messages or quiz answers. In response, MAI gives feedback. That might be a kind suggestion, a reminder to slow down, or a recommendation to take a next step, like scheduling self-care or adding something to their planner. The goal is to keep things light and helpful while creating space for emotional awareness.
+8. Why MAI Stands Out
+MAI is not just a chatbot or a to-do list. It’s a check-in point that feels personal. It understands tone, it tracks progress, and it grows with the user. It’s also built with simple tools that are accessible and easy to manage, using free-tier platforms like MongoDB Atlas and Hugging Face’s public API. The design and tech stack make it ideal for scaling, personalizing, and improving over time.
+Flowcharts for both the frontend and backend are included to help visualize how data and users move through the system
+
+
+
+
+Create...
+Github Repository at CodeCrew-CodeSchool Organization Containing the Following:
+A folder with a PDF copy of the Milestone 1 Paper Mentioned Above ✔️
+A branch for each team member ✔️
+README.md file containing: ✔️
+Short Project Description ✔️
+Team Members ✔️

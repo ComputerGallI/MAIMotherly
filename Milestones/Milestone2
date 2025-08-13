@@ -1,0 +1,317 @@
+
+Turn on screen reader support
+To enable screen reader support, press Ctrl+Alt+Z To learn about keyboard shortcuts, press Ctrl+slash
+Banner hidden 
+Comments
+Tab 1
+·
+Hugging Face pre-trained models
+
+Alonso Cornejo Leon
+10:21 AM Jul 24
+Which model specifically? Please add links
+Tab 1
+·
+affect computing, Retrieval-Augmented Generation
+
+Alonso Cornejo Leon
+10:19 AM Jul 24
+Like the use of bold!
+Tab 1
+
+Alonso Cornejo Leon
+10:18 AM Jul 24
+Looking good!
+Tab 1
+·
+Confirm
+
+Alonso Cornejo Leon
+10:17 AM Jul 24
+Unit tests might be helpful
+Tab 1
+·
+BERT Mini
+
+Alonso Cornejo Leon
+10:13 AM Jul 24
+Also for sentimental analysis?
+Tab 1
+·
+quizResults: [{ quizType, answers, timestamp }]
+
+Alonso Cornejo Leon
+10:10 AM Jul 24
+A bit tricky to implement
+Tab 1
+·
+hashed
+
+Alonso Cornejo Leon
+10:09 AM Jul 24
+Stretch goal but will be awesome to have
+Tab 1
+·
+Personality Quiz
+Stress & Anxiety Quiz
+Love Language Quiz
+21 Questions Game
+
+Alonso Cornejo Leon
+10:03 AM Jul 24
+Where are you getting the data for the quiz?
+Tab 1
+·
+Authentication routes
+
+Alonso Cornejo Leon
+11:51 AM Jul 14
+Check for OAuth
+Tab 1
+·
+Emotion-tagged responses from go_emotions
+
+Alonso Cornejo Leon
+11:49 AM Jul 14
+Link
+Tab 1
+·
+Enables users to add reminders to Google Calendar
+
+Alonso Cornejo Leon
+11:48 AM Jul 14
+Stretch Goal
+Tab 1
+·
+data
+
+Alonso Cornejo Leon
+11:48 AM Jul 14
+Check for security and data/privacy
+Tab 1
+·
+.
+
+Alonso Cornejo Leon
+11:47 AM Jul 14
+Add Mom Specific Problematic
+Resolved
+Tab 1
+·
+User-submitted quiz + chat data
+
+Alonso Cornejo Leon
+11:50 AM Jul 14
+Quiz Examples
+
+Alonso Cornejo Leon
+10:04 AM Jul 24
+Marked as resolved
+PLEASE, WE NEED A MEETING WITH YOU BOTH ASAP IF WE CAN SCHEDULE ONE ON ZOOM OR IN-PERSON
+REVISION 7/14:
+
+Project Proposal: MAI – Motherly AI with RAG, Emotional Intelligence, and Google Calendar Integration
+
+Problem Statement Many people struggle with balancing emotional wellness, responsibilities, and self-care in a fast-paced world. There is a need for an emotionally intelligent digital companion that not only listens, but responds with care, detects emotional overload, and provides timely, actionable wellness suggestions. Existing AI solutions are often impersonal or lack emotional context.
+
+How Our AI Solves the Problem MAI (Motherly AI) is an emotionally aware assistant trained to emulate a warm, maternal tone. It:
+Uses BERT/BART with RAG architecture to generate emotionally sensitive responses
+Gathers user personality and stress data via quizzes
+Stores data in MongoDB to personalize responses
+Offers wellness suggestions (like "schedule a massage" or "get sunlight")
+Enables users to add reminders to Google Calendar
+
+Use Case Profiles (Example Users)
+IndieMovies – A happy, high-functioning person juggling too much. MAI detects this and suggests:
+"Organize tasks for the team and delegate more tasks"
+"Schedule a massage" Groupon link
+Ryanator – A user emotionally overwhelmed. MAI recommends:
+"Make a dentist appointment"
+"Get 30 minutes of sunlight per day"
+Logins for demo:
+Username: IndieMovies / Password: 12345!
+Username: Ryanator / Password: 12345!
+
+Updated Quizzes & Emotional Input
+Personality Quiz
+Stress & Anxiety Quiz
+Love Language Quiz
+21 Questions Game
+All are multiple choice. Results are stored in MongoDB and displayed:
+Immediately after the quiz finishes
+On the user profile page
+
+Dataset
+Emotion-tagged responses from go_emotions
+User-submitted quiz + chat data (stored securely in MongoDB)
+
+High-Level AI System Plan
+Frontend (React or HTML/JS)
+Login screen
+Quizzes
+Chat interface
+Profile page w/ saved results & AI recommendations
+Backend (Node + Express)
+Authentication routes
+Quiz + chat routes
+Google Calendar API for scheduling
+MongoDB connection via Mongoose
+AI Model
+BERT Mini for embedding/retrieval
+BART for generation
+Custom prompts for nurturing, motherly tone
+
+Backend Data Structure (MongoDB)
+Users Collection:
+username
+email
+password (hashed)
+quizResults: [{ quizType, answers, timestamp }]
+suggestions: [text]
+Chat Logs Collection:
+userId
+input
+AI response
+contextUsed (e.g., quiz traits)
+timestamp
+Calendar Recommendations Collection (optional):
+suggestion
+link (if any)
+auto-generated timestamp
+
+Inputs/Outputs
+Inputs: Chat text, quiz answers, login info
+Outputs: AI response, emotional analysis, quiz results, suggested actions, calendar links
+
+Google Calendar Integration
+AI suggests action: "Get sunlight for 30 minutes"
+User clicks "Add to Calendar"
+Backend connects to Google API
+Event saved using OAuth 2.0
+
+UI/UX Notes
+Quizzes show result page with summary & actionable insight
+Profile page shows full quiz history & linked suggestions
+Chatbot references stored traits ("Because you're a giver, you might...")
+
+Testing Plan
+Use IndieMovies & Ryanator to simulate flows
+Confirm:
+Quiz storage
+Profile rendering
+AI response tailoring
+Google Calendar link generation
+
+Next Steps
+Generate updated frontend & backend wireframes
+Create quiz schemas and quiz pages
+Build calendar button logic
+Finalize chatbot prompt training style
+Prepare demo walkthrough with seeded users
+
+This update finalizes the vision of MAI as an emotionally intelligent, mother-like AI that remembers users, tailors conversation from quiz results, and gently nudges toward real-life wellness improvements.
+
+Revision modal prototype  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+REVISION BELOW: 
+Project Proposal: MAI – Motherly AI Enhanced with RAG and Affect Computing
+
+Problem Statement In our fast-paced, emotionally demanding world, many individuals struggle with maintaining emotional wellness, organizing their lives, and feeling understood. Traditional digital assistants fall short of offering human-like emotional awareness or personalization. Users need a warm, emotionally responsive companion that can check in, offer encouragement, and provide intelligent insights based on their emotional state.
+
+How Our AI Solves the Problem Motherly AI (MAI) uses affect computing, Retrieval-Augmented Generation (RAG), and emotionally tuned NLP models to understand users' moods and respond empathetically. By integrating BERT for understanding and BART for generating natural, supportive language, MAI can:
+Analyze user-submitted text and quiz responses for emotional context
+Use a RAG pipeline to retrieve relevant advice or insights from a knowledge base
+Provide personalized encouragement, reminders, and mood tracking
+Store and reuse user data (with permission) for increasingly tailored experiences
+
+Description of the Dataset While MAI uses Hugging Face pre-trained models, it also collects:
+User Info (email, password, preferences)
+Quiz Responses (to infer personality, emotional state, and habits)
+Chat Inputs (stored optionally to tailor future responses)
+Knowledge Base (static or dynamic responses MAI can retrieve during conversations)
+These are stored securely in MongoDB, with RAG used to pull contextually relevant data.
+
+High-Level AI System Plan
+Frontend: React-based single-page app
+Home Page with profile/login
+Quiz Component
+Chat Interface
+Backend: Node.js with Express
+Routes to handle login, quiz submission, and chat
+Middleware to call Hugging Face APIs
+Google Colab for model prototyping (BERT, BART)
+Database: MongoDB (User Info, Quiz Info, Knowledge Base)
+AI Models:
+BERT/BERTMini: Sentiment and context recognition
+BART (via Hugging Face): Generation in the RAG pipeline
+Affect Computing Layer: Custom logic for interpreting emotion, optionally enhanced via Colab-trained extensions
+
+Main Features (Frontend + Backend)
+User Login/Register
+Auth with MongoDB storage
+Error messages for failed login
+Quiz Page
+Integrated into chatbot or standalone
+Responses stored in MongoDB
+Chat Page
+Real-time chat with MAI (calls Hugging Face via backend)
+RAG-enhanced responses
+Knowledge Retrieval
+Based on user input and quiz profile
+Affects chat responses and reminders
+
+System Connections
+Frontend (React) sends data → Backend (Express)
+Backend processes input, stores in MongoDB, or calls Hugging Face
+RAG: Backend pulls from MongoDB KB + sends input/context to Hugging Face
+Responses are returned to the frontend chat UI
+Google Colab used for training/tuning models, especially BART variants
+
+Inputs and Outputs
+Inputs:
+User text (chat)
+Quiz answers (multiple choice)
+Login credentials
+Outputs:
+Emotional analysis labels (positive/neutral/negative)
+Personalized encouragement or tasks
+Generated conversational responses (via RAG + BART)
+
+Images
+Frontend Wireframe: Includes Home, Login, Quiz, Chat
+Backend Architecture Diagram: MongoDB, Hugging Face API, BERT/BART, RAG Flow
+(See attached wireframe images for full visuals)
+
+
+
+
+
+
+
+
+Create...
+Github Repository at CodeCrew-CodeSchool Organization Containing the Following:
+A folder with a PDF copy of the Milestone 1 Paper Mentioned Above ✔️
+A branch for each team member ✔️
+README.md file containing: ✔️
+Short Project Description ✔️
+Team Members ✔️
+
+
+
+
+
+
