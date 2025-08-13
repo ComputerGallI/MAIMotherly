@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Love Language Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../index.html">MAI</a>
+    <nav class="top-actions">
+      <a class="pill" href="../profile.html">Profile</a>
+      <a class="pill" href="../login.html">Login</a>
+    </nav>
+  </header>
+
+  <section class="card" style="max-width:900px;margin:24px auto;">
+    <h2 class="title soft">Love Language Quiz</h2>
+    
+    <form id="loveForm">
+      <p>you feel most loved when someone spends uninterrupted time with you?</p>
+      <label><input type="radio" name="q1" value="Quality Time"> yes, attention matters</label>
+      <label><input type="radio" name="q1" value="other"> no, other things matter more</label>
+
+      <p>sincere compliments make your day?</p>
+      <label><input type="radio" name="q2" value="Words"> yes, words mean everything</label>
+      <label><input type="radio" name="q2" value="other"> no, actions speak louder</label>
+
+      <p>thoughtful gifts make you feel special?</p>
+      <label><input type="radio" name="q3" value="Gifts"> yes, love the thought</label>
+      <label><input type="radio" name="q3" value="other"> no, don't need things</label>
+
+      <p>when someone helps with your tasks, you feel cared for?</p>
+      <label><input type="radio" name="q4" value="Acts"> yes, actions show love</label>
+      <label><input type="radio" name="q4" value="other"> no, prefer other gestures</label>
+
+      <p>physical affection like hugs makes you feel loved?</p>
+      <label><input type="radio" name="q5" value="Touch"> yes, touch is important</label>
+      <label><input type="radio" name="q5" value="other"> no, not really touchy</label>
+
+      <p>what do you ask for first on a rough day?</p>
+      <label><input type="radio" name="q6" value="Quality Time"> time together</label>
+      <label><input type="radio" name="q6" value="Words"> encouraging words</label>
+
+      <p>what cheers you up faster?</p>
+      <label><input type="radio" name="q7" value="Gifts"> a surprise gift</label>
+      <label><input type="radio" name="q7" value="Acts"> help with responsibilities</label>
+
+      <p>what feels most natural to give others?</p>
+      <label><input type="radio" name="q8" value="Touch"> hugs and physical comfort</label>
+      <label><input type="radio" name="q8" value="Words"> compliments and encouragement</label>
+
+      <p>what makes you feel most appreciated?</p>
+      <label><input type="radio" name="q9" value="Quality Time"> focused attention</label>
+      <label><input type="radio" name="q9" value="Words"> verbal acknowledgment</label>
+
+      <p>which would mean more to you?</p>
+      <label><input type="radio" name="q10" value="Acts"> someone doing your chores</label>
+      <label><input type="radio" name="q10" value="Gifts"> a meaningful present</label>
+
+      <button class="pill" type="submit" style="margin-top:16px;">Discover My Love Language</button>
+    </form>
+  </section>
+
+  <script>
+    document.getElementById('loveForm').addEventListener('submit',(e)=>{
+      e.preventDefault()
+      
+      const f = new FormData(e.target)
+      const counts = { 'Quality Time':0, 'Words':0, 'Gifts':0, 'Acts':0, 'Touch':0 }
+      
+      // count each love language
+      for (let [key,value] of f.entries()){ 
+        if(counts[value] !== undefined) counts[value]++ 
+      }
+      
+      // find the highest scoring love language
+      let topLanguage = 'Quality Time', maxCount = -1
+      Object.entries(counts).forEach(([language, count])=>{
+        if(count > maxCount){
+          maxCount = count
+          topLanguage = language
+        }
+      })
+      
+      localStorage.setItem('quiz_love', topLanguage)
+      const date = new Date().toLocaleString('default',{month:'long',year:'numeric'})
+      localStorage.setItem('quiz_love_date', date)
+      
+      alert('your love language: ' + topLanguage)
+      location.href = '../index.html'
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap');
+
+/* color scheme and variables */
+:root{
+  --bg1:#f0c6ff;
+  --bg2:#c8b3ff;
+  --ink:#1f133a;
+  --ink-soft:#2e2156;
+  --white:#ffffff;
+  --glass:rgba(255,255,255,0.82);
+  --edge:rgba(79,56,140,0.18);
+  --halo:rgba(120,80,200,0.22);
+  --pill1:#f4c2ff;
+  --pill2:#b4a1ff;
+  --pillTxt:#fff;
+}
+
+/* basic reset */
+*{box-sizing:border-box}
+html,body{height:100%}
+
+body{
+  margin:0;
+  font-family:Manrope, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--ink);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;
+}
+
+/* sticky header */
+.topbar{
+  position:sticky; top:0; z-index:15;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 24px;
+  backdrop-filter:saturate(140%) blur(8px);
+  background:linear-gradient(180deg,rgba(255,255,255,0.28),rgba(255,255,255,0.06));
+  border-bottom:1px solid rgba(80,60,130,0.12);
+}
+
+.brand{
+  font-weight:800; font-size:56px; line-height:1;
+  text-decoration:none; color:var(--ink);
+  -webkit-text-stroke:1px #5b39a6;
+  text-shadow:0 3px 14px rgba(90,60,170,0.25);
+}
+
+.top-actions{display:flex; gap:10px}
+
+/* button styles for everything */
+.pill{
+  display:inline-block;
+  padding:12px 20px;
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--pill1),var(--pill2));
+  color:var(--pillTxt); text-decoration:none; cursor:pointer;
+  font-weight:700; border:0;
+  box-shadow:0 8px 20px rgba(123,93,215,0.25);
+  text-shadow:0 1px 3px rgba(255,192,255,0.45);
+  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+.pill:hover{
+  transform:translateY(-1px) scale(1.03); 
+  filter:saturate(1.06); 
+  box-shadow:0 10px 22px rgba(123,93,215,0.33);
+}
+.pill:active{transform:translateY(0) scale(.99)}
+
+/* main layout grid */
+.shell{
+  max-width:1180px;
+  margin:24px auto 80px;
+  padding:0 20px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-areas:
+    "left right"
+    "full full";
+  gap:26px;
+}
+
+/* card containers */
+.card{
+  background:var(--glass);
+  border:1px solid var(--edge);
+  border-radius:28px;
+  padding:24px 26px;
+  box-shadow:0 14px 40px rgba(75,55,140,0.18);
+}
+.left{grid-area:left}
+.right{grid-area:right}
+.full{grid-area:full}
+
+.title{margin:0 0 18px; font-weight:800; font-size:40px; letter-spacing:.2px}
+.soft{ text-shadow:0 1px 0 var(--halo), 0 2px 10px var(--halo) }
+.muted{color:#4e3f7a}
+
+/* quiz visualization circle */
+.viz-wrap{
+  position:relative; height:430px; background:#fff; border-radius:22px;
+  border:1px dashed rgba(120,90,200,0.18);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+
+.viz-circle{
+  width:240px; height:240px; border-radius:50%;
+  background:radial-gradient(circle at 35% 25%, #e8c8ff, #b79dff);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 10px 40px rgba(90,60,170,0.25), 0 10px 24px rgba(100,70,180,0.18);
+}
+
+.center-text{ 
+  color:#fff; font-weight:800; font-size:20px; text-align:center; padding:0 18px;
+}
+
+/* quiz buttons positioned around circle */
+.orbit{ 
+  position:absolute; transform:translate(-50%,-50%); white-space:nowrap;
+}
+
+.viz-wrap .orbit{
+  --R: 190px; --cx:50%; --cy:50%;
+  left: calc(var(--cx) + cos(var(--deg)) * var(--R));
+  top:  calc(var(--cy) + sin(var(--deg)) * var(--R));
+}
+
+/* reminder list */
+.rem-list{display:flex; flex-direction:column; gap:10px; margin:14px 0}
+.cta{margin-top:8px}
+
+/* chat interface */
+.chat-box{display:flex; flex-direction:column; gap:14px}
+
+.chat-feed{
+  height:240px; background:#fff; border:1px solid rgba(80,60,130,0.12); 
+  border-radius:16px; padding:14px; overflow:auto;
+}
+
+.chat-input{display:flex; gap:10px}
+
+.chat-input input{
+  flex:1; height:46px; border-radius:999px; border:1px solid rgba(80,60,130,0.12);
+  padding:0 16px; font-weight:700; color:var(--ink-soft);
+  background:linear-gradient(180deg,#fff, #fbf8ff); outline:none;
+}
+
+/* responsive breakpoint */
+@media (max-width: 980px){
+  .shell{
+    grid-template-columns:1fr; 
+    grid-template-areas:"left" "right" "full";
+  }
+  .title{font-size:34px}
+  .brand{font-size:46px}
+  .viz-wrap{height:400px}
+  .viz-circle{width:210px; height:210px}
+  .viz-wrap .orbit{--R: 170px}
+}

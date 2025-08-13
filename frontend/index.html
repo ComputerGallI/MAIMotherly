@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="brand" href="index.html">MAI</a>
+    <nav class="top-actions">
+      <a class="pill" id="loginBtn" href="login.html">Login</a>
+      <a class="pill" id="profileBtn" href="profile.html">Profile</a>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <!-- quiz results section -->
+    <section class="card left">
+      <h2 class="title soft">Quiz Results</h2>
+      <div class="viz-wrap">
+        <div class="viz-circle" id="vizCenter">
+          <span class="center-text soft" id="centerLabel">Register or Log in</span>
+        </div>
+
+        <!-- quiz buttons positioned around the circle -->
+        <button class="orbit pill soft" style="--deg:10deg;"  data-target="quizzes/quiz_personality.html" id="btnPersonality">Personality</button>
+        <button class="orbit pill soft" style="--deg:190deg;" data-target="quizzes/quiz_stress.html"       id="btnStress">Stress & Anxiety</button>
+        <button class="orbit pill soft" style="--deg:350deg;" data-target="quizzes/quiz_love.html"         id="btnLove">Love Language</button>
+        <button class="orbit pill soft" style="--deg:95deg;"  data-target="quizzes/quiz_21.html"           id="btn21">21 Questions</button>
+      </div>
+    </section>
+
+    <!-- wellness reminders -->
+    <section class="card right">
+      <h2 class="title soft">Reminders</h2>
+      <p class="muted" id="remindersEmpty">No reminders yet</p>
+      <div id="reminderList" class="rem-list"></div>
+      <button class="cta pill soft" id="addCalBtn">Add Wellness Reminder</button>
+    </section>
+
+    <!-- mai chat interface -->
+    <section class="card full">
+      <h2 class="title soft" style="text-align:center">Talk to MAI</h2>
+      <div class="chat-box">
+        <div class="chat-feed" id="chatFeed"></div>
+        <div class="chat-input">
+          <input id="chatText" type="text" placeholder="type a message..." />
+          <button id="chatSend" class="pill soft">Send</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // load quiz stuff from browser storage 
+    function loadOrbit(){
+      const user = localStorage.getItem('username')
+      if (user) {
+        document.getElementById('centerLabel').textContent = `hey ${user}!`
+        document.getElementById('loginBtn').style.display = 'none'
+      }
+
+      // update the quiz buttons with what they got
+      const p = localStorage.getItem('quiz_personality') || 'Personality'
+      const s = localStorage.getItem('quiz_stress')      || 'Stress & Anxiety'  
+      const l = localStorage.getItem('quiz_love')        || 'Love Language'
+      const q = localStorage.getItem('quiz_21')          || '21 Questions'
+      
+      document.getElementById('btnPersonality').textContent = p
+      document.getElementById('btnStress').textContent      = s
+      document.getElementById('btnLove').textContent        = l
+      document.getElementById('btn21').textContent          = q
+    }
+    loadOrbit()
+
+    // click quiz buttons to go to quiz pages
+    document.querySelectorAll('.orbit').forEach(b=>{
+      b.addEventListener('click', ()=> location.href = b.dataset.target)
+    })
+
+    // chat with mai (now smarter with personality stuff)
+    document.getElementById('chatSend').onclick = async ()=>{
+      const t = document.getElementById('chatText')
+      const msg = t.value.trim()
+      if(!msg) return
+      
+      appendChat('You: ' + msg)
+      t.value=''
+      
+      // grab all the quiz results to make mai smarter
+      const personality = localStorage.getItem('quiz_personality') || ''
+      const stress = localStorage.getItem('quiz_stress') || ''
+      const love = localStorage.getItem('quiz_love') || ''
+      const quiz21 = localStorage.getItem('quiz_21') || ''
+      const quizSummary = `${personality}, ${stress}, ${love}, ${quiz21}`.replace(/^,+|,+$/g, '')
+      
+      try{
+        const r = await fetch('http://localhost:8000/generate', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ 
+            user_input: msg,
+            quiz_summary: quizSummary
+          })
+        })
+        const data = await r.json()
+        appendChat('MAI: ' + (data.response || 'tell me more about that'))
+        
+        // maybe suggest calendar reminder based on what they said
+        if (msg.toLowerCase().includes('remind') || msg.toLowerCase().includes('forget')) {
+          suggestCalendarReminder(msg)
+        }
+        
+      }catch(e){ 
+        appendChat('MAI: sorry, having trouble connecting right now') 
+      }
+    }
+
+    // add messages to the chat area
+    function appendChat(line){
+      const feed = document.getElementById('chatFeed')
+      const d = document.createElement('div')
+      d.textContent = line
+      d.style.margin = '8px 0'
+      d.style.padding = '8px 12px'
+      d.style.borderRadius = '12px'
+      
+      if (line.startsWith('You:')) {
+        d.style.background = '#f0c6ff'
+        d.style.marginLeft = '20px'
+      } else {
+        d.style.background = '#fff'
+        d.style.border = '1px solid #e0e0e0'
+      }
+      
+      feed.appendChild(d)
+      feed.scrollTop = feed.scrollHeight
+    }
+
+    // suggest adding reminder when appropriate
+    function suggestCalendarReminder(userMessage) {
+      // simple check for reminder keywords
+      setTimeout(() => {
+        appendChat('MAI: want me to add a reminder to your calendar? click the button below')
+      }, 1000)
+    }
+
+    // calendar button click handler
+    document.getElementById('addCalBtn').onclick = async ()=>{
+      const username = localStorage.getItem('username') || 'guest'
+      
+      // make a reminder for tomorrow morning
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      tomorrow.setHours(10, 0, 0, 0) // 10 am tomorrow
+      
+      const reminderData = {
+        title: 'MAI wellness check-in',
+        description: 'time for a quick mental health check-in. how are you feeling today?',
+        datetime: tomorrow.toISOString(),
+        username: username
+      }
+
+      try {
+        const response = await fetch('http://localhost:5000/api/calendar/add-reminder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reminderData)
+        })
+        
+        const result = await response.json()
+        
+        if (result.success) {
+          alert('reminder added to your calendar!')
+          loadReminders() // refresh the reminders list
+        } else if (result.authUrl) {
+          // need to login to google first
+          window.open(result.authUrl, '_blank')
+          alert('please login to google calendar first, then try again')
+        } else {
+          alert('couldnt add reminder: ' + (result.error || 'unknown error'))
+        }
+      } catch (e) {
+        alert('something went wrong with the calendar')
+      }
+    }
+
+    // load existing reminders from calendar
+    async function loadReminders() {
+      const username = localStorage.getItem('username') || 'guest'
+      
+      try {
+        const response = await fetch(`http://localhost:5000/api/calendar/reminders/${username}`)
+        const data = await response.json()
+        
+        const reminderList = document.getElementById('reminderList')
+        const emptyMsg = document.getElementById('remindersEmpty')
+        
+        if (data.reminders && data.reminders.length > 0) {
+          emptyMsg.style.display = 'none'
+          reminderList.innerHTML = ''
+          
+          data.reminders.forEach(reminder => {
+            const div = document.createElement('div')
+            div.style.cssText = 'background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin:8px 0'
+            div.innerHTML = `
+              <strong>${reminder.title}</strong><br>
+              <small>${new Date(reminder.datetime).toLocaleDateString()}</small>
+            `
+            reminderList.appendChild(div)
+          })
+        } else {
+          emptyMsg.style.display = 'block'
+          reminderList.innerHTML = ''
+        }
+      } catch (e) {
+        console.log('couldn\'t load reminders:', e)
+      }
+    }
+
+    // load reminders when page loads
+    loadReminders()
+
+    // check for calendar connection status in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('calendar') === 'connected') {
+      alert('calendar connected! you can now add reminders')
+      loadReminders()
+    } else if (urlParams.get('calendar') === 'error') {
+      alert('calendar connection failed')
+    }
+
+    // enter key sends message too
+    document.getElementById('chatText').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('chatSend').click()
+      }
+    })
+  </script>
+</body>
+</html>

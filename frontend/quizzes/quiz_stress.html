@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stress & Anxiety Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../index.html">MAI</a>
+    <nav class="top-actions">
+      <a class="pill" href="../profile.html">Profile</a>
+      <a class="pill" href="../login.html">Login</a>
+    </nav>
+  </header>
+
+  <section class="card" style="max-width:900px;margin:24px auto;">
+    <h2 class="title soft">Stress & Anxiety Quiz</h2>
+
+    <form id="quizForm">
+      <p>do you feel tense most of the day?</p>
+      <label><input type="radio" name="q1" value="High"> yes, constantly</label>
+      <label><input type="radio" name="q1" value="Low"> no, pretty relaxed</label>
+
+      <p>trouble sleeping because of worry?</p>
+      <label><input type="radio" name="q2" value="High"> yes, happens often</label>
+      <label><input type="radio" name="q2" value="Low"> no, sleep well usually</label>
+
+      <p>feel overwhelmed by small tasks?</p>
+      <label><input type="radio" name="q3" value="High"> yes, everything feels big</label>
+      <label><input type="radio" name="q3" value="Low"> no, handle things fine</label>
+
+      <p>worry about things you can't control?</p>
+      <label><input type="radio" name="q4" value="High"> yes, all the time</label>
+      <label><input type="radio" name="q4" value="Low"> no, let things go</label>
+
+      <p>feel irritable or snappy often?</p>
+      <label><input type="radio" name="q5" value="High"> yes, on edge</label>
+      <label><input type="radio" name="q5" value="Low"> no, pretty calm</label>
+
+      <p>get headaches from stress?</p>
+      <label><input type="radio" name="q6" value="High"> yes, frequently</label>
+      <label><input type="radio" name="q6" value="Low"> no, rarely</label>
+
+      <p>avoid social plans due to stress?</p>
+      <label><input type="radio" name="q7" value="High"> yes, too draining</label>
+      <label><input type="radio" name="q7" value="Low"> no, enjoy socializing</label>
+
+      <p>feel restless or on edge?</p>
+      <label><input type="radio" name="q8" value="High"> yes, can't sit still</label>
+      <label><input type="radio" name="q8" value="Low"> no, feel settled</label>
+
+      <p>hard to focus on one thing?</p>
+      <label><input type="radio" name="q9" value="High"> yes, mind races</label>
+      <label><input type="radio" name="q9" value="Low"> no, focus is good</label>
+
+      <p>heart racing from anxiety?</p>
+      <label><input type="radio" name="q10" value="High"> yes, happens often</label>
+      <label><input type="radio" name="q10" value="Low"> no, heart rate normal</label>
+
+      <button class="pill" type="submit" style="margin-top:16px;">Get Results</button>
+    </form>
+  </section>
+
+  <script>
+    document.getElementById("quizForm").addEventListener("submit", function(e){
+      e.preventDefault()
+      
+      const answers = Array.from(document.querySelectorAll('input[type="radio"]:checked')).map(el=>el.value)
+      const highCount = answers.filter(a=>a==="High").length
+      
+      // determine stress level based on high answers
+      let result
+      if (highCount >= 7) {
+        result = "High Stress"
+      } else if (highCount >= 4) {
+        result = "Moderate Stress"
+      } else {
+        result = "Low Stress"
+      }
+      
+      localStorage.setItem("quiz_stress", result)
+      const date = new Date().toLocaleString('default',{month:'long',year:'numeric'})
+      localStorage.setItem("quiz_stress_date", date)
+      
+      alert("stress level: " + result)
+      location.href = "../index.html"
+    })
+  </script>
+</body>
+</html>

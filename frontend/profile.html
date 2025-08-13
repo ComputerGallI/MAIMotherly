@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAI – Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">MAI</a>
+    <nav class="top-actions">
+      <a class="pill" href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <section class="card" style="max-width:980px;margin:24px auto;">
+    <h2 class="title soft">Your Quiz Results</h2>
+    <div id="rows"></div>
+  </section>
+
+  <script>
+    // create result row for each quiz
+    function createRow(label, storageKey, dateKey){
+      const result = localStorage.getItem(storageKey)
+      const dateTaken = localStorage.getItem(dateKey)
+      
+      if(!result) return ''
+      
+      // google search link for learning more
+      const searchUrl = 'https://www.google.com/search?q='+encodeURIComponent(result+' meaning wellness tips')
+      
+      return `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #eee;border-radius:16px;padding:14px 16px;margin:10px 0;background:#fff;">
+        <div>
+          <div style="font-weight:800">${label}: ${result}</div>
+          <div style="opacity:.8">taken: ${dateTaken||'unknown date'}</div>
+        </div>
+        <a class="pill" href="${searchUrl}" target="_blank" rel="noopener">Learn More</a>
+      </div>`
+    }
+
+    // build all result rows
+    function loadResults(){
+      const html = 
+        createRow('Personality Type','quiz_personality','quiz_personality_date') +
+        createRow('Stress Level','quiz_stress','quiz_stress_date') +
+        createRow('Love Language','quiz_love','quiz_love_date') +
+        createRow('Lifestyle','quiz_21','quiz_21_date')
+      
+      document.getElementById('rows').innerHTML = html || '<p class="muted">no quiz results yet - take some quizzes first!</p>'
+    }
+
+    loadResults()
+  </script>
+</body>
+</html>

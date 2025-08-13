@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAI – Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">MAI</a>
+  </header>
+
+  <section class="card" style="max-width:560px;margin:40px auto;">
+    <h2 class="title soft">Login or Register</h2>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <input id="u" placeholder="username"/>
+      <input id="p" type="password" placeholder="password"/>
+      <input id="e" placeholder="email (register only)"/>
+      <div style="display:flex;gap:8px;">
+        <button class="pill" id="doLogin">Login</button>
+        <button class="pill" id="doRegister">Register</button>
+      </div>
+      <p class="muted">demo users: IndieMovies / 12345!  &nbsp; | &nbsp; Ryanator / 12345!</p>
+    </div>
+  </section>
+
+  <script>
+    // register new user
+    document.getElementById('doRegister').onclick = async ()=>{
+      const username = document.getElementById('u').value.trim()
+      const password = document.getElementById('p').value.trim()
+      const email    = document.getElementById('e').value.trim()
+      
+      if(!username || !password){ 
+        alert('need username + password'); return 
+      }
+      
+      try{
+        const r = await fetch('http://localhost:5000/api/users/register',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({username,password,email})
+        })
+        const data = await r.json()
+        
+        if(data && data.ok){
+          localStorage.setItem('username', username)
+          localStorage.setItem('email', email||'')
+          alert('registered successfully!')
+          location.href = 'index.html'
+        }else {
+          alert('could not register - username might be taken')
+        }
+      }catch(e){ 
+        alert('registration error - check if backend is running') 
+      }
+    }
+
+    // login existing user
+    document.getElementById('doLogin').onclick = async ()=>{
+      const username = document.getElementById('u').value.trim()
+      const password = document.getElementById('p').value.trim()
+      
+      if(!username || !password){ 
+        alert('need username + password'); return 
+      }
+      
+      try{
+        const r = await fetch('http://localhost:5000/api/users/login',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({username,password})
+        })
+        const data = await r.json()
+        
+        if(data && data.username){
+          localStorage.setItem('username', data.username)
+          localStorage.setItem('email', data.email||'')
+          alert('logged in!')
+          location.href = 'index.html'
+        }else {
+          alert('invalid username or password')
+        }
+      }catch(e){ 
+        alert('login error - check if backend is running') 
+      }
+    }
+
+    // enter key submits
+    document.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('doLogin').click()
+      }
+    })
+  </script>
+</body>
+</html>

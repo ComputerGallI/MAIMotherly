@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Personality Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../index.html">MAI</a>
+    <nav class="top-actions">
+      <a class="pill" href="../profile.html">Profile</a>
+      <a class="pill" href="../login.html">Login</a>
+    </nav>
+  </header>
+
+  <section class="card" style="max-width:900px;margin:24px auto;">
+    <h2 class="title soft">Personality Quiz</h2>
+    
+    <form id="qForm">
+      <p>you prefer quiet time to recharge?</p>
+      <label><input type="radio" name="q1" value="I"> yes, definitely</label>
+      <label><input type="radio" name="q1" value="E"> no, people energize me</label>
+
+      <p>you plan ahead more than you improvise?</p>
+      <label><input type="radio" name="q2" value="J"> yes, i like structure</label>
+      <label><input type="radio" name="q2" value="P"> no, i go with the flow</label>
+
+      <p>you rely on facts over gut feelings?</p>
+      <label><input type="radio" name="q3" value="S"> yes, facts are safer</label>
+      <label><input type="radio" name="q3" value="N"> no, intuition guides me</label>
+
+      <p>you choose logic over harmony in tough choices?</p>
+      <label><input type="radio" name="q4" value="T"> yes, logic wins</label>
+      <label><input type="radio" name="q4" value="F"> no, feelings matter more</label>
+
+      <p>you like detailed to-do lists?</p>
+      <label><input type="radio" name="q5" value="J"> yes, love organization</label>
+      <label><input type="radio" name="q5" value="P"> no, lists stress me out</label>
+
+      <p>you enjoy meeting new people weekly?</p>
+      <label><input type="radio" name="q6" value="E"> yes, bring on the people</label>
+      <label><input type="radio" name="q6" value="I"> no, that sounds exhausting</label>
+
+      <p>you notice small details others miss?</p>
+      <label><input type="radio" name="q7" value="S"> yes, i see everything</label>
+      <label><input type="radio" name="q7" value="N"> no, i see the big picture</label>
+
+      <p>you avoid conflict to keep peace?</p>
+      <label><input type="radio" name="q8" value="F"> yes, harmony is key</label>
+      <label><input type="radio" name="q8" value="T"> no, truth matters more</label>
+
+      <p>you start tasks right away?</p>
+      <label><input type="radio" name="q9" value="J"> yes, no procrastination</label>
+      <label><input type="radio" name="q9" value="P"> no, i work better under pressure</label>
+
+      <p>you like being the center of attention?</p>
+      <label><input type="radio" name="q10" value="E"> yes, spotlight please</label>
+      <label><input type="radio" name="q10" value="I"> no, i prefer the background</label>
+
+      <button class="pill" type="submit" style="margin-top:16px;">Get My Type</button>
+    </form>
+  </section>
+
+  <script>
+    document.getElementById('qForm').addEventListener('submit', (e)=>{
+      e.preventDefault()
+      
+      // collect answers to build personality type
+      const f = new FormData(e.target)
+      let personalityCode = ''
+      
+      // build the 4-letter code (MBTI style)
+      personalityCode += f.get('q1') || 'I'  // introvert vs extrovert
+      personalityCode += f.get('q3') || 'S'  // sensing vs intuition  
+      personalityCode += f.get('q4') || 'F'  // thinking vs feeling
+      personalityCode += f.get('q2') || 'P'  // judging vs perceiving
+      
+      if(!personalityCode || personalityCode.length < 4) {
+        personalityCode = 'ISFP' // default if incomplete
+      }
+      
+      localStorage.setItem('quiz_personality', personalityCode)
+      const date = new Date().toLocaleString('default',{month:'long',year:'numeric'})
+      localStorage.setItem('quiz_personality_date', date)
+      
+      alert(`your personality type: ${personalityCode}`)
+      location.href='../index.html'
+    })
+  </script>
+</body>
+</html>

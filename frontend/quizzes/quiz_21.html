@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>21 Questions Lifestyle Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../index.html">MAI</a>
+    <nav class="top-actions">
+      <a class="pill" href="../profile.html">Profile</a>
+      <a class="pill" href="../login.html">Login</a>
+    </nav>
+  </header>
+
+  <section class="card" style="max-width:900px;margin:24px auto;">
+    <h2 class="title soft">21 Questions</h2>
+
+    <form id="q21">
+      <p>1. do you enjoy mornings?</p>
+      <label><input type="radio" name="q1" value="yes"> yes, morning person</label>
+      <label><input type="radio" name="q1" value="no"> no, night owl</label>
+      
+      <p>2. do you like planning ahead?</p>
+      <label><input type="radio" name="q2" value="yes"> yes, plan everything</label>
+      <label><input type="radio" name="q2" value="no"> no, spontaneous</label>
+      
+      <p>3. do you prefer quiet places?</p>
+      <label><input type="radio" name="q3" value="yes"> yes, need peace</label>
+      <label><input type="radio" name="q3" value="no"> no, like energy</label>
+      
+      <p>4. do you exercise regularly?</p>
+      <label><input type="radio" name="q4" value="yes"> yes, weekly routine</label>
+      <label><input type="radio" name="q4" value="no"> no, not consistent</label>
+      
+      <p>5. do you read often?</p>
+      <label><input type="radio" name="q5" value="yes"> yes, love books</label>
+      <label><input type="radio" name="q5" value="no"> no, prefer other media</label>
+      
+      <p>6. do you journal or write?</p>
+      <label><input type="radio" name="q6" value="yes"> yes, regularly</label>
+      <label><input type="radio" name="q6" value="no"> no, not really</label>
+      
+      <p>7. do you like trying new foods?</p>
+      <label><input type="radio" name="q7" value="yes"> yes, adventurous eater</label>
+      <label><input type="radio" name="q7" value="no"> no, stick to favorites</label>
+      
+      <p>8. do you prefer small gatherings?</p>
+      <label><input type="radio" name="q8" value="yes"> yes, intimate groups</label>
+      <label><input type="radio" name="q8" value="no"> no, big parties</label>
+      
+      <p>9. do you work well with deadlines?</p>
+      <label><input type="radio" name="q9" value="yes"> yes, thrive under pressure</label>
+      <label><input type="radio" name="q9" value="no"> no, prefer flexible timing</label>
+      
+      <p>10. do you enjoy nature walks?</p>
+      <label><input type="radio" name="q10" value="yes"> yes, love outdoors</label>
+      <label><input type="radio" name="q10" value="no"> no, prefer indoors</label>
+      
+      <p>11. do you track your habits?</p>
+      <label><input type="radio" name="q11" value="yes"> yes, love data</label>
+      <label><input type="radio" name="q11" value="no"> no, go with flow</label>
+      
+      <p>12. do you listen to music daily?</p>
+      <label><input type="radio" name="q12" value="yes"> yes, always</label>
+      <label><input type="radio" name="q12" value="no"> no, occasionally</label>
+      
+      <p>13. do you enjoy podcasts?</p>
+      <label><input type="radio" name="q13" value="yes"> yes, learn while listening</label>
+      <label><input type="radio" name="q13" value="no"> no, prefer silence</label>
+      
+      <p>14. do you keep a tidy space?</p>
+      <label><input type="radio" name="q14" value="yes"> yes, organization matters</label>
+      <label><input type="radio" name="q14" value="no"> no, creative chaos</label>
+      
+      <p>15. do you enjoy traveling?</p>
+      <label><input type="radio" name="q15" value="yes"> yes, love exploring</label>
+      <label><input type="radio" name="q15" value="no"> no, prefer familiar places</label>
+      
+      <p>16. do you like routines?</p>
+      <label><input type="radio" name="q16" value="yes"> yes, routines help</label>
+      <label><input type="radio" name="q16" value="no"> no, variety is key</label>
+      
+      <p>17. do you enjoy puzzles or games?</p>
+      <label><input type="radio" name="q17" value="yes"> yes, love challenges</label>
+      <label><input type="radio" name="q17" value="no"> no, not my thing</label>
+      
+      <p>18. do you cook at home often?</p>
+      <label><input type="radio" name="q18" value="yes"> yes, enjoy cooking</label>
+      <label><input type="radio" name="q18" value="no"> no, eat out/order</label>
+      
+      <p>19. do you stay in touch with friends regularly?</p>
+      <label><input type="radio" name="q19" value="yes"> yes, weekly calls</label>
+      <label><input type="radio" name="q19" value="no"> no, catch up occasionally</label>
+      
+      <p>20. do you practice mindfulness or meditation?</p>
+      <label><input type="radio" name="q20" value="yes"> yes, helps me center</label>
+      <label><input type="radio" name="q20" value="no"> no, hard to sit still</label>
+      
+      <p>21. do you like learning new skills?</p>
+      <label><input type="radio" name="q21" value="yes"> yes, always growing</label>
+      <label><input type="radio" name="q21" value="no"> no, stick to what i know</label>
+
+      <button class="pill" type="submit" style="margin-top:16px;">Get My Lifestyle</button>
+    </form>
+  </section>
+
+  <script>
+    document.getElementById('q21').addEventListener('submit',(e)=>{
+      e.preventDefault()
+      
+      const checked = Array.from(document.querySelectorAll('input[type="radio"]:checked'))
+      const yesCount = checked.filter(x=>x.value==='yes').length
+      
+      // determine lifestyle based on yes answers
+      let lifestyle
+      if (yesCount >= 15) {
+        lifestyle = 'Structured Explorer'
+      } else if (yesCount >= 10) {
+        lifestyle = 'Balanced Adventurer'  
+      } else {
+        lifestyle = 'Free Spirit'
+      }
+      
+      localStorage.setItem('quiz_21', lifestyle)
+      const date = new Date().toLocaleString('default',{month:'long',year:'numeric'})
+      localStorage.setItem('quiz_21_date', date)
+      
+      alert('your lifestyle: ' + lifestyle)
+      location.href = '../index.html'
+    })
+  </script>
+</body>
+</html>
