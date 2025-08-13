@@ -1,40 +1,85 @@
+# AI model files (too large for github)
+mai_artifacts/
+fastapi_ai/mai_artifacts/
+**/mai_artifacts/
+
+# Environment files (contain secrets)
+.env
+*/.env
+backend/.env
+fastapi_ai/.env
+
 # Dependencies
 node_modules/
 __pycache__/
 *.pyc
-
-# Environment
-.env
-.env.local
-.venv
-env/
+*.pyo
+*.pyd
 venv/
+env/
+.venv/
 
-# Build outputs
-dist/
-build/
-*.egg-info/
-
-# IDE
-.vscode/
-.idea/
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
 # Logs
 *.log
+logs/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# OS
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# AI model files
-*.onnx
-*.pt
-*.pth
-*.h5
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Data
-*.csv
-*.json
-!package.json
-!package-lock.json
+# Python specific
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Node specific
+.npm
+.node_repl_history
+coverage/
+.nyc_output
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Google credentials 
+google-credentials.json
+credentials.json
+token.json
+
+# Training outputs
+*.pkl
+*.bin
+*.model
+checkpoint-*/
+runs/
+
+# Jupyter notebooks 
+.ipynb_checkpoints/
