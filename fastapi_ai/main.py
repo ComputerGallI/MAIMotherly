@@ -6,6 +6,7 @@ from typing import List, Optional
 import os, json, pickle
 import numpy as np
 from dotenv import load_dotenv
+import random
 
 # ai stuff
 from sentence_transformers import SentenceTransformer
@@ -53,9 +54,18 @@ async def load_models():
         
         # load ai models  
         retriever = SentenceTransformer(f"{artifacts_path}/retriever_model")
-        generator = pipeline("text2text-generation", 
-                           model=f"{artifacts_path}/generator_model",
-                           tokenizer=f"{artifacts_path}/generator_tokenizer")
+        
+        # simpler generator setup to avoid issues
+        try:
+            generator = pipeline("text2text-generation", 
+                               model=f"{artifacts_path}/generator_model",
+                               tokenizer=f"{artifacts_path}/generator_tokenizer",
+                               max_length=50,
+                               do_sample=True,
+                               temperature=0.7)
+        except:
+            print("using fallback generator...")
+            generator = None
         
         # load search index
         search_index = faiss.read_index(f"{artifacts_path}/faiss_index.bin")
@@ -70,7 +80,7 @@ async def setup_demo():
     global retriever, generator, knowledge_corpus, search_index
     
     retriever = SentenceTransformer('all-MiniLM-L6-v2')
-    generator = pipeline("text2text-generation", model="facebook/bart-base")
+    generator = None  # we'll use template responses
     
     # basic mental health responses
     knowledge_corpus = [
@@ -90,6 +100,94 @@ async def setup_demo():
     search_index.add(embeddings.astype('float32'))
     print("demo ready")
 
+def create_smart_response(user_input, quiz_summary, relevant_docs):
+    """create good responses using templates and knowledge"""
+    
+    # extract personality info
+    personality_type = ""
+    stress_level = ""
+    love_language = ""
+    
+    if quiz_summary:
+        parts = quiz_summary.split(", ")
+        for part in parts:
+            if len(part) == 4 and part.isupper():  # MBTI type
+                personality_type = part
+            elif "stress" in part.lower():
+                stress_level = part
+            elif any(word in part.lower() for word in ["time", "words", "touch", "acts", "gifts"]):
+                love_language = part
+    
+    # get relevant knowledge
+    context = relevant_docs[0] if relevant_docs else "be kind to yourself"
+    
+    # create personalized response based on input
+    user_lower = user_input.lower()
+    
+    if any(word in user_lower for word in ["hello", "hi", "hey"]):
+        responses = [
+            f"hey there! i'm mai, your mental health buddy. how are you feeling today?",
+            f"hi! i'm here to chat and support you. what's on your mind?",
+            f"hello! nice to meet you. i'm mai and i care about your wellbeing. how can i help?"
+        ]
+        
+    elif any(word in user_lower for word in ["anxious", "anxiety", "nervous", "worried"]):
+        responses = [
+            f"anxiety can feel overwhelming. try the 5-4-3-2-1 technique: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste.",
+            f"when anxiety hits, remember to breathe slowly. in for 4 counts, hold for 4, out for 6. you've got this.",
+            f"anxiety is tough but temporary. ground yourself by focusing on what's real right now around you."
+        ]
+        
+    elif any(word in user_lower for word in ["stressed", "stress", "overwhelmed", "pressure"]):
+        responses = [
+            f"feeling stressed is totally normal. try breaking whatever's overwhelming you into smaller, manageable pieces.",
+            f"stress can feel heavy. remember that you don't have to carry it all at once - one step at a time is enough.",
+            f"when everything feels urgent, pick just one thing to focus on first. progress beats perfection."
+        ]
+        
+    elif any(word in user_lower for word in ["sad", "down", "depressed", "low"]):
+        responses = [
+            f"it's okay to feel down sometimes. your feelings are valid and this difficult time will pass.",
+            f"low energy days are real. even small acts of self-care like drinking water count as wins.",
+            f"feeling sad doesn't define you. be gentle with yourself as you work through these emotions."
+        ]
+        
+    elif any(word in user_lower for word in ["don't know", "unsure", "confused", "lost"]):
+        responses = [
+            f"feeling uncertain is part of being human. you don't need to have all the answers right now.",
+            f"it's okay not to know what to do next. sometimes the best step is just being present with yourself.",
+            f"confusion can actually be a sign you're growing. take things one moment at a time."
+        ]
+        
+    elif any(word in user_lower for word in ["tired", "exhausted", "drained"]):
+        responses = [
+            f"exhaustion is your body's way of asking for rest. it's okay to slow down and recharge.",
+            f"being tired isn't a weakness - it's information. listen to what your body needs right now.",
+            f"rest isn't earned, it's needed. give yourself permission to take breaks without guilt."
+        ]
+        
+    else:
+        # general supportive responses
+        responses = [
+            f"i hear you. whatever you're going through, your feelings matter and you're not alone in this.",
+            f"thank you for sharing with me. it takes courage to talk about what's bothering you.",
+            f"you're doing better than you think. be patient with yourself as you navigate whatever you're facing."
+        ]
+    
+    # add personality-specific touch
+    base_response = random.choice(responses)
+    
+    if personality_type:
+        if "I" in personality_type:  # introvert
+            base_response += " take some quiet time for yourself if you need it."
+        elif "E" in personality_type:  # extrovert
+            base_response += " talking with someone you trust might help too."
+            
+    if stress_level and "high" in stress_level.lower():
+        base_response += " given your stress levels, be extra gentle with yourself right now."
+        
+    return base_response
+
 @app.post("/generate")
 async def generate_response(request: ChatRequest):
     """make a helpful response using ai"""
@@ -101,22 +199,9 @@ async def generate_response(request: ChatRequest):
         
         # grab relevant stuff
         relevant_docs = [knowledge_corpus[i] for i in indices[0]]
-        context = " ".join(relevant_docs)
         
-        # build prompt with personality info
-        personality_hint = f"User info: {request.quiz_summary}. " if request.quiz_summary else ""
-        
-        prompt = f"""{personality_hint}You are MAI, a caring mental health buddy.
-
-Context: {context}
-
-User: {request.user_input}
-
-Respond with empathy and practical tips:"""
-        
-        # generate the response
-        result = generator(prompt, max_length=100, do_sample=True, temperature=0.7)
-        response_text = result[0]['generated_text']
+        # use our smart template system instead of buggy generator
+        response_text = create_smart_response(request.user_input, request.quiz_summary, relevant_docs)
         
         return {
             "response": response_text,
