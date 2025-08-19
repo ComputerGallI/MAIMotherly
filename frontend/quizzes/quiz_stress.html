@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Stress & Anxiety Quiz</title>
+  <title>MAI - Stress & Anxiety Assessment</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css"/>
 </head>
@@ -11,83 +11,317 @@
   <header class="topbar">
     <a class="brand" href="../index.html">MAI</a>
     <nav class="top-actions">
-      <a class="pill" href="../profile.html">Profile</a>
-      <a class="pill" href="../login.html">Login</a>
+      <a class="pill" href="../index.html">Back to MAI</a>
     </nav>
   </header>
 
-  <section class="card" style="max-width:900px;margin:24px auto;">
-    <h2 class="title soft">Stress & Anxiety Quiz</h2>
-
-    <form id="quizForm">
-      <p>do you feel tense most of the day?</p>
-      <label><input type="radio" name="q1" value="High"> yes, constantly</label>
-      <label><input type="radio" name="q1" value="Low"> no, pretty relaxed</label>
-
-      <p>trouble sleeping because of worry?</p>
-      <label><input type="radio" name="q2" value="High"> yes, happens often</label>
-      <label><input type="radio" name="q2" value="Low"> no, sleep well usually</label>
-
-      <p>feel overwhelmed by small tasks?</p>
-      <label><input type="radio" name="q3" value="High"> yes, everything feels big</label>
-      <label><input type="radio" name="q3" value="Low"> no, handle things fine</label>
-
-      <p>worry about things you can't control?</p>
-      <label><input type="radio" name="q4" value="High"> yes, all the time</label>
-      <label><input type="radio" name="q4" value="Low"> no, let things go</label>
-
-      <p>feel irritable or snappy often?</p>
-      <label><input type="radio" name="q5" value="High"> yes, on edge</label>
-      <label><input type="radio" name="q5" value="Low"> no, pretty calm</label>
-
-      <p>get headaches from stress?</p>
-      <label><input type="radio" name="q6" value="High"> yes, frequently</label>
-      <label><input type="radio" name="q6" value="Low"> no, rarely</label>
-
-      <p>avoid social plans due to stress?</p>
-      <label><input type="radio" name="q7" value="High"> yes, too draining</label>
-      <label><input type="radio" name="q7" value="Low"> no, enjoy socializing</label>
-
-      <p>feel restless or on edge?</p>
-      <label><input type="radio" name="q8" value="High"> yes, can't sit still</label>
-      <label><input type="radio" name="q8" value="Low"> no, feel settled</label>
-
-      <p>hard to focus on one thing?</p>
-      <label><input type="radio" name="q9" value="High"> yes, mind races</label>
-      <label><input type="radio" name="q9" value="Low"> no, focus is good</label>
-
-      <p>heart racing from anxiety?</p>
-      <label><input type="radio" name="q10" value="High"> yes, happens often</label>
-      <label><input type="radio" name="q10" value="Low"> no, heart rate normal</label>
-
-      <button class="pill" type="submit" style="margin-top:16px;">Get Results</button>
-    </form>
-  </section>
+  <!-- Quiz Modal -->
+  <div class="quiz-modal active" id="quizModal">
+    <div class="quiz-book">
+      <button class="quiz-close" onclick="closeQuiz()">&times;</button>
+      
+      <div class="quiz-page" id="quizPage">
+        <div class="quiz-question">
+          <h2 id="questionTitle">Stress & Anxiety Assessment</h2>
+          <p id="questionText">Loading question...</p>
+        </div>
+        
+        <div class="quiz-options" id="quizOptions">
+          <!-- Options will be populated by JavaScript -->
+        </div>
+        
+        <div class="quiz-navigation">
+          <button class="quiz-btn" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+          <div class="quiz-progress">
+            <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span>
+          </div>
+          <button class="quiz-btn" id="nextBtn" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    document.getElementById("quizForm").addEventListener("submit", function(e){
-      e.preventDefault()
+    const stressQuestions = [
+      {
+        question: "Do you often feel overwhelmed by daily tasks?",
+        options: [
+          { text: "Yes, frequently", value: 2 },
+          { text: "Sometimes", value: 1 },
+          { text: "Rarely or never", value: 0 }
+        ]
+      },
+      {
+        question: "How often do you have trouble sleeping due to worry?",
+        options: [
+          { text: "Most nights", value: 2 },
+          { text: "A few times a week", value: 1 },
+          { text: "Rarely or never", value: 0 }
+        ]
+      },
+      {
+        question: "Do you find it hard to relax even when you have free time?",
+        options: [
+          { text: "Yes, I can't seem to unwind", value: 2 },
+          { text: "Sometimes it's difficult", value: 1 },
+          { text: "No, I relax easily", value: 0 }
+        ]
+      },
+      {
+        question: "How often do you experience physical symptoms of stress (headaches, muscle tension, stomach issues)?",
+        options: [
+          { text: "Daily or almost daily", value: 2 },
+          { text: "A few times a week", value: 1 },
+          { text: "Rarely or never", value: 0 }
+        ]
+      },
+      {
+        question: "Do you worry about things that might happen in the future?",
+        options: [
+          { text: "Constantly", value: 2 },
+          { text: "Sometimes", value: 1 },
+          { text: "Rarely", value: 0 }
+        ]
+      },
+      {
+        question: "How often do you feel irritable or short-tempered?",
+        options: [
+          { text: "Most days", value: 2 },
+          { text: "Some days", value: 1 },
+          { text: "Rarely", value: 0 }
+        ]
+      },
+      {
+        question: "Do you have difficulty concentrating on tasks?",
+        options: [
+          { text: "Yes, very often", value: 2 },
+          { text: "Sometimes", value: 1 },
+          { text: "Rarely or never", value: 0 }
+        ]
+      },
+      {
+        question: "How often do you feel like you're under pressure?",
+        options: [
+          { text: "Almost constantly", value: 2 },
+          { text: "Several times a week", value: 1 },
+          { text: "Occasionally", value: 0 }
+        ]
+      },
+      {
+        question: "Do you avoid social situations because they feel stressful?",
+        options: [
+          { text: "Yes, often", value: 2 },
+          { text: "Sometimes", value: 1 },
+          { text: "Rarely or never", value: 0 }
+        ]
+      },
+      {
+        question: "How would you rate your overall stress level in the past month?",
+        options: [
+          { text: "Very high", value: 2 },
+          { text: "Moderate", value: 1 },
+          { text: "Low", value: 0 }
+        ]
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let answers = [];
+    let selectedAnswer = null;
+
+    function initializeQuiz() {
+      document.getElementById('totalQuestions').textContent = stressQuestions.length;
+      showQuestion(0);
+    }
+
+    function showQuestion(index) {
+      const question = stressQuestions[index];
       
-      const answers = Array.from(document.querySelectorAll('input[type="radio"]:checked')).map(el=>el.value)
-      const highCount = answers.filter(a=>a==="High").length
+      // Capitalize first word of question
+      const capitalizedQuestion = question.question.charAt(0).toUpperCase() + question.question.slice(1);
       
-      // determine stress level based on high answers
-      let result
-      if (highCount >= 7) {
-        result = "High Stress"
-      } else if (highCount >= 4) {
-        result = "Moderate Stress"
+      document.getElementById('questionText').textContent = capitalizedQuestion;
+      document.getElementById('currentQuestion').textContent = index + 1;
+      
+      const optionsContainer = document.getElementById('quizOptions');
+      optionsContainer.innerHTML = '';
+      
+      question.options.forEach((option, optionIndex) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'quiz-option';
+        optionDiv.textContent = option.text;
+        optionDiv.onclick = () => selectOption(optionIndex, option.value);
+        optionsContainer.appendChild(optionDiv);
+      });
+      
+      // Reset selection
+      selectedAnswer = null;
+      updateNavigationButtons();
+    }
+
+    function selectOption(optionIndex, value) {
+      // Remove previous selection
+      document.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Add selection to clicked option
+      document.querySelectorAll('.quiz-option')[optionIndex].classList.add('selected');
+      
+      selectedAnswer = value;
+      updateNavigationButtons();
+    }
+
+    function updateNavigationButtons() {
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      
+      prevBtn.disabled = currentQuestionIndex === 0;
+      nextBtn.disabled = selectedAnswer === null;
+      
+      if (currentQuestionIndex === stressQuestions.length - 1) {
+        nextBtn.textContent = 'Finish';
       } else {
-        result = "Low Stress"
+        nextBtn.textContent = 'Next';
+      }
+    }
+
+    function nextQuestion() {
+      if (selectedAnswer === null) return;
+      
+      // Save answer
+      answers[currentQuestionIndex] = selectedAnswer;
+      
+      if (currentQuestionIndex === stressQuestions.length - 1) {
+        // Quiz completed
+        finishQuiz();
+      } else {
+        // Animate page turn
+        const currentPage = document.getElementById('quizPage');
+        currentPage.classList.add('slide-out');
+        
+        setTimeout(() => {
+          currentQuestionIndex++;
+          showQuestion(currentQuestionIndex);
+          
+          currentPage.classList.remove('slide-out');
+          currentPage.classList.add('slide-in');
+          
+          setTimeout(() => {
+            currentPage.classList.remove('slide-in');
+          }, 50);
+        }, 250);
+      }
+    }
+
+    function previousQuestion() {
+      if (currentQuestionIndex === 0) return;
+      
+      // Animate page turn (reverse)
+      const currentPage = document.getElementById('quizPage');
+      currentPage.classList.add('slide-out');
+      
+      setTimeout(() => {
+        currentQuestionIndex--;
+        showQuestion(currentQuestionIndex);
+        
+        // Restore previous answer if it exists
+        if (answers[currentQuestionIndex] !== undefined) {
+          const question = stressQuestions[currentQuestionIndex];
+          const savedAnswer = answers[currentQuestionIndex];
+          
+          question.options.forEach((option, index) => {
+            if (option.value === savedAnswer) {
+              selectOption(index, savedAnswer);
+            }
+          });
+        }
+        
+        currentPage.classList.remove('slide-out');
+        currentPage.classList.add('slide-in');
+        
+        setTimeout(() => {
+          currentPage.classList.remove('slide-in');
+        }, 50);
+      }, 250);
+    }
+
+    function finishQuiz() {
+      // Calculate total stress score
+      const totalScore = answers.reduce((sum, answer) => sum + answer, 0);
+      const maxScore = stressQuestions.length * 2; // Max 2 points per question
+      
+      let stressLevel;
+      let description;
+      let recommendation;
+      
+      if (totalScore >= 15) {
+        stressLevel = "High Stress";
+        description = "You're experiencing significant stress that may be impacting your daily life.";
+        recommendation = "Consider speaking with a mental health professional and practicing stress management techniques.";
+      } else if (totalScore >= 8) {
+        stressLevel = "Moderate Stress";
+        description = "You're experiencing a moderate level of stress that's manageable but worth addressing.";
+        recommendation = "Focus on stress management techniques like deep breathing, exercise, and time management.";
+      } else {
+        stressLevel = "Low Stress";
+        description = "You're managing stress well and maintaining good mental health.";
+        recommendation = "Keep up your current coping strategies and maintain healthy habits.";
       }
       
-      localStorage.setItem("quiz_stress", result)
-      const date = new Date().toLocaleString('default',{month:'long',year:'numeric'})
-      localStorage.setItem("quiz_stress_date", date)
+      const result = `${stressLevel} (${totalScore}/${maxScore})`;
       
-      alert("stress level: " + result)
-      location.href = "../index.html"
-    })
+      // Save result
+      localStorage.setItem('quiz_stress', result);
+      
+      // Show result page
+      showResult(stressLevel, description, recommendation, totalScore, maxScore);
+    }
+
+    function showResult(level, description, recommendation, score, maxScore) {
+      const questionDiv = document.querySelector('.quiz-question');
+      const optionsDiv = document.querySelector('.quiz-options');
+      const navigationDiv = document.querySelector('.quiz-navigation');
+      
+      const color = level.includes('High') ? '#e74c3c' : level.includes('Moderate') ? '#f39c12' : '#27ae60';
+      
+      questionDiv.innerHTML = `
+        <h2>Your Stress Assessment</h2>
+        <p style="font-size: 24px; font-weight: 700; color: ${color}; margin: 20px 0;">${level}</p>
+        <p style="margin: 15px 0; font-weight: 600;">${description}</p>
+        <p style="margin: 15px 0; color: var(--ink-soft);">${recommendation}</p>
+        <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">Score: ${score}/${maxScore}</p>
+      `;
+      
+      optionsDiv.innerHTML = '';
+      
+      navigationDiv.innerHTML = `
+        <button class="quiz-btn" onclick="retakeQuiz()">Retake Assessment</button>
+        <button class="quiz-btn" onclick="goHome()" style="background: linear-gradient(135deg, #7dd87d, #5cb85c);">Continue to MAI</button>
+      `;
+    }
+
+    function retakeQuiz() {
+      currentQuestionIndex = 0;
+      answers = [];
+      selectedAnswer = null;
+      
+      document.getElementById('questionTitle').textContent = 'Stress & Anxiety Assessment';
+      initializeQuiz();
+    }
+
+    function goHome() {
+      window.location.href = '../index.html';
+    }
+
+    function closeQuiz() {
+      if (confirm('Are you sure you want to close the quiz? Your progress will be lost.')) {
+        window.location.href = '../index.html';
+      }
+    }
+
+    // Initialize quiz when page loads
+    window.addEventListener('load', initializeQuiz);
   </script>
 </body>
 </html>

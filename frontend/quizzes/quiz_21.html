@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>21 Questions Lifestyle Quiz</title>
+  <title>MAI - 21 Questions Quiz</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css"/>
 </head>
@@ -11,127 +11,410 @@
   <header class="topbar">
     <a class="brand" href="../index.html">MAI</a>
     <nav class="top-actions">
-      <a class="pill" href="../profile.html">Profile</a>
-      <a class="pill" href="../login.html">Login</a>
+      <a class="pill" href="../index.html">Back to MAI</a>
     </nav>
   </header>
 
-  <section class="card" style="max-width:900px;margin:24px auto;">
-    <h2 class="title soft">21 Questions</h2>
-
-    <form id="q21">
-      <p>1. do you enjoy mornings?</p>
-      <label><input type="radio" name="q1" value="yes"> yes, morning person</label>
-      <label><input type="radio" name="q1" value="no"> no, night owl</label>
+  <!-- Quiz Modal -->
+  <div class="quiz-modal active" id="quizModal">
+    <div class="quiz-book">
+      <button class="quiz-close" onclick="closeQuiz()">&times;</button>
       
-      <p>2. do you like planning ahead?</p>
-      <label><input type="radio" name="q2" value="yes"> yes, plan everything</label>
-      <label><input type="radio" name="q2" value="no"> no, spontaneous</label>
-      
-      <p>3. do you prefer quiet places?</p>
-      <label><input type="radio" name="q3" value="yes"> yes, need peace</label>
-      <label><input type="radio" name="q3" value="no"> no, like energy</label>
-      
-      <p>4. do you exercise regularly?</p>
-      <label><input type="radio" name="q4" value="yes"> yes, weekly routine</label>
-      <label><input type="radio" name="q4" value="no"> no, not consistent</label>
-      
-      <p>5. do you read often?</p>
-      <label><input type="radio" name="q5" value="yes"> yes, love books</label>
-      <label><input type="radio" name="q5" value="no"> no, prefer other media</label>
-      
-      <p>6. do you journal or write?</p>
-      <label><input type="radio" name="q6" value="yes"> yes, regularly</label>
-      <label><input type="radio" name="q6" value="no"> no, not really</label>
-      
-      <p>7. do you like trying new foods?</p>
-      <label><input type="radio" name="q7" value="yes"> yes, adventurous eater</label>
-      <label><input type="radio" name="q7" value="no"> no, stick to favorites</label>
-      
-      <p>8. do you prefer small gatherings?</p>
-      <label><input type="radio" name="q8" value="yes"> yes, intimate groups</label>
-      <label><input type="radio" name="q8" value="no"> no, big parties</label>
-      
-      <p>9. do you work well with deadlines?</p>
-      <label><input type="radio" name="q9" value="yes"> yes, thrive under pressure</label>
-      <label><input type="radio" name="q9" value="no"> no, prefer flexible timing</label>
-      
-      <p>10. do you enjoy nature walks?</p>
-      <label><input type="radio" name="q10" value="yes"> yes, love outdoors</label>
-      <label><input type="radio" name="q10" value="no"> no, prefer indoors</label>
-      
-      <p>11. do you track your habits?</p>
-      <label><input type="radio" name="q11" value="yes"> yes, love data</label>
-      <label><input type="radio" name="q11" value="no"> no, go with flow</label>
-      
-      <p>12. do you listen to music daily?</p>
-      <label><input type="radio" name="q12" value="yes"> yes, always</label>
-      <label><input type="radio" name="q12" value="no"> no, occasionally</label>
-      
-      <p>13. do you enjoy podcasts?</p>
-      <label><input type="radio" name="q13" value="yes"> yes, learn while listening</label>
-      <label><input type="radio" name="q13" value="no"> no, prefer silence</label>
-      
-      <p>14. do you keep a tidy space?</p>
-      <label><input type="radio" name="q14" value="yes"> yes, organization matters</label>
-      <label><input type="radio" name="q14" value="no"> no, creative chaos</label>
-      
-      <p>15. do you enjoy traveling?</p>
-      <label><input type="radio" name="q15" value="yes"> yes, love exploring</label>
-      <label><input type="radio" name="q15" value="no"> no, prefer familiar places</label>
-      
-      <p>16. do you like routines?</p>
-      <label><input type="radio" name="q16" value="yes"> yes, routines help</label>
-      <label><input type="radio" name="q16" value="no"> no, variety is key</label>
-      
-      <p>17. do you enjoy puzzles or games?</p>
-      <label><input type="radio" name="q17" value="yes"> yes, love challenges</label>
-      <label><input type="radio" name="q17" value="no"> no, not my thing</label>
-      
-      <p>18. do you cook at home often?</p>
-      <label><input type="radio" name="q18" value="yes"> yes, enjoy cooking</label>
-      <label><input type="radio" name="q18" value="no"> no, eat out/order</label>
-      
-      <p>19. do you stay in touch with friends regularly?</p>
-      <label><input type="radio" name="q19" value="yes"> yes, weekly calls</label>
-      <label><input type="radio" name="q19" value="no"> no, catch up occasionally</label>
-      
-      <p>20. do you practice mindfulness or meditation?</p>
-      <label><input type="radio" name="q20" value="yes"> yes, helps me center</label>
-      <label><input type="radio" name="q20" value="no"> no, hard to sit still</label>
-      
-      <p>21. do you like learning new skills?</p>
-      <label><input type="radio" name="q21" value="yes"> yes, always growing</label>
-      <label><input type="radio" name="q21" value="no"> no, stick to what i know</label>
-
-      <button class="pill" type="submit" style="margin-top:16px;">Get My Lifestyle</button>
-    </form>
-  </section>
+      <div class="quiz-page" id="quizPage">
+        <div class="quiz-question">
+          <h2 id="questionTitle">21 Questions Quiz</h2>
+          <p id="questionText">Loading question...</p>
+        </div>
+        
+        <div class="quiz-options" id="quizOptions">
+          <!-- Options will be populated by JavaScript -->
+        </div>
+        
+        <div class="quiz-navigation">
+          <button class="quiz-btn" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+          <div class="quiz-progress">
+            <span id="currentQuestion">1</span> of <span id="totalQuestions">21</span>
+          </div>
+          <button class="quiz-btn" id="nextBtn" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    document.getElementById('q21').addEventListener('submit',(e)=>{
-      e.preventDefault()
+    const twentyOneQuestions = [
+      {
+        question: "Do you prefer to have a detailed plan for your day?",
+        options: [
+          { text: "Yes, I like structure", value: "structured" },
+          { text: "No, I prefer flexibility", value: "flexible" }
+        ]
+      },
+      {
+        question: "When facing a problem, do you analyze it thoroughly before acting?",
+        options: [
+          { text: "Yes, I think it through", value: "analytical" },
+          { text: "No, I trust my instincts", value: "intuitive" }
+        ]
+      },
+      {
+        question: "Do you enjoy meeting new people regularly?",
+        options: [
+          { text: "Yes, I love meeting people", value: "social" },
+          { text: "No, I prefer my close circle", value: "intimate" }
+        ]
+      },
+      {
+        question: "Do you set specific goals for yourself?",
+        options: [
+          { text: "Yes, I have clear goals", value: "goal-oriented" },
+          { text: "No, I go with the flow", value: "adaptable" }
+        ]
+      },
+      {
+        question: "Do you prefer to finish tasks completely before starting new ones?",
+        options: [
+          { text: "Yes, one thing at a time", value: "focused" },
+          { text: "No, I multitask easily", value: "multitasker" }
+        ]
+      },
+      {
+        question: "Do you often think about the future?",
+        options: [
+          { text: "Yes, I plan ahead", value: "future-focused" },
+          { text: "No, I live in the moment", value: "present-focused" }
+        ]
+      },
+      {
+        question: "Do you enjoy taking on leadership roles?",
+        options: [
+          { text: "Yes, I like to lead", value: "leader" },
+          { text: "No, I prefer to follow", value: "collaborator" }
+        ]
+      },
+      {
+        question: "Do you prefer routines and consistency?",
+        options: [
+          { text: "Yes, routines help me", value: "routine-oriented" },
+          { text: "No, I like variety", value: "variety-seeking" }
+        ]
+      },
+      {
+        question: "Do you make decisions quickly?",
+        options: [
+          { text: "Yes, I decide fast", value: "decisive" },
+          { text: "No, I take my time", value: "deliberate" }
+        ]
+      },
+      {
+        question: "Do you enjoy creative or artistic activities?",
+        options: [
+          { text: "Yes, I'm creative", value: "creative" },
+          { text: "No, I'm more practical", value: "practical" }
+        ]
+      },
+      {
+        question: "Do you prefer working independently?",
+        options: [
+          { text: "Yes, I work best alone", value: "independent" },
+          { text: "No, I like teamwork", value: "collaborative" }
+        ]
+      },
+      {
+        question: "Do you often reflect on your emotions and thoughts?",
+        options: [
+          { text: "Yes, I'm introspective", value: "reflective" },
+          { text: "No, I focus outward", value: "action-oriented" }
+        ]
+      },
+      {
+        question: "Do you enjoy learning new skills regularly?",
+        options: [
+          { text: "Yes, I love learning", value: "growth-minded" },
+          { text: "No, I perfect existing skills", value: "mastery-focused" }
+        ]
+      },
+      {
+        question: "Do you prefer to have few but deep friendships?",
+        options: [
+          { text: "Yes, deep connections", value: "depth-seeking" },
+          { text: "No, many acquaintances", value: "breadth-seeking" }
+        ]
+      },
+      {
+        question: "Do you often seek out new experiences?",
+        options: [
+          { text: "Yes, I love new experiences", value: "adventurous" },
+          { text: "No, I prefer familiar things", value: "comfort-seeking" }
+        ]
+      },
+      {
+        question: "Do you typically finish projects you start?",
+        options: [
+          { text: "Yes, I complete things", value: "persistent" },
+          { text: "No, I move on to new ideas", value: "explorative" }
+        ]
+      },
+      {
+        question: "Do you prefer to spend weekends relaxing?",
+        options: [
+          { text: "Yes, I need downtime", value: "restorative" },
+          { text: "No, I like to be active", value: "energetic" }
+        ]
+      },
+      {
+        question: "Do you enjoy helping others with their problems?",
+        options: [
+          { text: "Yes, I like to help", value: "supportive" },
+          { text: "No, I focus on my own", value: "self-focused" }
+        ]
+      },
+      {
+        question: "Do you prefer to communicate directly and honestly?",
+        options: [
+          { text: "Yes, I'm direct", value: "direct" },
+          { text: "No, I'm more diplomatic", value: "diplomatic" }
+        ]
+      },
+      {
+        question: "Do you enjoy competitive activities?",
+        options: [
+          { text: "Yes, I'm competitive", value: "competitive" },
+          { text: "No, I prefer cooperation", value: "cooperative" }
+        ]
+      },
+      {
+        question: "Do you believe in taking calculated risks?",
+        options: [
+          { text: "Yes, risks can pay off", value: "risk-taking" },
+          { text: "No, I prefer safety", value: "security-focused" }
+        ]
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let answers = [];
+    let selectedAnswer = null;
+
+    function initializeQuiz() {
+      document.getElementById('totalQuestions').textContent = twentyOneQuestions.length;
+      showQuestion(0);
+    }
+
+    function showQuestion(index) {
+      const question = twentyOneQuestions[index];
       
-      const checked = Array.from(document.querySelectorAll('input[type="radio"]:checked'))
-      const yesCount = checked.filter(x=>x.value==='yes').length
+      // Capitalize first word of question
+      const capitalizedQuestion = question.question.charAt(0).toUpperCase() + question.question.slice(1);
       
-      // determine lifestyle based on yes answers
-      let lifestyle
-      if (yesCount >= 15) {
-        lifestyle = 'Structured Explorer'
-      } else if (yesCount >= 10) {
-        lifestyle = 'Balanced Adventurer'  
+      document.getElementById('questionText').textContent = capitalizedQuestion;
+      document.getElementById('currentQuestion').textContent = index + 1;
+      
+      const optionsContainer = document.getElementById('quizOptions');
+      optionsContainer.innerHTML = '';
+      
+      question.options.forEach((option, optionIndex) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'quiz-option';
+        optionDiv.textContent = option.text;
+        optionDiv.onclick = () => selectOption(optionIndex, option.value);
+        optionsContainer.appendChild(optionDiv);
+      });
+      
+      // Reset selection
+      selectedAnswer = null;
+      updateNavigationButtons();
+    }
+
+    function selectOption(optionIndex, value) {
+      // Remove previous selection
+      document.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Add selection to clicked option
+      document.querySelectorAll('.quiz-option')[optionIndex].classList.add('selected');
+      
+      selectedAnswer = value;
+      updateNavigationButtons();
+    }
+
+    function updateNavigationButtons() {
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      
+      prevBtn.disabled = currentQuestionIndex === 0;
+      nextBtn.disabled = selectedAnswer === null;
+      
+      if (currentQuestionIndex === twentyOneQuestions.length - 1) {
+        nextBtn.textContent = 'Finish';
       } else {
-        lifestyle = 'Free Spirit'
+        nextBtn.textContent = 'Next';
+      }
+    }
+
+    function nextQuestion() {
+      if (selectedAnswer === null) return;
+      
+      // Save answer
+      answers[currentQuestionIndex] = selectedAnswer;
+      
+      if (currentQuestionIndex === twentyOneQuestions.length - 1) {
+        // Quiz completed
+        finishQuiz();
+      } else {
+        // Animate page turn
+        const currentPage = document.getElementById('quizPage');
+        currentPage.classList.add('slide-out');
+        
+        setTimeout(() => {
+          currentQuestionIndex++;
+          showQuestion(currentQuestionIndex);
+          
+          currentPage.classList.remove('slide-out');
+          currentPage.classList.add('slide-in');
+          
+          setTimeout(() => {
+            currentPage.classList.remove('slide-in');
+          }, 50);
+        }, 250);
+      }
+    }
+
+    function previousQuestion() {
+      if (currentQuestionIndex === 0) return;
+      
+      // Animate page turn (reverse)
+      const currentPage = document.getElementById('quizPage');
+      currentPage.classList.add('slide-out');
+      
+      setTimeout(() => {
+        currentQuestionIndex--;
+        showQuestion(currentQuestionIndex);
+        
+        // Restore previous answer if it exists
+        if (answers[currentQuestionIndex]) {
+          const question = twentyOneQuestions[currentQuestionIndex];
+          const savedAnswer = answers[currentQuestionIndex];
+          
+          question.options.forEach((option, index) => {
+            if (option.value === savedAnswer) {
+              selectOption(index, savedAnswer);
+            }
+          });
+        }
+        
+        currentPage.classList.remove('slide-out');
+        currentPage.classList.add('slide-in');
+        
+        setTimeout(() => {
+          currentPage.classList.remove('slide-in');
+        }, 50);
+      }, 250);
+    }
+
+    function finishQuiz() {
+      // Analyze answers to determine personality archetype
+      const traits = {};
+      
+      answers.forEach(answer => {
+        traits[answer] = (traits[answer] || 0) + 1;
+      });
+      
+      // Determine primary traits and create archetype
+      let archetype = '';
+      let description = '';
+      
+      // Analyze key trait combinations
+      const structuredScore = (traits['structured'] || 0) + (traits['goal-oriented'] || 0) + (traits['routine-oriented'] || 0) + (traits['focused'] || 0);
+      const flexibleScore = (traits['flexible'] || 0) + (traits['adaptable'] || 0) + (traits['variety-seeking'] || 0) + (traits['explorative'] || 0);
+      const socialScore = (traits['social'] || 0) + (traits['leader'] || 0) + (traits['collaborative'] || 0) + (traits['supportive'] || 0);
+      const independentScore = (traits['independent'] || 0) + (traits['reflective'] || 0) + (traits['depth-seeking'] || 0) + (traits['self-focused'] || 0);
+      const creativeScore = (traits['creative'] || 0) + (traits['adventurous'] || 0) + (traits['growth-minded'] || 0) + (traits['risk-taking'] || 0);
+      const practicalScore = (traits['practical'] || 0) + (traits['analytical'] || 0) + (traits['mastery-focused'] || 0) + (traits['security-focused'] || 0);
+      
+      // Determine archetype based on dominant traits
+      if (structuredScore >= 3 && practicalScore >= 2) {
+        archetype = 'The Organizer';
+        description = 'You thrive on structure, planning, and systematic approaches. You bring order and efficiency to everything you do.';
+      } else if (creativeScore >= 3 && flexibleScore >= 2) {
+        archetype = 'The Creative Explorer';
+        description = 'You love new experiences, creative expression, and flexible approaches. You bring innovation and fresh perspectives.';
+      } else if (socialScore >= 3 && structuredScore >= 2) {
+        archetype = 'The Natural Leader';
+        description = 'You combine social skills with organizational abilities. You excel at bringing people together to achieve goals.';
+      } else if (independentScore >= 3 && practicalScore >= 2) {
+        archetype = 'The Thoughtful Analyst';
+        description = 'You prefer deep thinking, independent work, and careful analysis. You bring wisdom and careful consideration to decisions.';
+      } else if (socialScore >= 3 && creativeScore >= 2) {
+        archetype = 'The Inspiring Connector';
+        description = 'You blend creativity with social connection. You inspire others and build meaningful relationships through shared experiences.';
+      } else if (flexibleScore >= 3 && independentScore >= 2) {
+        archetype = 'The Adaptable Spirit';
+        description = 'You value flexibility and independence. You adapt well to change and prefer to forge your own unique path.';
+      } else {
+        archetype = 'The Balanced Individual';
+        description = 'You show balanced traits across different areas. You can adapt your approach based on the situation and bring versatility to your relationships and work.';
       }
       
-      localStorage.setItem('quiz_21', lifestyle)
-      const date = new Date().toLocaleString('default',{month:'long',year:'numeric'})
-      localStorage.setItem('quiz_21_date', date)
+      const result = archetype;
       
-      alert('your lifestyle: ' + lifestyle)
-      location.href = '../index.html'
-    })
+      // Save result
+      localStorage.setItem('quiz_21', result);
+      
+      // Show result page
+      showResult(archetype, description, traits);
+    }
+
+    function showResult(archetype, description, allTraits) {
+      const questionDiv = document.querySelector('.quiz-question');
+      const optionsDiv = document.querySelector('.quiz-options');
+      const navigationDiv = document.querySelector('.quiz-navigation');
+      
+      // Get top 3 traits
+      const topTraits = Object.entries(allTraits)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([trait, count]) => `${trait.replace(/-/g, ' ')}: ${count}`)
+        .join(' | ');
+      
+      questionDiv.innerHTML = `
+        <h2>Your Personality Archetype</h2>
+        <p style="font-size: 24px; font-weight: 700; color: var(--pill2); margin: 20px 0;">${archetype}</p>
+        <p style="margin: 15px 0; font-weight: 600; line-height: 1.5;">${description}</p>
+        <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">Top traits: ${topTraits}</p>
+        <p style="margin-top: 10px; font-size: 13px; color: var(--muted); font-style: italic;">This comprehensive profile will help MAI understand your unique approach to life and relationships.</p>
+      `;
+      
+      optionsDiv.innerHTML = '';
+      
+      navigationDiv.innerHTML = `
+        <button class="quiz-btn" onclick="retakeQuiz()">Retake Quiz</button>
+        <button class="quiz-btn" onclick="goHome()" style="background: linear-gradient(135deg, #7dd87d, #5cb85c);">Continue to MAI</button>
+      `;
+    }
+
+    function retakeQuiz() {
+      currentQuestionIndex = 0;
+      answers = [];
+      selectedAnswer = null;
+      
+      document.getElementById('questionTitle').textContent = '21 Questions Quiz';
+      initializeQuiz();
+    }
+
+    function goHome() {
+      window.location.href = '../index.html';
+    }
+
+    function closeQuiz() {
+      if (confirm('Are you sure you want to close the quiz? Your progress will be lost.')) {
+        window.location.href = '../index.html';
+      }
+    }
+
+    // Initialize quiz when page loads
+    window.addEventListener('load', initializeQuiz);
   </script>
 </body>
 </html>

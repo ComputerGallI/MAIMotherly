@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Personality Quiz</title>
+  <title>MAI - Personality Quiz</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css"/>
 </head>
@@ -11,84 +11,316 @@
   <header class="topbar">
     <a class="brand" href="../index.html">MAI</a>
     <nav class="top-actions">
-      <a class="pill" href="../profile.html">Profile</a>
-      <a class="pill" href="../login.html">Login</a>
+      <a class="pill" href="../index.html">Back to MAI</a>
     </nav>
   </header>
 
-  <section class="card" style="max-width:900px;margin:24px auto;">
-    <h2 class="title soft">Personality Quiz</h2>
-    
-    <form id="qForm">
-      <p>you prefer quiet time to recharge?</p>
-      <label><input type="radio" name="q1" value="I"> yes, definitely</label>
-      <label><input type="radio" name="q1" value="E"> no, people energize me</label>
-
-      <p>you plan ahead more than you improvise?</p>
-      <label><input type="radio" name="q2" value="J"> yes, i like structure</label>
-      <label><input type="radio" name="q2" value="P"> no, i go with the flow</label>
-
-      <p>you rely on facts over gut feelings?</p>
-      <label><input type="radio" name="q3" value="S"> yes, facts are safer</label>
-      <label><input type="radio" name="q3" value="N"> no, intuition guides me</label>
-
-      <p>you choose logic over harmony in tough choices?</p>
-      <label><input type="radio" name="q4" value="T"> yes, logic wins</label>
-      <label><input type="radio" name="q4" value="F"> no, feelings matter more</label>
-
-      <p>you like detailed to-do lists?</p>
-      <label><input type="radio" name="q5" value="J"> yes, love organization</label>
-      <label><input type="radio" name="q5" value="P"> no, lists stress me out</label>
-
-      <p>you enjoy meeting new people weekly?</p>
-      <label><input type="radio" name="q6" value="E"> yes, bring on the people</label>
-      <label><input type="radio" name="q6" value="I"> no, that sounds exhausting</label>
-
-      <p>you notice small details others miss?</p>
-      <label><input type="radio" name="q7" value="S"> yes, i see everything</label>
-      <label><input type="radio" name="q7" value="N"> no, i see the big picture</label>
-
-      <p>you avoid conflict to keep peace?</p>
-      <label><input type="radio" name="q8" value="F"> yes, harmony is key</label>
-      <label><input type="radio" name="q8" value="T"> no, truth matters more</label>
-
-      <p>you start tasks right away?</p>
-      <label><input type="radio" name="q9" value="J"> yes, no procrastination</label>
-      <label><input type="radio" name="q9" value="P"> no, i work better under pressure</label>
-
-      <p>you like being the center of attention?</p>
-      <label><input type="radio" name="q10" value="E"> yes, spotlight please</label>
-      <label><input type="radio" name="q10" value="I"> no, i prefer the background</label>
-
-      <button class="pill" type="submit" style="margin-top:16px;">Get My Type</button>
-    </form>
-  </section>
+  <!-- Quiz Modal -->
+  <div class="quiz-modal active" id="quizModal">
+    <div class="quiz-book">
+      <button class="quiz-close" onclick="closeQuiz()">&times;</button>
+      
+      <div class="quiz-page" id="quizPage">
+        <div class="quiz-question">
+          <h2 id="questionTitle">Personality Quiz</h2>
+          <p id="questionText">Loading question...</p>
+        </div>
+        
+        <div class="quiz-options" id="quizOptions">
+          <!-- Options will be populated by JavaScript -->
+        </div>
+        
+        <div class="quiz-navigation">
+          <button class="quiz-btn" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+          <div class="quiz-progress">
+            <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span>
+          </div>
+          <button class="quiz-btn" id="nextBtn" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    document.getElementById('qForm').addEventListener('submit', (e)=>{
-      e.preventDefault()
-      
-      // collect answers to build personality type
-      const f = new FormData(e.target)
-      let personalityCode = ''
-      
-      // build the 4-letter code (MBTI style)
-      personalityCode += f.get('q1') || 'I'  // introvert vs extrovert
-      personalityCode += f.get('q3') || 'S'  // sensing vs intuition  
-      personalityCode += f.get('q4') || 'F'  // thinking vs feeling
-      personalityCode += f.get('q2') || 'P'  // judging vs perceiving
-      
-      if(!personalityCode || personalityCode.length < 4) {
-        personalityCode = 'ISFP' // default if incomplete
+    const personalityQuestions = [
+      {
+        question: "At a party, you would rather:",
+        options: [
+          { text: "Talk to many different people", value: "E" },
+          { text: "Have deep conversations with a few close friends", value: "I" }
+        ]
+      },
+      {
+        question: "When making decisions, you rely more on:",
+        options: [
+          { text: "Logic and objective analysis", value: "T" },
+          { text: "Personal values and how it affects others", value: "F" }
+        ]
+      },
+      {
+        question: "You prefer to:",
+        options: [
+          { text: "Plan things in advance", value: "J" },
+          { text: "Keep your options open", value: "P" }
+        ]
+      },
+      {
+        question: "When learning something new, you:",
+        options: [
+          { text: "Focus on facts and details", value: "S" },
+          { text: "Look for patterns and possibilities", value: "N" }
+        ]
+      },
+      {
+        question: "In your free time, you prefer:",
+        options: [
+          { text: "Being around people and socializing", value: "E" },
+          { text: "Having quiet time alone or with close friends", value: "I" }
+        ]
+      },
+      {
+        question: "When solving problems, you:",
+        options: [
+          { text: "Step back and analyze logically", value: "T" },
+          { text: "Consider how it impacts people involved", value: "F" }
+        ]
+      },
+      {
+        question: "You work best when:",
+        options: [
+          { text: "Following a clear schedule and deadlines", value: "J" },
+          { text: "Working flexibly as inspiration strikes", value: "P" }
+        ]
+      },
+      {
+        question: "You trust:",
+        options: [
+          { text: "Experience and proven methods", value: "S" },
+          { text: "Insights and future possibilities", value: "N" }
+        ]
+      },
+      {
+        question: "After a long day, you:",
+        options: [
+          { text: "Want to go out and be with friends", value: "E" },
+          { text: "Need quiet time to recharge", value: "I" }
+        ]
+      },
+      {
+        question: "You make choices based on:",
+        options: [
+          { text: "What makes the most practical sense", value: "T" },
+          { text: "What feels right and aligns with your values", value: "F" }
+        ]
       }
+    ];
+
+    let currentQuestionIndex = 0;
+    let answers = [];
+    let selectedAnswer = null;
+
+    function initializeQuiz() {
+      document.getElementById('totalQuestions').textContent = personalityQuestions.length;
+      showQuestion(0);
+    }
+
+    function showQuestion(index) {
+      const question = personalityQuestions[index];
       
-      localStorage.setItem('quiz_personality', personalityCode)
-      const date = new Date().toLocaleString('default',{month:'long',year:'numeric'})
-      localStorage.setItem('quiz_personality_date', date)
+      // Capitalize first word of question
+      const capitalizedQuestion = question.question.charAt(0).toUpperCase() + question.question.slice(1);
       
-      alert(`your personality type: ${personalityCode}`)
-      location.href='../index.html'
-    })
+      document.getElementById('questionText').textContent = capitalizedQuestion;
+      document.getElementById('currentQuestion').textContent = index + 1;
+      
+      const optionsContainer = document.getElementById('quizOptions');
+      optionsContainer.innerHTML = '';
+      
+      question.options.forEach((option, optionIndex) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'quiz-option';
+        optionDiv.textContent = option.text;
+        optionDiv.onclick = () => selectOption(optionIndex, option.value);
+        optionsContainer.appendChild(optionDiv);
+      });
+      
+      // Reset selection
+      selectedAnswer = null;
+      updateNavigationButtons();
+    }
+
+    function selectOption(optionIndex, value) {
+      // Remove previous selection
+      document.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Add selection to clicked option
+      document.querySelectorAll('.quiz-option')[optionIndex].classList.add('selected');
+      
+      selectedAnswer = value;
+      updateNavigationButtons();
+    }
+
+    function updateNavigationButtons() {
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      
+      prevBtn.disabled = currentQuestionIndex === 0;
+      nextBtn.disabled = selectedAnswer === null;
+      
+      if (currentQuestionIndex === personalityQuestions.length - 1) {
+        nextBtn.textContent = 'Finish';
+      } else {
+        nextBtn.textContent = 'Next';
+      }
+    }
+
+    function nextQuestion() {
+      if (selectedAnswer === null) return;
+      
+      // Save answer
+      answers[currentQuestionIndex] = selectedAnswer;
+      
+      if (currentQuestionIndex === personalityQuestions.length - 1) {
+        // Quiz completed
+        finishQuiz();
+      } else {
+        // Animate page turn
+        const currentPage = document.getElementById('quizPage');
+        currentPage.classList.add('slide-out');
+        
+        setTimeout(() => {
+          currentQuestionIndex++;
+          showQuestion(currentQuestionIndex);
+          
+          currentPage.classList.remove('slide-out');
+          currentPage.classList.add('slide-in');
+          
+          setTimeout(() => {
+            currentPage.classList.remove('slide-in');
+          }, 50);
+        }, 250);
+      }
+    }
+
+    function previousQuestion() {
+      if (currentQuestionIndex === 0) return;
+      
+      // Animate page turn (reverse)
+      const currentPage = document.getElementById('quizPage');
+      currentPage.classList.add('slide-out');
+      
+      setTimeout(() => {
+        currentQuestionIndex--;
+        showQuestion(currentQuestionIndex);
+        
+        // Restore previous answer if it exists
+        if (answers[currentQuestionIndex]) {
+          const question = personalityQuestions[currentQuestionIndex];
+          const savedAnswer = answers[currentQuestionIndex];
+          
+          question.options.forEach((option, index) => {
+            if (option.value === savedAnswer) {
+              selectOption(index, savedAnswer);
+            }
+          });
+        }
+        
+        currentPage.classList.remove('slide-out');
+        currentPage.classList.add('slide-in');
+        
+        setTimeout(() => {
+          currentPage.classList.remove('slide-in');
+        }, 50);
+      }, 250);
+    }
+
+    function finishQuiz() {
+      // Calculate personality type
+      const counts = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+      
+      answers.forEach(answer => {
+        if (counts.hasOwnProperty(answer)) {
+          counts[answer]++;
+        }
+      });
+      
+      const personality = 
+        (counts.E >= counts.I ? 'E' : 'I') +
+        (counts.S >= counts.N ? 'S' : 'N') +
+        (counts.T >= counts.F ? 'T' : 'F') +
+        (counts.J >= counts.P ? 'J' : 'P');
+      
+      // Get personality description
+      const descriptions = {
+        'ENFP': 'The Campaigner - Enthusiastic, creative, and sociable free spirits',
+        'ENFJ': 'The Protagonist - Charismatic and inspiring leaders',
+        'ENTP': 'The Debater - Smart and curious thinkers who love intellectual challenges',
+        'ENTJ': 'The Commander - Bold, imaginative and strong-willed leaders',
+        'ESFP': 'The Entertainer - Spontaneous, energetic and enthusiastic people',
+        'ESFJ': 'The Consul - Extraordinarily caring, social and popular people',
+        'ESTP': 'The Entrepreneur - Smart, energetic and perceptive people',
+        'ESTJ': 'The Executive - Excellent administrators, unsurpassed at managing things',
+        'INFP': 'The Mediator - Poetic, kind and altruistic people, always eager to help',
+        'INFJ': 'The Advocate - Creative and insightful, inspired and independent',
+        'INTP': 'The Thinker - Innovative inventors with an unquenchable thirst for knowledge',
+        'INTJ': 'The Architect - Imaginative and strategic thinkers, with a plan for everything',
+        'ISFP': 'The Adventurer - Flexible and charming artists, always ready to explore',
+        'ISFJ': 'The Protector - Warm-hearted and dedicated, always ready to protect loved ones',
+        'ISTP': 'The Virtuoso - Bold and practical experimenters, masters of all kinds of tools',
+        'ISTJ': 'The Logistician - Practical and fact-minded, reliable and responsible'
+      };
+      
+      const result = `${personality} - ${descriptions[personality] || 'Unique and wonderful'}`;
+      
+      // Save result
+      localStorage.setItem('quiz_personality', result);
+      
+      // Show result page
+      showResult(result);
+    }
+
+    function showResult(result) {
+      const questionDiv = document.querySelector('.quiz-question');
+      const optionsDiv = document.querySelector('.quiz-options');
+      const navigationDiv = document.querySelector('.quiz-navigation');
+      
+      questionDiv.innerHTML = `
+        <h2>Your Personality Type</h2>
+        <p style="font-size: 24px; font-weight: 700; color: var(--pill2); margin: 20px 0;">${result}</p>
+        <p>This result has been saved and will help MAI provide more personalized guidance for you.</p>
+      `;
+      
+      optionsDiv.innerHTML = '';
+      
+      navigationDiv.innerHTML = `
+        <button class="quiz-btn" onclick="retakeQuiz()">Retake Quiz</button>
+        <button class="quiz-btn" onclick="goHome()" style="background: linear-gradient(135deg, #7dd87d, #5cb85c);">Continue to MAI</button>
+      `;
+    }
+
+    function retakeQuiz() {
+      currentQuestionIndex = 0;
+      answers = [];
+      selectedAnswer = null;
+      
+      document.getElementById('questionTitle').textContent = 'Personality Quiz';
+      initializeQuiz();
+    }
+
+    function goHome() {
+      window.location.href = '../index.html';
+    }
+
+    function closeQuiz() {
+      if (confirm('Are you sure you want to close the quiz? Your progress will be lost.')) {
+        window.location.href = '../index.html';
+      }
+    }
+
+    // Initialize quiz when page loads
+    window.addEventListener('load', initializeQuiz);
   </script>
 </body>
 </html>

@@ -15,7 +15,7 @@
       <a class="pill" id="loginBtn" href="login.html">Login</a>
       <button class="pill" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
       <a class="pill" id="profileBtn" href="profile.html">Profile</a>
-      <button class="pill-gold" id="goProBtn" onclick="goToPremium()">GO PRO ✨</button>
+      <button class="pill go-pro-btn" id="goProBtn" onclick="goToPremium()">GO PRO ✨</button>
     </nav>
   </header>
 
@@ -23,7 +23,7 @@
     <!-- quiz results section -->
     <section class="card left">
       <h2 class="title soft">Quiz Results</h2>
-      <p class="caring-instruction">Take a quiz to learn more about yourself</p>
+      <p class="caring-instruction glowing-text">Want to learn more about you? Take a quiz</p>
       <div class="viz-wrap">
         <div class="viz-circle" id="vizCenter">
           <span class="center-text soft" id="centerLabel">Register or Log in</span>
@@ -40,16 +40,16 @@
     <!-- wellness reminders -->
     <section class="card right">
       <h2 class="title soft">Reminders</h2>
-      <p class="caring-instruction">Reminders fueled by your results and conversations with me</p>
+      <p class="caring-instruction glowing-text">Fueled by your personal quiz results and our conversations</p>
       <p class="muted" id="remindersEmpty">No reminders yet</p>
       <div id="reminderList" class="rem-list"></div>
-      <button class="cta pill soft" id="addCalBtn" onclick="addWellnessReminder()">Add Wellness Reminder</button>
+      <button class="cta pill soft" id="addCalBtn" onclick="addWellnessReminder()">Add Reminders to your Calendar</button>
     </section>
 
     <!-- mai chat interface -->
     <section class="card full">
       <h2 class="title soft" style="text-align:center">Talk to MAI</h2>
-      <p class="caring-instruction" style="text-align:center">Talk to MAI and get some clarity</p>
+      <p class="caring-instruction glowing-text" style="text-align:center">Get some guidance from MAI</p>
       <div class="chat-box">
         <div class="chat-feed" id="chatFeed">
           <div class="mai-welcome" id="welcomeMessage">
@@ -110,12 +110,6 @@
         // clear all user data
         localStorage.removeItem('username')
         localStorage.removeItem('email')
-        
-        // optionally clear quiz results (keep them for now)
-        // localStorage.removeItem('quiz_personality')
-        // localStorage.removeItem('quiz_stress')
-        // localStorage.removeItem('quiz_love')
-        // localStorage.removeItem('quiz_21')
         
         // update UI immediately
         loadUserInterface()

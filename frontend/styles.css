@@ -13,6 +13,9 @@
   --pill1:#f4c2ff;
   --pill2:#b4a1ff;
   --pillTxt:#fff;
+  --calm-green:#7dd87d;
+  --glow-green:rgba(125, 216, 125, 0.6);
+  --glow-yellow:rgba(255, 215, 0, 0.8);
 }
 
 /* basic reset */
@@ -64,6 +67,60 @@ body{
   box-shadow:0 10px 22px rgba(123,93,215,0.33);
 }
 .pill:active{transform:translateY(0) scale(.99)}
+
+/* GO PRO button with special swell effect */
+.go-pro-btn{
+  display:inline-block;
+  padding:12px 20px;
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--pill1),var(--pill2));
+  color:var(--pillTxt); text-decoration:none; cursor:pointer;
+  font-weight:700; border:0;
+  box-shadow:0 8px 20px rgba(123,93,215,0.25);
+  text-shadow:0 1px 3px rgba(255,192,255,0.45);
+  transition:all .25s ease;
+  position: relative;
+}
+
+.go-pro-btn:hover{
+  transform:translateY(-2px) scale(1.15); 
+  filter:saturate(1.1) brightness(1.1); 
+  box-shadow:0 15px 35px rgba(123,93,215,0.4), 0 0 25px var(--glow-yellow);
+  background:linear-gradient(135deg,#ffd700,#ffb347);
+  color:#8b4513;
+}
+
+.go-pro-btn:active{transform:translateY(0) scale(1.1)}
+
+/* glowing text for caring instructions */
+.glowing-text{
+  color:var(--calm-green) !important; 
+  font-weight:700 !important; 
+  font-size:15px !important; 
+  text-shadow:0 0 10px var(--glow-green), 0 0 20px var(--glow-green), 0 0 30px var(--glow-green);
+  animation:gentle-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes gentle-glow {
+  from {
+    text-shadow:0 0 8px var(--glow-green), 0 0 15px var(--glow-green), 0 0 25px var(--glow-green);
+  }
+  to {
+    text-shadow:0 0 12px var(--glow-green), 0 0 25px var(--glow-green), 0 0 35px var(--glow-green);
+  }
+}
+
+/* caring instruction text (fallback for non-glowing) */
+.caring-instruction{
+  color:#6a4c93; font-weight:600; font-size:14px; 
+  margin:0 0 16px; text-align:center; font-style:italic;
+}
+
+/* mai welcome message */
+.mai-welcome{
+  background:#f8f5ff; border:1px solid #e0d4ff; border-radius:12px;
+  padding:12px 16px; margin:8px 0; color:#5a4fcf; font-size:14px;
+}
 
 /* main layout grid */
 .shell{
@@ -143,6 +200,161 @@ body{
   background:linear-gradient(180deg,#fff, #fbf8ff); outline:none;
 }
 
+/* quiz modal styles */
+.quiz-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.quiz-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.quiz-book {
+  background: var(--glass);
+  border: 2px solid var(--edge);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  height: 80%;
+  max-height: 500px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(75, 55, 140, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.quiz-page {
+  position: absolute;
+  top: 40px; left: 40px; right: 40px; bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quiz-page.slide-out {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.quiz-page.slide-in {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.quiz-question {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.quiz-question h2 {
+  color: var(--ink);
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.quiz-question p {
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.quiz-option {
+  padding: 15px 20px;
+  border: 2px solid var(--edge);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.quiz-option:hover {
+  border-color: var(--pill1);
+  background: rgba(244, 194, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.quiz-option.selected {
+  border-color: var(--pill2);
+  background: var(--pill1);
+  color: white;
+}
+
+.quiz-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quiz-progress {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.quiz-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(135deg, var(--pill1), var(--pill2));
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quiz-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(123, 93, 215, 0.3);
+}
+
+.quiz-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quiz-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.quiz-close:hover {
+  background: rgba(79, 56, 140, 0.1);
+  color: var(--ink);
+}
+
 /* responsive breakpoint */
 @media (max-width: 980px){
   .shell{
@@ -154,4 +366,14 @@ body{
   .viz-wrap{height:400px}
   .viz-circle{width:210px; height:210px}
   .viz-wrap .orbit{--R: 170px}
+  
+  .quiz-book {
+    width: 95%;
+    height: 85%;
+    padding: 30px;
+  }
+  
+  .quiz-page {
+    top: 30px; left: 30px; right: 30px; bottom: 30px;
+  }
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Love Language Quiz</title>
+  <title>MAI - Love Language Quiz</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles.css"/>
 </head>
@@ -11,87 +11,367 @@
   <header class="topbar">
     <a class="brand" href="../index.html">MAI</a>
     <nav class="top-actions">
-      <a class="pill" href="../profile.html">Profile</a>
-      <a class="pill" href="../login.html">Login</a>
+      <a class="pill" href="../index.html">Back to MAI</a>
     </nav>
   </header>
 
-  <section class="card" style="max-width:900px;margin:24px auto;">
-    <h2 class="title soft">Love Language Quiz</h2>
-    
-    <form id="loveForm">
-      <p>you feel most loved when someone spends uninterrupted time with you?</p>
-      <label><input type="radio" name="q1" value="Quality Time"> yes, attention matters</label>
-      <label><input type="radio" name="q1" value="other"> no, other things matter more</label>
-
-      <p>sincere compliments make your day?</p>
-      <label><input type="radio" name="q2" value="Words"> yes, words mean everything</label>
-      <label><input type="radio" name="q2" value="other"> no, actions speak louder</label>
-
-      <p>thoughtful gifts make you feel special?</p>
-      <label><input type="radio" name="q3" value="Gifts"> yes, love the thought</label>
-      <label><input type="radio" name="q3" value="other"> no, don't need things</label>
-
-      <p>when someone helps with your tasks, you feel cared for?</p>
-      <label><input type="radio" name="q4" value="Acts"> yes, actions show love</label>
-      <label><input type="radio" name="q4" value="other"> no, prefer other gestures</label>
-
-      <p>physical affection like hugs makes you feel loved?</p>
-      <label><input type="radio" name="q5" value="Touch"> yes, touch is important</label>
-      <label><input type="radio" name="q5" value="other"> no, not really touchy</label>
-
-      <p>what do you ask for first on a rough day?</p>
-      <label><input type="radio" name="q6" value="Quality Time"> time together</label>
-      <label><input type="radio" name="q6" value="Words"> encouraging words</label>
-
-      <p>what cheers you up faster?</p>
-      <label><input type="radio" name="q7" value="Gifts"> a surprise gift</label>
-      <label><input type="radio" name="q7" value="Acts"> help with responsibilities</label>
-
-      <p>what feels most natural to give others?</p>
-      <label><input type="radio" name="q8" value="Touch"> hugs and physical comfort</label>
-      <label><input type="radio" name="q8" value="Words"> compliments and encouragement</label>
-
-      <p>what makes you feel most appreciated?</p>
-      <label><input type="radio" name="q9" value="Quality Time"> focused attention</label>
-      <label><input type="radio" name="q9" value="Words"> verbal acknowledgment</label>
-
-      <p>which would mean more to you?</p>
-      <label><input type="radio" name="q10" value="Acts"> someone doing your chores</label>
-      <label><input type="radio" name="q10" value="Gifts"> a meaningful present</label>
-
-      <button class="pill" type="submit" style="margin-top:16px;">Discover My Love Language</button>
-    </form>
-  </section>
+  <!-- Quiz Modal -->
+  <div class="quiz-modal active" id="quizModal">
+    <div class="quiz-book">
+      <button class="quiz-close" onclick="closeQuiz()">&times;</button>
+      
+      <div class="quiz-page" id="quizPage">
+        <div class="quiz-question">
+          <h2 id="questionTitle">Love Language Quiz</h2>
+          <p id="questionText">Loading question...</p>
+        </div>
+        
+        <div class="quiz-options" id="quizOptions">
+          <!-- Options will be populated by JavaScript -->
+        </div>
+        
+        <div class="quiz-navigation">
+          <button class="quiz-btn" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+          <div class="quiz-progress">
+            <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span>
+          </div>
+          <button class="quiz-btn" id="nextBtn" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    document.getElementById('loveForm').addEventListener('submit',(e)=>{
-      e.preventDefault()
+    const loveLanguageQuestions = [
+      {
+        question: "What makes you feel most loved in a relationship?",
+        options: [
+          { text: "When someone spends uninterrupted time with me", value: "QualityTime" },
+          { text: "When someone tells me they love and appreciate me", value: "WordsOfAffirmation" },
+          { text: "When someone does thoughtful things for me", value: "ActsOfService" },
+          { text: "When someone gives me meaningful gifts", value: "ReceivingGifts" },
+          { text: "When someone holds my hand or hugs me", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "When you want to show someone you care, you:",
+        options: [
+          { text: "Plan special activities to do together", value: "QualityTime" },
+          { text: "Write them a heartfelt note or tell them how you feel", value: "WordsOfAffirmation" },
+          { text: "Help them with tasks or chores", value: "ActsOfService" },
+          { text: "Buy them something they've mentioned wanting", value: "ReceivingGifts" },
+          { text: "Give them a hug or hold their hand", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "What would hurt your feelings most in a relationship?",
+        options: [
+          { text: "If they were always too busy to spend time with me", value: "QualityTime" },
+          { text: "If they rarely said nice things about me", value: "WordsOfAffirmation" },
+          { text: "If they never helped me when I needed it", value: "ActsOfService" },
+          { text: "If they never remembered special occasions", value: "ReceivingGifts" },
+          { text: "If they avoided physical affection", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "Which would be the most meaningful birthday surprise?",
+        options: [
+          { text: "A day planned just for the two of us", value: "QualityTime" },
+          { text: "A heartfelt letter expressing their love", value: "WordsOfAffirmation" },
+          { text: "They handle all your responsibilities for the day", value: "ActsOfService" },
+          { text: "A thoughtful gift you've been wanting", value: "ReceivingGifts" },
+          { text: "Extra cuddles and physical closeness", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "When you're stressed, what helps you feel better?",
+        options: [
+          { text: "Having someone sit and talk with me", value: "QualityTime" },
+          { text: "Hearing encouraging words and support", value: "WordsOfAffirmation" },
+          { text: "Someone taking care of things for me", value: "ActsOfService" },
+          { text: "A small thoughtful gift or surprise", value: "ReceivingGifts" },
+          { text: "A comforting hug or back rub", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "Which compliment would mean the most to you?",
+        options: [
+          { text: "I love spending time with you", value: "QualityTime" },
+          { text: "You're amazing and I'm lucky to have you", value: "WordsOfAffirmation" },
+          { text: "You're so helpful and reliable", value: "ActsOfService" },
+          { text: "You have great taste and I love your style", value: "ReceivingGifts" },
+          { text: "I love being close to you", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "What makes you feel most connected to someone?",
+        options: [
+          { text: "Deep conversations and shared experiences", value: "QualityTime" },
+          { text: "When they express their feelings openly", value: "WordsOfAffirmation" },
+          { text: "When they notice what I need and help", value: "ActsOfService" },
+          { text: "When they surprise me with thoughtful gestures", value: "ReceivingGifts" },
+          { text: "Physical closeness and affection", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "Your ideal date would include:",
+        options: [
+          { text: "Quality conversation without distractions", value: "QualityTime" },
+          { text: "Lots of laughing and sharing feelings", value: "WordsOfAffirmation" },
+          { text: "Someone planning everything so you can relax", value: "ActsOfService" },
+          { text: "A meaningful location or thoughtful details", value: "ReceivingGifts" },
+          { text: "Plenty of opportunities for physical closeness", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "When someone apologizes, what matters most?",
+        options: [
+          { text: "That they take time to really talk it through", value: "QualityTime" },
+          { text: "That they sincerely express their remorse", value: "WordsOfAffirmation" },
+          { text: "That they take action to make it right", value: "ActsOfService" },
+          { text: "That they make a gesture to show they care", value: "ReceivingGifts" },
+          { text: "That they offer physical comfort", value: "PhysicalTouch" }
+        ]
+      },
+      {
+        question: "What would make you feel most appreciated at work?",
+        options: [
+          { text: "One-on-one time with my supervisor", value: "QualityTime" },
+          { text: "Public recognition and praise", value: "WordsOfAffirmation" },
+          { text: "Help with my workload when I'm overwhelmed", value: "ActsOfService" },
+          { text: "A bonus or thoughtful work-related gift", value: "ReceivingGifts" },
+          { text: "A pat on the back or encouraging touch", value: "PhysicalTouch" }
+        ]
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let answers = [];
+    let selectedAnswer = null;
+
+    function initializeQuiz() {
+      document.getElementById('totalQuestions').textContent = loveLanguageQuestions.length;
+      showQuestion(0);
+    }
+
+    function showQuestion(index) {
+      const question = loveLanguageQuestions[index];
       
-      const f = new FormData(e.target)
-      const counts = { 'Quality Time':0, 'Words':0, 'Gifts':0, 'Acts':0, 'Touch':0 }
+      // Capitalize first word of question
+      const capitalizedQuestion = question.question.charAt(0).toUpperCase() + question.question.slice(1);
       
-      // count each love language
-      for (let [key,value] of f.entries()){ 
-        if(counts[value] !== undefined) counts[value]++ 
+      document.getElementById('questionText').textContent = capitalizedQuestion;
+      document.getElementById('currentQuestion').textContent = index + 1;
+      
+      const optionsContainer = document.getElementById('quizOptions');
+      optionsContainer.innerHTML = '';
+      
+      question.options.forEach((option, optionIndex) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'quiz-option';
+        optionDiv.textContent = option.text;
+        optionDiv.onclick = () => selectOption(optionIndex, option.value);
+        optionsContainer.appendChild(optionDiv);
+      });
+      
+      // Reset selection
+      selectedAnswer = null;
+      updateNavigationButtons();
+    }
+
+    function selectOption(optionIndex, value) {
+      // Remove previous selection
+      document.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Add selection to clicked option
+      document.querySelectorAll('.quiz-option')[optionIndex].classList.add('selected');
+      
+      selectedAnswer = value;
+      updateNavigationButtons();
+    }
+
+    function updateNavigationButtons() {
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      
+      prevBtn.disabled = currentQuestionIndex === 0;
+      nextBtn.disabled = selectedAnswer === null;
+      
+      if (currentQuestionIndex === loveLanguageQuestions.length - 1) {
+        nextBtn.textContent = 'Finish';
+      } else {
+        nextBtn.textContent = 'Next';
+      }
+    }
+
+    function nextQuestion() {
+      if (selectedAnswer === null) return;
+      
+      // Save answer
+      answers[currentQuestionIndex] = selectedAnswer;
+      
+      if (currentQuestionIndex === loveLanguageQuestions.length - 1) {
+        // Quiz completed
+        finishQuiz();
+      } else {
+        // Animate page turn
+        const currentPage = document.getElementById('quizPage');
+        currentPage.classList.add('slide-out');
+        
+        setTimeout(() => {
+          currentQuestionIndex++;
+          showQuestion(currentQuestionIndex);
+          
+          currentPage.classList.remove('slide-out');
+          currentPage.classList.add('slide-in');
+          
+          setTimeout(() => {
+            currentPage.classList.remove('slide-in');
+          }, 50);
+        }, 250);
+      }
+    }
+
+    function previousQuestion() {
+      if (currentQuestionIndex === 0) return;
+      
+      // Animate page turn (reverse)
+      const currentPage = document.getElementById('quizPage');
+      currentPage.classList.add('slide-out');
+      
+      setTimeout(() => {
+        currentQuestionIndex--;
+        showQuestion(currentQuestionIndex);
+        
+        // Restore previous answer if it exists
+        if (answers[currentQuestionIndex]) {
+          const question = loveLanguageQuestions[currentQuestionIndex];
+          const savedAnswer = answers[currentQuestionIndex];
+          
+          question.options.forEach((option, index) => {
+            if (option.value === savedAnswer) {
+              selectOption(index, savedAnswer);
+            }
+          });
+        }
+        
+        currentPage.classList.remove('slide-out');
+        currentPage.classList.add('slide-in');
+        
+        setTimeout(() => {
+          currentPage.classList.remove('slide-in');
+        }, 50);
+      }, 250);
+    }
+
+    function finishQuiz() {
+      // Calculate love language scores
+      const counts = {
+        QualityTime: 0,
+        WordsOfAffirmation: 0,
+        ActsOfService: 0,
+        ReceivingGifts: 0,
+        PhysicalTouch: 0
+      };
+      
+      answers.forEach(answer => {
+        if (counts.hasOwnProperty(answer)) {
+          counts[answer]++;
+        }
+      });
+      
+      // Find the highest scoring love language
+      let primaryLoveLanguage = '';
+      let highestScore = 0;
+      
+      for (const [language, score] of Object.entries(counts)) {
+        if (score > highestScore) {
+          highestScore = score;
+          primaryLoveLanguage = language;
+        }
       }
       
-      // find the highest scoring love language
-      let topLanguage = 'Quality Time', maxCount = -1
-      Object.entries(counts).forEach(([language, count])=>{
-        if(count > maxCount){
-          maxCount = count
-          topLanguage = language
-        }
-      })
+      // Convert to readable format and get description
+      const loveLanguageNames = {
+        QualityTime: 'Quality Time',
+        WordsOfAffirmation: 'Words of Affirmation',
+        ActsOfService: 'Acts of Service',
+        ReceivingGifts: 'Receiving Gifts',
+        PhysicalTouch: 'Physical Touch'
+      };
       
-      localStorage.setItem('quiz_love', topLanguage)
-      const date = new Date().toLocaleString('default',{month:'long',year:'numeric'})
-      localStorage.setItem('quiz_love_date', date)
+      const descriptions = {
+        QualityTime: 'You value undivided attention and meaningful shared experiences. You feel most loved when someone gives you their focused time.',
+        WordsOfAffirmation: 'You thrive on verbal expressions of love, appreciation, and encouragement. Kind words mean the world to you.',
+        ActsOfService: 'You feel loved when people do helpful things for you. Actions speak louder than words in your relationships.',
+        ReceivingGifts: 'Thoughtful gifts and gestures make you feel special. You appreciate when someone thinks of you and shows it tangibly.',
+        PhysicalTouch: 'Physical affection like hugs, hand-holding, and cuddling make you feel most connected and loved.'
+      };
       
-      alert('your love language: ' + topLanguage)
-      location.href = '../index.html'
-    })
+      const readableName = loveLanguageNames[primaryLoveLanguage];
+      const description = descriptions[primaryLoveLanguage];
+      
+      const result = `${readableName}`;
+      
+      // Save result
+      localStorage.setItem('quiz_love', result);
+      
+      // Show result page
+      showResult(readableName, description, counts);
+    }
+
+    function showResult(loveLanguage, description, allScores) {
+      const questionDiv = document.querySelector('.quiz-question');
+      const optionsDiv = document.querySelector('.quiz-options');
+      const navigationDiv = document.querySelector('.quiz-navigation');
+      
+      // Create score breakdown
+      const scoreBreakdown = Object.entries(allScores)
+        .map(([lang, score]) => {
+          const name = lang.replace(/([A-Z])/g, ' $1').trim();
+          return `${name}: ${score}`;
+        })
+        .join(' | ');
+      
+      questionDiv.innerHTML = `
+        <h2>Your Love Language</h2>
+        <p style="font-size: 24px; font-weight: 700; color: var(--pill2); margin: 20px 0;">${loveLanguage}</p>
+        <p style="margin: 15px 0; font-weight: 600; line-height: 1.5;">${description}</p>
+        <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">Breakdown: ${scoreBreakdown}</p>
+        <p style="margin-top: 10px; font-size: 13px; color: var(--muted); font-style: italic;">This result will help MAI provide more personalized relationship guidance.</p>
+      `;
+      
+      optionsDiv.innerHTML = '';
+      
+      navigationDiv.innerHTML = `
+        <button class="quiz-btn" onclick="retakeQuiz()">Retake Quiz</button>
+        <button class="quiz-btn" onclick="goHome()" style="background: linear-gradient(135deg, #7dd87d, #5cb85c);">Continue to MAI</button>
+      `;
+    }
+
+    function retakeQuiz() {
+      currentQuestionIndex = 0;
+      answers = [];
+      selectedAnswer = null;
+      
+      document.getElementById('questionTitle').textContent = 'Love Language Quiz';
+      initializeQuiz();
+    }
+
+    function goHome() {
+      window.location.href = '../index.html';
+    }
+
+    function closeQuiz() {
+      if (confirm('Are you sure you want to close the quiz? Your progress will be lost.')) {
+        window.location.href = '../index.html';
+      }
+    }
+
+    // Initialize quiz when page loads
+    window.addEventListener('load', initializeQuiz);
   </script>
 </body>
 </html>
