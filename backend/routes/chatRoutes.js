@@ -1,39 +1,80 @@
 const express = require('express')
 const axios = require('axios')
-const ChatLog = require('../models/ChatLog')
 const r = express.Router()
 
-// chat with mai
-r.post('/', async (req,res)=>{
-  const { userId, user_input } = req.body
-  
-  try{
-    // send to fastapi for ai response
-    const ai = await axios.post(`${process.env.FASTAPI_URL}/generate`, {
-      user_input,
-      quiz_summary: buildQuizSummary(userId) // placeholder for now
+// chat endpoint that calls FastAPI
+r.post('/', async (req, res) => {
+  try {
+    console.log('Chat request received:', req.body)
+    
+    const { user_input, username, quiz_summary } = req.body
+    
+    if (!user_input || !user_input.trim()) {
+      console.log('ERROR: Empty user input')
+      return res.json({ 
+        response: "I'm here to listen. What's on your mind?" 
+      })
+    }
+
+    console.log('Calling FastAPI with:', {
+      user_input: user_input.trim(),
+      quiz_summary: quiz_summary || "",
+      subscription_tier: "free"
     })
-    
-    const data = ai.data || {}
-    
-    // save chat to database
-    await ChatLog.create({
-      username: userId || 'guest',
-      input: user_input,
-      response: data.response || '',
-      retrieved: data.retrieved_docs || []
+
+    // Call FastAPI
+    const fastApiUrl = process.env.FASTAPI_URL || 'http://127.0.0.1:8000'
+    const fastApiResponse = await axios.post(`${fastApiUrl}/generate`, {
+      user_input: user_input.trim(),
+      quiz_summary: quiz_summary || "",
+      subscription_tier: "free"
+    }, {
+      timeout: 15000, // 15 second timeout
+      headers: {
+        'Content-Type': 'application/json'
+      }
     })
+
+    console.log('FastAPI response received:', fastApiResponse.data)
+
+    const aiResponse = fastApiResponse.data?.response || "I want to help you with that. Can you tell me more?"
+    const suggestions = fastApiResponse.data?.suggestions || []
+
+    res.json({ 
+      response: aiResponse,
+      suggestions: suggestions,
+      debug_info: {
+        fastapi_called: true,
+        response_length: aiResponse.length
+      }
+    })
+
+  } catch (error) {
+    console.error('Chat error:', error.message)
     
-    res.json(data)
-  }catch(e){
-    console.error('chat error', e.message)
-    res.json({response:"sorry, having trouble right now"})
+    // Provide specific error info
+    let errorResponse = "I'm having trouble accessing my knowledge right now, but I'm still here to listen. "
+    
+    if (error.code === 'ECONNREFUSED') {
+      errorResponse += "It seems my AI brain isn't responding. Can you try restarting the FastAPI server?"
+      console.log('ERROR: FastAPI server appears to be down')
+    } else if (error.code === 'ETIMEDOUT') {
+      errorResponse += "I'm taking longer than usual to think. Can you try again?"
+      console.log('ERROR: FastAPI request timed out')
+    } else if (error.response) {
+      errorResponse += `There was an issue with my AI processing (${error.response.status}).`
+      console.log('ERROR: FastAPI returned error:', error.response.status, error.response.data)
+    }
+    
+    res.json({ 
+      response: errorResponse,
+      error: true,
+      debug_info: {
+        error_type: error.code || 'unknown',
+        fastapi_url: process.env.FASTAPI_URL || 'http://127.0.0.1:8000'
+      }
+    })
   }
 })
-
-function buildQuizSummary(userId){
-  // simple stub - in real app you'd get this from user profile
-  return 'personality and quiz data will go here'
-}
 
 module.exports = r
