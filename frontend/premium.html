@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAI Pro - Unlock Your Full Wellness Potential</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">MAI</a>
+    <nav class="top-actions">
+      <a class="pill" href="index.html">Back to MAI</a>
+    </nav>
+  </header>
+
+  <main style="max-width:1200px;margin:24px auto;padding:0 20px;">
+    
+    <!-- Hero Section -->
+    <section class="card" style="text-align:center;margin-bottom:30px;">
+      <h1 class="title soft" style="font-size:48px;margin-bottom:16px;">
+        Allow me to get to know you better ✨
+      </h1>
+      <p style="font-size:18px;color:#6a4c93;margin-bottom:0;">
+        Unlock personalized wellness with insurance integration, health tracking, and human support
+      </p>
+    </section>
+
+    <!-- Pricing Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:24px;">
+      
+      <!-- Basic Plan -->
+      <div class="card" style="border:2px solid #e0d4ff;">
+        <div style="text-align:center;">
+          <h3 style="color:#8b66d6;font-size:24px;margin:0 0 8px;">Basic Pro</h3>
+          <div style="font-size:36px;font-weight:800;color:#5a4fcf;margin-bottom:16px;">
+            $19.99<span style="font-size:16px;font-weight:normal;">/month</span>
+          </div>
+        </div>
+        
+        <div style="margin:20px 0;">
+          <h4 style="color:#5a4fcf;margin-bottom:12px;">What's Included:</h4>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:4px 0;">✨ Personalized health insights</li>
+            <li style="padding:4px 0;">📊 Enhanced quiz analytics</li>
+            <li style="padding:4px 0;">🔍 Limited research capabilities</li>
+            <li style="padding:4px 0;">💬 General wellness search</li>
+            <li style="padding:4px 0;">📅 Advanced calendar integration</li>
+            <li style="padding:4px 0;">⚡ Priority response times</li>
+          </ul>
+        </div>
+        
+        <button class="pill" style="width:100%;justify-content:center;margin-top:16px;" onclick="selectPlan('basic')">
+          Choose Basic Pro
+        </button>
+      </div>
+
+      <!-- Premium Plan -->
+      <div class="card" style="border:3px solid #ffd700;position:relative;">
+        <div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ffd700,#ffb347);color:#8b4513;padding:6px 20px;border-radius:20px;font-weight:800;font-size:12px;">
+          MOST POPULAR
+        </div>
+        
+        <div style="text-align:center;margin-top:10px;">
+          <h3 style="color:#b8860b;font-size:24px;margin:0 0 8px;">Premium Pro</h3>
+          <div style="font-size:36px;font-weight:800;color:#daa520;margin-bottom:16px;">
+            $15.99<span style="font-size:16px;font-weight:normal;">/month</span>
+          </div>
+          <p style="font-size:14px;color:#8b7355;margin-bottom:16px;">3-month commitment</p>
+        </div>
+        
+        <div style="margin:20px 0;">
+          <h4 style="color:#b8860b;margin-bottom:12px;">Everything in Basic Pro, plus:</h4>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:4px 0;">🏥 <strong>Insurance network integration</strong></li>
+            <li style="padding:4px 0;">💰 AI-powered cost optimization</li>
+            <li style="padding:4px 0;">🔍 In-network provider search</li>
+            <li style="padding:4px 0;">📋 Uninsured low-cost options</li>
+            <li style="padding:4px 0;">📊 Health condition tracking</li>
+            <li style="padding:4px 0;">⚕️ Preventive care reminders</li>
+            <li style="padding:4px 0;">👨‍💼 <strong>Human customer service</strong></li>
+            <li style="padding:4px 0;">📞 Discounted admin assistance sessions</li>
+            <li style="padding:4px 0;">🎯 Human-reviewed recommendations</li>
+          </ul>
+        </div>
+        
+        <button class="pill-gold" style="width:100%;justify-content:center;margin-top:16px;" onclick="selectPlan('premium')">
+          Choose Premium Pro
+        </button>
+      </div>
+
+      <!-- Ultimate Plan -->
+      <div class="card" style="border:2px solid #9370db;">
+        <div style="text-align:center;">
+          <h3 style="color:#663399;font-size:24px;margin:0 0 8px;">Ultimate Pro</h3>
+          <div style="font-size:36px;font-weight:800;color:#8a2be2;margin-bottom:16px;">
+            $150<span style="font-size:16px;font-weight:normal;">/year</span>
+          </div>
+          <p style="font-size:14px;color:#9370db;margin-bottom:16px;">Best value - 2 months free!</p>
+        </div>
+        
+        <div style="margin:20px 0;">
+          <h4 style="color:#663399;margin-bottom:12px;">Everything in Premium Pro, plus:</h4>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:4px 0;">🧠 <strong>Advanced AI model capacity</strong></li>
+            <li style="padding:4px 0;">💾 Large data storage space</li>
+            <li style="padding:4px 0;">⚡ Unlimited token usage</li>
+            <li style="padding:4px 0;">🎯 Hyper-personalized insights</li>
+            <li style="padding:4px 0;">👥 <strong>Dedicated human wellness advocate</strong></li>
+            <li style="padding:4px 0;">📱 Priority 24/7 human support</li>
+            <li style="padding:4px 0;">📞 Unlimited admin assistance calls</li>
+            <li style="padding:4px 0;">🔬 Beta feature access</li>
+            <li style="padding:4px 0;">🩺 Annual health screening reminders</li>
+          </ul>
+        </div>
+        
+        <button class="pill" style="width:100%;justify-content:center;margin-top:16px;background:linear-gradient(135deg,#9370db,#8a2be2);color:white;" onclick="selectPlan('ultimate')">
+          Choose Ultimate Pro
+        </button>
+      </div>
+    </div>
+
+    <!-- Human Support Details -->
+    <section class="card" style="margin-top:30px;">
+      <h2 class="title soft" style="text-align:center;margin-bottom:24px;">Human Customer Service Included</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+        
+        <div style="text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">🎯</div>
+          <h4 style="color:#5a4fcf;">Personalized Recommendations</h4>
+          <p style="color:#6a4c93;">Human experts review your AI recommendations for insurance, providers, and wellness plans</p>
+        </div>
+        
+        <div style="text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">📞</div>
+          <h4 style="color:#5a4fcf;">Admin Assistance</h4>
+          <p style="color:#6a4c93;">We'll help you call doctors, schedule appointments, and handle insurance paperwork</p>
+        </div>
+        
+        <div style="text-align:center;">
+          <div style="font-size:48px;margin-bottom:12px;">🔍</div>
+          <h4 style="color:#5a4fcf;">Insurance Research</h4>
+          <p style="color:#6a4c93;">Our team researches your specific insurance network to find the best covered options</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="card" style="margin-top:30px;">
+      <h2 class="title soft" style="text-align:center;margin-bottom:24px;">Frequently Asked Questions</h2>
+      
+      <div style="max-width:800px;margin:0 auto;">
+        <div style="margin-bottom:20px;">
+          <h4 style="color:#5a4fcf;">How does insurance integration work?</h4>
+          <p style="color:#6a4c93;">You'll securely connect your insurance information, and MAI will search your network for covered mental health providers, medications, and treatments in your area.</p>
+        </div>
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="color:#5a4fcf;">What if I don't have insurance?</h4>
+          <p style="color:#6a4c93;">MAI will help you find community health centers, sliding-scale therapy options, and affordable medication programs in your area.</p>
+        </div>
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="color:#5a4fcf;">How does human customer service work?</h4>
+          <p style="color:#6a4c93;">You'll have access to real wellness advocates who can review your AI recommendations, help with phone calls to providers, and assist with paperwork and scheduling.</p>
+        </div>
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="color:#5a4fcf;">Can I cancel anytime?</h4>
+          <p style="color:#6a4c93;">Yes! Monthly plans can be canceled anytime. 3-month and annual plans can be canceled with 30 days notice.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function selectPlan(planType) {
+      const user = localStorage.getItem('username')
+      if (!user) {
+        alert('Please log in first to upgrade to MAI Pro!')
+        window.location.href = 'login.html'
+        return
+      }
+      
+      const plans = {
+        basic: { name: 'Basic Pro', price: '$19.99/month', features: 'Enhanced AI + Analytics' },
+        premium: { name: 'Premium Pro', price: '$15.99/month', features: 'Insurance Integration + Human Support' },
+        ultimate: { name: 'Ultimate Pro', price: '$150/year', features: 'Full AI Capacity + Dedicated Advocate' }
+      }
+      
+      const selected = plans[planType]
+      const message = `🎉 Thanks for choosing MAI ${selected.name}!\n\nPlan: ${selected.name}\nPrice: ${selected.price}\nFeatures: ${selected.features}\n\nThis is a demo - payment processing would be implemented here.\n\nReturn to MAI to start using your enhanced features!`
+      
+      alert(message)
+      
+      // In a real app, this would process payment and update user account
+      // For demo purposes, just redirect back to main app
+      window.location.href = 'index.html'
+    }
+  </script>
+</body>
+</html>
