@@ -1,4 +1,4 @@
-# mai fastapi - Better search to actually find your training content
+# mai fastapi - ACTUALLY use your specific training data
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -18,7 +18,7 @@ class ChatResponse(BaseModel):
     response: str
     suggestions: Optional[List[str]] = []
 
-print("Starting MAI with improved search...")
+print("Starting MAI with your specific training data...")
 
 app = FastAPI(title="MAI AI Backend", version="1.0.0")
 
@@ -47,7 +47,8 @@ def load_your_trained_models():
                 KNOWLEDGE_CORPUS = pickle.load(f)
             print(f"SUCCESS: Loaded {len(KNOWLEDGE_CORPUS)} knowledge entries")
             
-            # Print first few entries to see their structure
+            # Print actual content to understand structure
+            print("Sample training content:")
             for i, entry in enumerate(KNOWLEDGE_CORPUS[:3]):
                 print(f"Entry {i}: {entry}")
                 
@@ -63,123 +64,127 @@ def load_your_trained_models():
         traceback.print_exc()
         return False
 
-def improved_search(query, top_k=3):
-    """Improved search that's more likely to find matches"""
+def smart_search_your_content(query, top_k=3):
+    """Smart search specifically for your training data format"""
     if not KNOWLEDGE_CORPUS:
         return []
     
     query_lower = query.lower()
-    print(f"SEARCHING for: '{query}'")
+    print(f"SEARCHING your training data for: '{query}'")
     
-    # Create broader search terms
-    search_terms = set()
+    # Based on your corpus, it looks like entries are strings
+    # Let's create a comprehensive search
+    results = []
     
-    # Add original words
-    search_terms.update(query_lower.split())
+    # Emotional keywords mapping
+    emotion_keywords = {
+        'sad': ['sad', 'sadness', 'down', 'depressed', 'low', 'feelings', 'valid', 'pass'],
+        'anxious': ['anxious', 'anxiety', 'worry', 'nervous', 'breathing', 'calm'],
+        'overwhelmed': ['overwhelmed', 'tasks', 'break', 'pieces', 'progress', 'small'],
+        'tired': ['tired', 'energy', 'low', 'valid', 'rest', 'water', 'self-care'],
+        'relationships': ['relationships', 'boundaries', 'saying', 'no', 'protects', 'mental', 'health'],
+        'stress': ['stress', 'overwhelmed', 'tasks', 'break', 'breathing', 'calm']
+    }
     
-    # Add emotional/mental health related terms
-    if any(word in query_lower for word in ["nervous", "anxious", "worried", "stress"]):
-        search_terms.update(["anxiety", "anxious", "stress", "worried", "nervous", "calm", "breathing", "relax"])
+    # Expand search terms based on emotional context
+    search_terms = set(query_lower.split())
     
-    if any(word in query_lower for word in ["conference", "presentation", "work", "meeting"]):
-        search_terms.update(["work", "professional", "meeting", "presentation", "confidence", "performance"])
-    
-    if any(word in query_lower for word in ["doctor", "medical", "health", "appointment"]):
-        search_terms.update(["health", "medical", "doctor", "appointment", "care", "treatment"])
-    
-    if any(word in query_lower for word in ["week", "busy", "schedule", "time"]):
-        search_terms.update(["time", "schedule", "busy", "overwhelmed", "planning", "organization"])
+    # Add related terms based on emotional keywords
+    for emotion, keywords in emotion_keywords.items():
+        if any(term in query_lower for term in [emotion]):
+            search_terms.update(keywords)
     
     print(f"Expanded search terms: {search_terms}")
     
-    results = []
-    
+    # Search through your training content
     for i, entry in enumerate(KNOWLEDGE_CORPUS):
-        # Extract text from entry
-        text_content = ""
-        if isinstance(entry, dict):
-            for key in ['text', 'content', 'response', 'answer', 'advice', 'data', 'message']:
-                if key in entry and entry[key]:
-                    text_content = str(entry[key]).lower()
-                    break
-        elif isinstance(entry, str):
-            text_content = entry.lower()
-        elif isinstance(entry, list) and len(entry) > 0:
-            text_content = str(entry[0]).lower()
+        # Your entries appear to be strings based on the debug output
+        if isinstance(entry, str):
+            content = entry.lower()
+        elif isinstance(entry, dict):
+            # Handle if some entries are dictionaries
+            content = str(entry.get('content', entry.get('text', str(entry)))).lower()
+        else:
+            content = str(entry).lower()
         
-        if text_content and len(text_content) > 5:
-            # Check for any overlap with search terms
-            text_words = set(re.findall(r'\b\w+\b', text_content))
-            
-            overlap = len(search_terms.intersection(text_words))
-            
-            # Also check for partial matches and semantic similarity
-            semantic_score = 0
-            for search_term in search_terms:
-                if search_term in text_content:
-                    semantic_score += 1
-            
-            total_score = overlap + semantic_score
-            
-            if total_score > 0:
-                final_score = total_score / len(search_terms) if search_terms else 0
-                results.append({
-                    'content': text_content,
-                    'original_entry': entry,
-                    'score': final_score,
-                    'overlap_count': overlap,
-                    'semantic_count': semantic_score,
-                    'index': i
-                })
-                print(f"Match found: {text_content[:100]}... (score: {final_score})")
+        # Calculate relevance score
+        score = 0
+        content_words = set(re.findall(r'\b\w+\b', content))
+        
+        # Direct word matches
+        matches = search_terms.intersection(content_words)
+        score += len(matches) * 2
+        
+        # Partial matches and semantic similarity
+        for search_term in search_terms:
+            if search_term in content:
+                score += 1
+        
+        # Boost score for exact emotional matches
+        if any(emotion in query_lower for emotion in ['sad', 'anxious', 'overwhelmed', 'tired']) and \
+           any(emotion in content for emotion in ['valid', 'feeling', 'pass', 'breathing', 'care']):
+            score += 3
+        
+        if score > 0:
+            results.append({
+                'content': entry if isinstance(entry, str) else str(entry),
+                'score': score,
+                'matches': matches,
+                'index': i
+            })
+            print(f"MATCH FOUND (score {score}): {entry[:100]}...")
     
     # Sort by score
     results.sort(key=lambda x: x['score'], reverse=True)
+    print(f"Found {len(results)} total matches from your training data")
     
-    print(f"Found {len(results)} total matches")
     return results[:top_k]
 
-def use_best_training_content(user_input, relevant_docs, quiz_summary=""):
-    """Use the best matching content from training data"""
+def use_your_training_content(user_input, relevant_docs, quiz_summary=""):
+    """Use YOUR specific training content directly"""
     
     if not relevant_docs or len(relevant_docs) == 0:
-        print("NO RELEVANT CONTENT FOUND - using generic fallback")
-        return "I want to help you with that. Can you tell me more about what's specifically concerning you so I can provide better guidance?"
+        print("NO MATCHES in your training data - this shouldn't happen with good content")
+        return "I want to help you with that. Can you tell me more about what you're experiencing?"
     
-    # Use the best match
+    # Get the best match from YOUR training data
     best_match = relevant_docs[0]
-    content = best_match['content']
+    your_content = best_match['content']
     
-    print(f"USING TRAINING CONTENT: {content}")
+    print(f"USING YOUR TRAINING CONTENT: {your_content}")
     
-    # If the content is very short, combine with second best
-    if len(content) < 50 and len(relevant_docs) > 1:
-        content += " " + relevant_docs[1]['content']
+    # Use your training content directly with minimal modification
+    # Your content already sounds natural and helpful
     
-    # Clean up the content
-    if len(content) > 400:
-        sentences = content.split('.')
-        content = '. '.join(sentences[:2]) + '.'
-    
-    # Make it more conversational
+    # Add a brief natural intro if needed
     user_lower = user_input.lower()
     
-    if any(word in user_lower for word in ["nervous", "anxious", "conference"]):
-        intro = "I understand that nervousness before important events. "
-    elif any(word in user_lower for word in ["doctor", "medical", "waiting"]):
-        intro = "Waiting for medical news can be really stressful. "
-    elif any(word in user_lower for word in ["week", "busy", "ahead"]):
-        intro = "Big weeks can feel overwhelming. "
+    if any(word in user_lower for word in ["sad", "down"]):
+        if not your_content.lower().startswith('i'):
+            response = f"I hear that you're feeling sad. {your_content}"
+        else:
+            response = your_content
+    elif any(word in user_lower for word in ["anxious", "worried"]):
+        if not your_content.lower().startswith('i'):
+            response = f"I understand you're feeling anxious. {your_content}"
+        else:
+            response = your_content
+    elif any(word in user_lower for word in ["overwhelmed", "tasks"]):
+        if not your_content.lower().startswith('i'):
+            response = f"I hear that you're feeling overwhelmed. {your_content}"
+        else:
+            response = your_content
     else:
-        intro = "I hear what you're going through. "
+        # Use your content directly - it's already well-written
+        response = your_content
     
-    final_response = intro + content
+    # Clean up any weird formatting
+    response = response.strip()
+    if not response.endswith('.') and not response.endswith('!') and not response.endswith('?'):
+        response += '.'
     
-    # Remove any duplicate intro phrases
-    final_response = re.sub(r'^(I understand|I hear|That sounds|Thank you for sharing).*?\. (I understand|I hear|That sounds)', r'\1', final_response)
-    
-    print(f"FINAL RESPONSE: {final_response}")
-    return final_response
+    print(f"FINAL RESPONSE from your training: {response}")
+    return response
 
 # Load models
 models_loaded = load_your_trained_models()
@@ -197,27 +202,27 @@ async def health_check():
 async def generate_response(request: ChatRequest):
     try:
         user_input = request.user_input.strip()
-        print(f"\n=== PROCESSING: {user_input} ===")
+        print(f"\n=== PROCESSING with your training data: {user_input} ===")
         
         if not user_input:
             return ChatResponse(response="I'm here to listen. What's on your mind?")
         
         if models_loaded and KNOWLEDGE_CORPUS:
-            # Use improved search
-            relevant_docs = improved_search(user_input, top_k=3)
-            response_text = use_best_training_content(user_input, relevant_docs, request.quiz_summary)
+            # Use improved search on YOUR content
+            relevant_docs = smart_search_your_content(user_input, top_k=3)
+            response_text = use_your_training_content(user_input, relevant_docs, request.quiz_summary)
         else:
             response_text = "I'm having trouble accessing my knowledge. Can you tell me more about what's on your mind?"
         
         # Simple suggestions
         suggestions = []
         user_lower = user_input.lower()
-        if any(word in user_lower for word in ["nervous", "anxious"]):
-            suggestions = ["Try deep breathing", "Practice positive visualization", "Take breaks"]
-        elif any(word in user_lower for word in ["doctor", "medical"]):
-            suggestions = ["Prepare questions", "Bring support person", "Practice self-care"]
+        if any(word in user_lower for word in ["sad", "down"]):
+            suggestions = ["Practice self-compassion", "Reach out to someone", "Take things one step at a time"]
+        elif any(word in user_lower for word in ["anxious", "worried"]):
+            suggestions = ["Try deep breathing", "Practice grounding", "Focus on what you can control"]
         
-        print(f"=== RETURNING: {response_text[:100]}... ===\n")
+        print(f"=== RETURNING your training content: {response_text[:100]}... ===\n")
         
         return ChatResponse(
             response=response_text,
@@ -240,7 +245,7 @@ async def debug_corpus():
 
 @app.get("/debug/search/{query}")
 async def debug_search(query: str):
-    results = improved_search(query, top_k=5)
+    results = smart_search_your_content(query, top_k=5)
     return {
         "query": query,
         "results_found": len(results),
