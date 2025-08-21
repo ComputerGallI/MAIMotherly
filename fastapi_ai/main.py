@@ -1,4 +1,4 @@
-# mai fastapi - Your training data + Gemini LLM fallback
+# mai fastapi - Simple and reliable Gemini integration
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -7,16 +7,24 @@ import os, json, pickle
 import re
 import random
 
-# Try to import Gemini
+# Import Gemini
 try:
     import google.generativeai as genai
     GEMINI_AVAILABLE = True
-    print("Gemini AI available")
+    print("✓ Gemini AI available")
 except ImportError:
     GEMINI_AVAILABLE = False
-    print("Gemini AI not available - install google-generativeai package")
+    print("✗ Gemini AI not installed - run: pip install google-generativeai")
 
-app = FastAPI(title="MAI Mental Health AI - Your Training + Gemini Fallback")
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("✓ Loaded .env file")
+except ImportError:
+    print("✓ No .env file loader (install with: pip install python-dotenv)")
+
+app = FastAPI(title="MAI Mental Health AI - Your training data + Gemini fallback")
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,413 +48,307 @@ knowledge_corpus = []
 config = {}
 gemini_model = None
 
-# Enhanced keyword mapping for your training content
-KEYWORD_TO_CONTENT = {
-    # Mental health topics that your model handles
-    'work': ['work', 'job', 'career', 'workplace', 'office', 'boss', 'colleague', 'professional', 'deadline', 'meeting', 'project'],
-    'stress': ['stress', 'stressed', 'pressure', 'overwhelmed', 'busy', 'burnout', 'exhausted'],
-    'anxiety': ['anxious', 'anxiety', 'nervous', 'worried', 'panic', 'fear', 'scared'],
-    'worry': ['worry', 'worrying', 'concern', 'concerned', 'afraid'],
-    'sad': ['sad', 'sadness', 'down', 'low', 'blue', 'depressed', 'depression'],
-    'hurt': ['hurt', 'pain', 'upset', 'disappointed', 'heartbroken'],
-    'relationship': ['relationship', 'partner', 'boyfriend', 'girlfriend', 'husband', 'wife', 'dating'],
-    'fight': ['fight', 'argument', 'conflict', 'disagree', 'angry', 'mad'],
-    'family': ['family', 'parent', 'mother', 'father', 'sibling', 'child'],
-    'friend': ['friend', 'friendship', 'social', 'lonely', 'alone'],
-    'confidence': ['confidence', 'self-esteem', 'self-worth', 'insecure', 'doubt'],
-    'failure': ['failure', 'failed', 'not good enough', 'inadequate', 'worthless'],
-    'sleep': ['sleep', 'sleeping', 'insomnia', 'tired', 'exhausted', 'rest'],
-    'energy': ['energy', 'motivation', 'drive', 'focus', 'lazy', 'unmotivated'],
-    'feeling': ['feeling', 'feel', 'emotion', 'emotional', 'mood'],
-    'help': ['help', 'support', 'advice', 'guidance', 'assistance']
-}
-
 def setup_gemini():
-    """Initialize Gemini AI model"""
+    """Set up Gemini AI model"""
     global gemini_model
     
     if not GEMINI_AVAILABLE:
-        print("Gemini not available - skipping setup")
+        print("❌ Gemini not available - google-generativeai not installed")
+        return False
+        
+    # Check for API key
+    api_key = os.getenv('GEMINI_API_KEY')
+    
+    if not api_key:
+        print("❌ GEMINI_API_KEY not found in environment")
+        print("   Create a .env file with: GEMINI_API_KEY=your_key_here")
+        print("   Or set environment variable: set GEMINI_API_KEY=your_key_here")
         return False
     
     try:
-        # Get API key from environment
-        api_key = os.getenv('GEMINI_API_KEY')
-        if not api_key:
-            print("GEMINI_API_KEY not found in environment")
-            return False
-        
-        # Configure Gemini
         genai.configure(api_key=api_key)
+        gemini_model = genai.GenerativeModel('gemini-pro')
+        print(f"✅ Gemini initialized successfully (key: {api_key[:8]}...)")
         
-        # Initialize model with system instructions for MAI
-        generation_config = {
-            "temperature": 0.7,
-            "top_p": 0.8,
-            "top_k": 40,
-            "max_output_tokens": 300,
+        # Test Gemini with a simple call
+        test_response = gemini_model.generate_content("Say hello")
+        print(f"✅ Gemini test successful: {test_response.text[:30]}...")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Gemini setup failed: {e}")
+        return False
+
+def call_gemini(user_input: str, quiz_summary: str = "") -> dict:
+    """Call Gemini AI for response"""
+    if not gemini_model:
+        print("⚠️  Gemini not available - using fallback")
+        return {
+            "response": "I'd like to help you with that. Can you tell me more about what you're experiencing?",
+            "suggestions": [
+                "Take a moment to breathe deeply",
+                "Notice your current feelings",
+                "Practice self-compassion",
+                "Do something kind for yourself"
+            ]
+        }
+    
+    try:
+        # Create mental health-focused prompt
+        prompt = f"""You are MAI, a caring mental health AI assistant. Be warm and supportive.
+
+User background: {quiz_summary or 'No background info available'}
+User question: "{user_input}"
+
+Respond with:
+1. A caring, supportive response (1-3 sentences)
+2. Then list exactly 4 practical wellness suggestions that could be calendar reminders
+
+Format like this:
+[Your caring response here]
+
+SUGGESTIONS:
+- [Suggestion 1]
+- [Suggestion 2] 
+- [Suggestion 3]
+- [Suggestion 4]
+
+Keep it warm, practical, and mental health focused."""
+
+        print(f"🤖 Calling Gemini for: {user_input[:30]}...")
+        
+        response = gemini_model.generate_content(prompt)
+        gemini_text = response.text.strip()
+        
+        print(f"✅ Gemini responded: {gemini_text[:50]}...")
+        
+        # Split response and suggestions
+        if "SUGGESTIONS:" in gemini_text:
+            parts = gemini_text.split("SUGGESTIONS:")
+            main_response = parts[0].strip()
+            suggestions_text = parts[1].strip()
+            
+            # Extract suggestions
+            suggestions = []
+            for line in suggestions_text.split('\n'):
+                line = line.strip()
+                if line.startswith('-') or line.startswith('•'):
+                    suggestion = line[1:].strip()
+                    if suggestion and len(suggestion) > 3:
+                        suggestions.append(suggestion)
+            
+            # Ensure we have 4 suggestions
+            while len(suggestions) < 4:
+                suggestions.extend([
+                    "Take three deep breaths mindfully",
+                    "Check in with your emotions",
+                    "Practice gratitude for one minute",
+                    "Do something kind for yourself"
+                ])
+            
+            suggestions = suggestions[:4]  # Limit to 4
+            
+        else:
+            # If format wasn't followed, use the whole response
+            main_response = gemini_text
+            suggestions = [
+                "Take three deep breaths",
+                "Practice mindful awareness", 
+                "Show yourself compassion",
+                "Take care of your needs"
+            ]
+        
+        return {
+            "response": main_response,
+            "suggestions": suggestions
         }
         
-        gemini_model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config=generation_config,
-            system_instruction="""You are MAI, a caring mental health assistant. When answering questions outside of mental health topics, be helpful and informative while maintaining a warm, supportive tone. Keep responses concise (under 250 words) and always try to gently connect back to wellbeing when appropriate. If someone asks about serious medical issues, recommend they consult healthcare professionals."""
-        )
-        
-        print("SUCCESS: Gemini AI model initialized")
-        return True
-        
     except Exception as e:
-        print(f"ERROR setting up Gemini: {e}")
-        return False
+        print(f"❌ Gemini call failed: {e}")
+        return {
+            "response": "I want to support you through this. Can you share more about how you're feeling?",
+            "suggestions": [
+                "Take slow, deep breaths",
+                "Ground yourself in the present",
+                "Be gentle with yourself", 
+                "Remember that you matter"
+            ]
+        }
 
-def load_models():
-    """Load the trained knowledge base and Gemini"""
-    global knowledge_corpus, config
-    
-    try:
-        print("Starting MAI - Your training data + Gemini fallback...")
-        artifacts_dir = "./mai_artifacts"
-        print(f"Looking for trained models in: {artifacts_dir}")
-        
-        # Load knowledge corpus
-        with open(os.path.join(artifacts_dir, "knowledge_corpus.pkl"), "rb") as f:
-            knowledge_corpus = pickle.load(f)
-        print(f"SUCCESS: Loaded {len(knowledge_corpus)} mental health knowledge entries")
-        
-        # Show sample of your training data
-        if knowledge_corpus:
-            print("Sample of your training data:")
-            for i, entry in enumerate(knowledge_corpus[:3]):
-                print(f"  Entry {i+1}: {entry[:60]}...")
-        
-        # Load config
-        try:
-            with open(os.path.join(artifacts_dir, "config.json"), "r") as f:
-                config = json.load(f)
-            print(f"SUCCESS: Loaded training config")
-        except:
-            print("Config file not found, continuing without it")
-        
-        # Setup Gemini
-        gemini_setup = setup_gemini()
-        if gemini_setup:
-            print("SUCCESS: Gemini AI ready for fallback responses")
-        else:
-            print("WARNING: Gemini AI not available - using basic fallbacks")
-        
-        print("AI system ready - Your training data FIRST, Gemini for everything else!")
-        
-    except Exception as e:
-        print(f"ERROR loading models: {e}")
-        raise
-
-def is_mental_health_related(user_input: str) -> bool:
-    """Check if the question is related to mental health topics that your training covers"""
-    user_lower = user_input.lower()
-    
-    # Count mental health keyword matches
-    mental_health_matches = 0
-    for keyword_group in KEYWORD_TO_CONTENT.values():
-        for keyword in keyword_group:
-            if keyword in user_lower:
-                mental_health_matches += 1
-    
-    # If we have mental health indicators, it's probably in scope
-    if mental_health_matches >= 1:
-        print(f"MENTAL HEALTH TOPIC DETECTED: {mental_health_matches} indicators")
-        return True
-    
-    # Check for emotional language
-    emotional_words = ['feel', 'feeling', 'emotions', 'emotional', 'mental', 'psychology', 'therapy', 'counseling', 'wellness']
-    emotional_matches = sum(1 for word in emotional_words if word in user_lower)
-    
-    if emotional_matches >= 1:
-        print(f"EMOTIONAL TOPIC DETECTED: {emotional_matches} indicators")
-        return True
-    
-    print(f"NON-MENTAL-HEALTH TOPIC: Will use Gemini fallback")
-    return False
-
-def find_best_training_content(user_input: str) -> str:
-    """Find the best match from your actual training data"""
+def find_training_data_match(user_input: str) -> str:
+    """Find match in training data"""
     if not knowledge_corpus:
-        print("ERROR: No training data loaded")
         return None
         
     user_lower = user_input.lower()
-    user_words = set(user_lower.split())
     
-    print(f"SEARCHING your {len(knowledge_corpus)} training entries for: '{user_input}'")
-    
-    # Find matches by checking how many keywords overlap
-    matches = []
-    
-    for i, entry in enumerate(knowledge_corpus):
+    # Simple keyword matching
+    for entry in knowledge_corpus:
         if isinstance(entry, str):
             entry_lower = entry.lower()
+            
+            # Count matching words
+            user_words = set(user_lower.split())
             entry_words = set(entry_lower.split())
+            matches = len(user_words.intersection(entry_words))
             
-            # Count word overlaps
-            overlap_count = len(user_words.intersection(entry_words))
-            
-            # Also check for keyword matches
-            keyword_matches = 0
-            for keyword_group in KEYWORD_TO_CONTENT.values():
-                for keyword in keyword_group:
-                    if keyword in user_lower and keyword in entry_lower:
-                        keyword_matches += 2
-            
-            total_score = overlap_count + keyword_matches
-            
-            if total_score > 0:
-                matches.append({
-                    'entry': entry,
-                    'score': total_score,
-                    'index': i
-                })
+            # If we have good overlap, use it
+            if matches >= 2:
+                print(f"📚 Using training data (match score: {matches})")
+                return entry
     
-    # Sort by score and return best match
-    if matches:
-        matches.sort(key=lambda x: x['score'], reverse=True)
-        best_match = matches[0]
-        
-        print(f"BEST MATCH (score {best_match['score']}): {best_match['entry'][:80]}...")
-        print(f"Found {len(matches)} total matches in your training data")
-        
-        return best_match['entry']
-    
-    print("NO MATCHES found in your training data")
+    print("📚 No good training data match found")
     return None
 
-def ask_gemini(user_input: str, quiz_summary: str = "") -> dict:
-    """Ask Gemini AI for responses to questions outside your training scope"""
-    if not GEMINI_AVAILABLE or not gemini_model:
-        return {
-            "response": "I'm specifically trained for mental health support. For questions outside that scope, I'd recommend searching online or consulting relevant professionals. Is there anything about your mental health or wellbeing I can help with?",
-            "suggestions": ["Tell me how you're feeling", "Any stress or anxiety?", "Want to talk about relationships?"]
-        }
-    
-    try:
-        print(f"ASKING GEMINI: {user_input}")
-        
-        # Create context for Gemini
-        context = f"User question: {user_input}"
-        if quiz_summary:
-            context += f"\nUser personality context: {quiz_summary}"
-        
-        # Get response from Gemini
-        response = gemini_model.generate_content(context)
-        
-        if response.text:
-            gemini_response = response.text.strip()
-            print(f"GEMINI RESPONSE: {gemini_response[:100]}...")
-            
-            # Generate suggestions based on the topic
-            suggestions = [
-                "Is there anything else I can help with?",
-                "How are you feeling about this?",
-                "Want to talk about anything else?"
-            ]
-            
-            # Try to detect topic for better suggestions
-            user_lower = user_input.lower()
-            if any(word in user_lower for word in ['learn', 'study', 'school', 'education']):
-                suggestions = ["Need study tips?", "Feeling stressed about learning?", "Want to talk about school pressure?"]
-            elif any(word in user_lower for word in ['weather', 'temperature', 'rain', 'sun']):
-                suggestions = ["How does weather affect your mood?", "Feeling seasonal changes?", "Want tips for weather-related mood?"]
-            elif any(word in user_lower for word in ['food', 'recipe', 'cooking', 'eating']):
-                suggestions = ["How's your relationship with food?", "Feeling stressed about eating?", "Want to talk about nutrition and mood?"]
-            
-            return {
-                "response": gemini_response,
-                "suggestions": suggestions
-            }
-        else:
-            raise Exception("Empty response from Gemini")
-            
-    except Exception as e:
-        print(f"GEMINI ERROR: {e}")
-        return {
-            "response": "I'm having trouble accessing additional information right now. Is there anything about your mental health, stress, relationships, or wellbeing I can help you with instead?",
-            "suggestions": ["Tell me about your day", "Any stress or worries?", "Want to talk about feelings?"]
-        }
-
-def is_physical_health_question(user_input: str) -> bool:
-    """Check if this is about physical health (outside mental health scope)"""
-    physical_terms = ['knee', 'back', 'shoulder', 'pain', 'hurt', 'ache', 'headache', 'sick', 'fever', 'cold', 'injury', 'medical', 'doctor visit', 'surgery', 'medication', 'pills', 'prescription']
+def generate_suggestions_for_topic(user_input: str) -> List[str]:
+    """Generate topic-appropriate suggestions"""
     user_lower = user_input.lower()
     
-    physical_count = sum(1 for term in physical_terms if term in user_lower)
-    
-    if physical_count >= 1:
-        print(f"PHYSICAL HEALTH DETECTED: {physical_count} indicators")
-        return True
-    return False
-
-def generate_response(user_input: str, quiz_summary: str = "") -> dict:
-    """Generate response using your training data first, then Gemini fallback"""
-    print(f"\n=== PROCESSING: {user_input} ===")
-    
-    # Check for physical health first
-    if is_physical_health_question(user_input):
-        return {
-            "response": "I'm specifically trained for mental health support. For physical health concerns, I'd recommend speaking with a healthcare professional. Is there anything about how this situation is affecting you emotionally that I can help with?",
-            "suggestions": ["How are you feeling about this?", "Any emotional impact?", "Want to talk about stress?"]
-        }
-    
-    # Check if it's a mental health topic that your training should handle
-    if is_mental_health_related(user_input):
-        print("MENTAL HEALTH TOPIC: Searching your training data...")
-        
-        # Find the best content from your training data
-        best_content = find_best_training_content(user_input)
-        
-        if best_content:
-            # Use your training content directly
-            response = best_content
-            
-            # Add context-appropriate suggestions that work as calendar reminders
-            user_lower = user_input.lower()
-            suggestions = []
-            
-            if any(word in user_lower for word in ['work', 'job', 'workplace', 'boss', 'colleague']):
-                suggestions = [
-                    'Take a 10-minute break every hour',
-                    'Practice deep breathing before meetings', 
-                    'Set work-life boundaries',
-                    'Schedule time for lunch away from desk'
-                ]
-            elif any(word in user_lower for word in ['anxious', 'nervous', 'worried', 'panic']):
-                suggestions = [
-                    'Practice 4-7-8 breathing technique',
-                    'Do 5-minute grounding exercise',
-                    'Take a short walk outside',
-                    'Listen to calming music'
-                ]
-            elif any(word in user_lower for word in ['sad', 'down', 'depressed', 'low']):
-                suggestions = [
-                    'Call a friend or family member',
-                    'Do one small self-care activity',
-                    'Write in a gratitude journal',
-                    'Get some sunlight or fresh air'
-                ]
-            elif any(word in user_lower for word in ['relationship', 'partner', 'friend', 'family']):
-                suggestions = [
-                    'Practice active listening',
-                    'Express appreciation to someone',
-                    'Set healthy communication boundaries',
-                    'Schedule quality time together'
-                ]
-            elif any(word in user_lower for word in ['stress', 'overwhelmed', 'pressure']):
-                suggestions = [
-                    'Break large tasks into smaller steps',
-                    'Practice 5-minute meditation',
-                    'Take three deep breaths',
-                    'Prioritize your top 3 tasks'
-                ]
-            elif any(word in user_lower for word in ['sleep', 'tired', 'exhausted']):
-                suggestions = [
-                    'Set a consistent bedtime routine',
-                    'Avoid screens 1 hour before bed',
-                    'Try progressive muscle relaxation',
-                    'Keep bedroom cool and dark'
-                ]
-            else:
-                suggestions = [
-                    'Take 5 deep breaths mindfully',
-                    'Do something kind for yourself',
-                    'Check in with your feelings',
-                    'Practice one minute of gratitude'
-                ]
-            
-            print(f"USING YOUR TRAINING DATA: {response[:100]}...")
-            
-            return {
-                "response": response,
-                "suggestions": suggestions
-            }
-        else:
-            print("NO MATCH in training data for mental health topic - using Gemini...")
-            return ask_gemini(user_input, quiz_summary)
-    
+    if any(word in user_lower for word in ['work', 'job', 'office', 'boss']):
+        return [
+            'Take a 10-minute break',
+            'Practice desk breathing exercises',
+            'Set a boundary with work time',
+            'Connect with a supportive colleague'
+        ]
+    elif any(word in user_lower for word in ['anxious', 'anxiety', 'worried', 'nervous']):
+        return [
+            'Try 4-7-8 breathing technique',
+            'Do a 5-minute grounding exercise',
+            'Take a short mindful walk',
+            'Listen to calming music'
+        ]
+    elif any(word in user_lower for word in ['sad', 'depressed', 'down', 'low']):
+        return [
+            'Reach out to someone who cares',
+            'Do one small self-care activity',
+            'Write three things you\'re grateful for',
+            'Get some sunlight or fresh air'
+        ]
+    elif any(word in user_lower for word in ['stress', 'overwhelmed', 'pressure']):
+        return [
+            'Break tasks into smaller steps',
+            'Practice 5-minute meditation',
+            'Take three conscious breaths',
+            'Prioritize your most important tasks'
+        ]
     else:
-        # Not a mental health topic - use Gemini for general questions
-        print("GENERAL TOPIC: Using Gemini...")
-        return ask_gemini(user_input, quiz_summary)
+        return [
+            'Take a moment for deep breathing',
+            'Check in with your emotions',
+            'Practice self-compassion',
+            'Do something nurturing for yourself'
+        ]
 
-# Load models on startup
+def load_models():
+    """Load training data and set up Gemini"""
+    global knowledge_corpus, config
+    
+    print("🚀 Starting MAI - Your training data + Gemini fallback...")
+    
+    # Load training data
+    try:
+        artifacts_dir = "./mai_artifacts"
+        print(f"📁 Looking for trained models in: {artifacts_dir}")
+        
+        with open(os.path.join(artifacts_dir, "knowledge_corpus.pkl"), "rb") as f:
+            knowledge_corpus = pickle.load(f)
+        print(f"✅ Loaded {len(knowledge_corpus)} mental health knowledge entries")
+        
+        if knowledge_corpus:
+            print("📖 Sample training data:")
+            for i, entry in enumerate(knowledge_corpus[:2]):
+                print(f"   {i+1}. {entry[:50]}...")
+        
+        try:
+            with open(os.path.join(artifacts_dir, "config.json"), "r") as f:
+                config = json.load(f)
+            print("✅ Loaded training config")
+        except:
+            print("⚠️  No config file found")
+            
+    except Exception as e:
+        print(f"❌ Could not load training data: {e}")
+        knowledge_corpus = []
+    
+    # Set up Gemini
+    gemini_success = setup_gemini()
+    
+    print("\n🎯 AI System Ready!")
+    print(f"   📚 Training entries: {len(knowledge_corpus)}")
+    print(f"   🤖 Gemini fallback: {'✅ Available' if gemini_success else '❌ Not available'}")
+    print(f"   🔄 Strategy: Training data first, then Gemini")
+
+# Initialize on startup
 load_models()
 
 @app.get("/health")
 async def health_check():
     return {
-        "status": "operational - your training data + Gemini fallback",
-        "knowledge_entries": len(knowledge_corpus),
-        "gemini_available": GEMINI_AVAILABLE,
-        "system": "Mental health training FIRST, Gemini for everything else",
-        "ready": len(knowledge_corpus) > 0
+        "status": "operational",
+        "training_entries": len(knowledge_corpus),
+        "gemini_available": gemini_model is not None,
+        "gemini_library_installed": GEMINI_AVAILABLE,
+        "api_key_found": bool(os.getenv('GEMINI_API_KEY')),
+        "strategy": "Training data first, Gemini fallback"
     }
 
 @app.post("/generate", response_model=ChatResponse)
 async def generate_response_endpoint(request: ChatRequest):
     try:
         user_input = request.user_input.strip()
-        print(f"\nRECEIVED REQUEST: {user_input}")
+        print(f"\n💬 REQUEST: {user_input}")
         
         if not user_input:
             return ChatResponse(response="I'm here to listen. What's on your mind?")
         
-        if not knowledge_corpus:
-            return ChatResponse(response="I'm having trouble accessing my knowledge. Let me try to help anyway - what's going on?")
+        # Check if it's a physical health question
+        physical_terms = ['knee', 'back', 'shoulder', 'hurt', 'pain', 'sick', 'fever']
+        if any(term in user_input.lower() for term in physical_terms):
+            print("🏥 Physical health question detected")
+            return ChatResponse(
+                response="I focus on mental health support. For physical health concerns, I'd recommend speaking with a healthcare professional. Is there anything about how this situation is affecting you emotionally that I can help with?",
+                suggestions=["How is this affecting your mood?", "Any stress about the situation?", "Want to talk about your feelings?", "Need emotional support?"]
+            )
         
-        # Generate response using your training data first, Gemini fallback
-        result = generate_response(user_input, request.quiz_summary)
+        # First, try training data
+        training_match = find_training_data_match(user_input)
         
-        print(f"SENDING RESPONSE: {result['response'][:100]}...")
+        if training_match:
+            # Use training data + topic-based suggestions
+            suggestions = generate_suggestions_for_topic(user_input)
+            print(f"✅ Response: Training data + topic suggestions")
+            return ChatResponse(
+                response=training_match,
+                suggestions=suggestions
+            )
         
+        # No training data match - use Gemini
+        print("🤖 No training match - using Gemini...")
+        result = call_gemini(user_input, request.quiz_summary)
+        
+        print(f"✅ Response: Gemini AI")
         return ChatResponse(
             response=result['response'],
-            suggestions=result.get('suggestions', [])
+            suggestions=result['suggestions']
         )
         
     except Exception as e:
-        print(f"ERROR: {e}")
-        import traceback
-        traceback.print_exc()
-        return ChatResponse(response="I'm here to help. Can you tell me more about what's on your mind?")
+        print(f"❌ ERROR: {e}")
+        return ChatResponse(
+            response="I'm here to support you. Can you tell me more about what you're experiencing?",
+            suggestions=["Take a deep breath", "Ground yourself", "Be kind to yourself", "You're not alone"]
+        )
 
-@app.get("/debug/corpus")
-async def debug_corpus():
-    return {
-        "total_entries": len(knowledge_corpus),
-        "sample_entries": knowledge_corpus[:5] if knowledge_corpus else [],
-        "entry_types": [type(entry).__name__ for entry in knowledge_corpus[:5]],
-        "gemini_available": GEMINI_AVAILABLE
-    }
-
-@app.get("/debug/search/{query}")
-async def debug_search(query: str):
-    if is_physical_health_question(query):
-        return {
-            "query": query,
-            "physical_health_detected": True,
-            "results": "Redirected to physical health response"
-        }
-    
-    is_mental_health = is_mental_health_related(query)
-    best_content = None
-    
-    if is_mental_health:
-        best_content = find_best_training_content(query)
-    
+@app.get("/test-gemini/{query}")
+async def test_gemini_directly(query: str):
+    """Test Gemini directly"""
+    result = call_gemini(query)
     return {
         "query": query,
-        "is_mental_health_topic": is_mental_health,
-        "best_match": best_content[:200] + "..." if best_content else None,
-        "total_training_entries": len(knowledge_corpus),
-        "will_use_gemini": not is_mental_health or (is_mental_health and not best_content),
-        "gemini_available": GEMINI_AVAILABLE
+        "gemini_available": gemini_model is not None,
+        "response": result['response'],
+        "suggestions": result['suggestions']
     }
 
 if __name__ == "__main__":
