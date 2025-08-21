@@ -6,3 +6,4 @@ faiss-cpu
 numpy
 pydantic
 python-dotenv
+google-generativeai
