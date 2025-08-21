@@ -41,9 +41,27 @@
     <section class="card right">
       <h2 class="title soft">Reminders</h2>
       <p class="caring-instruction glowing-text">Fueled by your personal quiz results and our conversations</p>
-      <p class="muted" id="remindersEmpty">No reminders yet</p>
-      <div id="reminderList" class="rem-list"></div>
-      <button class="cta pill soft" id="addCalBtn" onclick="addWellnessReminder()">Add Reminders to your Calendar</button>
+      
+      <!-- Current reminders -->
+      <div id="currentReminders" style="margin-bottom: 20px;">
+        <p class="muted" id="remindersEmpty">No reminders yet</p>
+        <div id="reminderList" class="rem-list"></div>
+      </div>
+
+      <!-- Recommendations section -->
+      <div id="recommendationsSection" style="display: none;">
+        <h3 style="color: var(--ink); font-size: 18px; margin: 15px 0 10px;">MAI's Recommendations</h3>
+        <div id="recommendationsList" class="recommendations-list">
+          <!-- Recommendations will be populated here -->
+        </div>
+        <div style="margin: 15px 0 10px; display: flex; gap: 10px; align-items: center;">
+          <button class="pill small-pill" onclick="selectAllRecommendations()">Select All</button>
+          <button class="pill small-pill" onclick="clearAllRecommendations()">Clear All</button>
+          <span id="selectedCount" style="font-size: 14px; color: var(--muted);">0 selected</span>
+        </div>
+      </div>
+
+      <button class="cta pill soft" id="addCalBtn" onclick="addSelectedToCalendar()">Add Selected to Calendar</button>
     </section>
 
     <!-- mai chat interface -->
@@ -64,7 +82,32 @@
     </section>
   </main>
 
+  <!-- Google Calendar Auth Modal -->
+  <div id="calendarAuthModal" class="calendar-modal" style="display: none;">
+    <div class="calendar-modal-content">
+      <div class="calendar-modal-header">
+        <h3>Connect Google Calendar</h3>
+        <button class="modal-close" onclick="closeCalendarModal()">&times;</button>
+      </div>
+      <div class="calendar-modal-body">
+        <p>To add your selected reminders to Google Calendar, please connect your account:</p>
+        <div id="selectedItemsPreview" class="selected-items-preview">
+          <!-- Selected items will be shown here -->
+        </div>
+        <div style="margin-top: 20px; text-align: center;">
+          <button class="pill" onclick="connectGoogleCalendar()" style="background: #4285f4; font-size: 16px; padding: 15px 30px;">
+            Connect Google Calendar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // Global variables for recommendations
+    let currentRecommendations = [];
+    let selectedRecommendations = new Set();
+
     // load user data and update UI
     function loadUserInterface(){
       const user = localStorage.getItem('username')
@@ -105,24 +148,19 @@
 
     // logout functionality
     function handleLogout() {
-      // confirm logout
       if (confirm('Are you sure you want to log out?')) {
-        // clear all user data
         localStorage.removeItem('username')
         localStorage.removeItem('email')
-        
-        // update UI immediately
         loadUserInterface()
-        
-        // show success message
         alert('Logged out successfully!')
         
-        // clear chat history
+        // clear chat history and recommendations
         document.getElementById('chatFeed').innerHTML = `
           <div class="mai-welcome">
             <strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜
           </div>
         `
+        clearRecommendations()
       }
     }
 
@@ -158,7 +196,6 @@
       const quizSummary = `${personality}, ${stress}, ${love}, ${quiz21}`.replace(/^,+|,+$/g, '')
       
       try {
-        // call backend API (which calls FastAPI)
         const response = await fetch('http://localhost:5000/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -175,17 +212,10 @@
         // add AI response to chat
         appendChatMessage('MAI: ' + aiResponse)
         
-        // show suggestions if available
+        // handle recommendations separately
         if (data.suggestions && data.suggestions.length > 0) {
-          const suggestionText = 'Suggestions: ' + data.suggestions.join(', ')
-          appendChatMessage(suggestionText, 'suggestion')
-        }
-        
-        // suggest calendar reminder for certain keywords
-        if (message.toLowerCase().includes('remind') || message.toLowerCase().includes('forget')) {
-          setTimeout(() => {
-            appendChatMessage('MAI: Would you like me to add a wellness reminder to your calendar? Click the button above!')
-          }, 1000)
+          appendRecommendationsBubble(data.suggestions)
+          addRecommendationsToSidebar(data.suggestions)
         }
         
       } catch (error) {
@@ -208,11 +238,6 @@
         messageDiv.style.background = '#f0c6ff'
         messageDiv.style.marginLeft = '20px'
         messageDiv.style.textAlign = 'right'
-      } else if (type === 'suggestion') {
-        messageDiv.style.background = '#e8f4fd'
-        messageDiv.style.border = '1px solid #bee5eb'
-        messageDiv.style.fontSize = '14px'
-        messageDiv.style.fontStyle = 'italic'
       } else {
         messageDiv.style.background = '#fff'
         messageDiv.style.border = '1px solid #e0e0e0'
@@ -222,8 +247,105 @@
       chatFeed.scrollTop = chatFeed.scrollHeight
     }
 
-    // add wellness reminder
-    async function addWellnessReminder() {
+    // add recommendations bubble to chat
+    function appendRecommendationsBubble(suggestions) {
+      const chatFeed = document.getElementById('chatFeed')
+      const recommendationsDiv = document.createElement('div')
+      
+      recommendationsDiv.style.cssText = `
+        margin: 8px 0; padding: 12px; border-radius: 12px;
+        background: linear-gradient(135deg, #e8f4fd, #d1ecf1);
+        border: 2px solid #bee5eb; font-size: 14px;
+      `
+      
+      let content = '<strong>💡 Recommendations:</strong><br>'
+      suggestions.forEach((suggestion, index) => {
+        content += `<span style="display: block; margin: 4px 0; padding: 4px 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">• ${suggestion}</span>`
+      })
+      
+      recommendationsDiv.innerHTML = content
+      chatFeed.appendChild(recommendationsDiv)
+      chatFeed.scrollTop = chatFeed.scrollHeight
+    }
+
+    // add recommendations to sidebar
+    function addRecommendationsToSidebar(suggestions) {
+      currentRecommendations = [...currentRecommendations, ...suggestions]
+      displayRecommendations()
+    }
+
+    // display recommendations in sidebar
+    function displayRecommendations() {
+      const recommendationsSection = document.getElementById('recommendationsSection')
+      const recommendationsList = document.getElementById('recommendationsList')
+      
+      if (currentRecommendations.length === 0) {
+        recommendationsSection.style.display = 'none'
+        return
+      }
+      
+      recommendationsSection.style.display = 'block'
+      recommendationsList.innerHTML = ''
+      
+      currentRecommendations.forEach((recommendation, index) => {
+        const recDiv = document.createElement('div')
+        recDiv.className = 'recommendation-item'
+        recDiv.innerHTML = `
+          <input type="checkbox" id="rec_${index}" onchange="toggleRecommendation(${index}, this.checked)">
+          <label for="rec_${index}" style="margin-left: 8px; font-size: 14px; cursor: pointer;">${recommendation}</label>
+        `
+        recommendationsList.appendChild(recDiv)
+      })
+      
+      updateSelectedCount()
+    }
+
+    // toggle recommendation selection
+    function toggleRecommendation(index, checked) {
+      if (checked) {
+        selectedRecommendations.add(index)
+      } else {
+        selectedRecommendations.delete(index)
+      }
+      updateSelectedCount()
+    }
+
+    // select all recommendations
+    function selectAllRecommendations() {
+      currentRecommendations.forEach((_, index) => {
+        selectedRecommendations.add(index)
+        document.getElementById(`rec_${index}`).checked = true
+      })
+      updateSelectedCount()
+    }
+
+    // clear all recommendations
+    function clearAllRecommendations() {
+      selectedRecommendations.clear()
+      currentRecommendations.forEach((_, index) => {
+        document.getElementById(`rec_${index}`).checked = false
+      })
+      updateSelectedCount()
+    }
+
+    // update selected count display
+    function updateSelectedCount() {
+      const count = selectedRecommendations.size
+      document.getElementById('selectedCount').textContent = `${count} selected`
+      
+      // Update button text
+      const addBtn = document.getElementById('addCalBtn')
+      if (count > 0) {
+        addBtn.textContent = `Add ${count} Selected to Calendar`
+        addBtn.style.background = 'linear-gradient(135deg, #7dd87d, #5cb85c)'
+      } else {
+        addBtn.textContent = 'Add Selected to Calendar'
+        addBtn.style.background = ''
+      }
+    }
+
+    // add selected recommendations to calendar
+    function addSelectedToCalendar() {
       const username = localStorage.getItem('username')
       
       if (!username) {
@@ -231,40 +353,53 @@
         return
       }
       
-      // create reminder for tomorrow at 10 AM
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      tomorrow.setHours(10, 0, 0, 0)
+      if (selectedRecommendations.size === 0) {
+        alert('Please select at least one recommendation to add to your calendar.')
+        return
+      }
       
-      const reminderData = {
-        title: 'MAI wellness check-in',
-        description: 'Time for a quick mental health check-in. How are you feeling today?',
-        datetime: tomorrow.toISOString(),
-        username: username
-      }
+      // Show selected items and Google auth modal
+      showCalendarAuthModal()
+    }
 
-      try {
-        const response = await fetch('http://localhost:5000/api/calendar/add-reminder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(reminderData)
-        })
-        
-        const result = await response.json()
-        
-        if (result.success) {
-          alert('Wellness reminder added to your calendar!')
-          loadReminders()
-        } else if (result.authUrl) {
-          window.open(result.authUrl, '_blank')
-          alert('Please connect your Google Calendar first, then try again')
-        } else {
-          alert('Couldn\'t add reminder: ' + (result.error || 'Unknown error'))
-        }
-      } catch (error) {
-        console.error('Calendar error:', error)
-        alert('Something went wrong with the calendar integration')
-      }
+    // show calendar authentication modal
+    function showCalendarAuthModal() {
+      const modal = document.getElementById('calendarAuthModal')
+      const preview = document.getElementById('selectedItemsPreview')
+      
+      // Show selected recommendations
+      let previewHTML = '<h4>Selected Reminders:</h4><ul>'
+      selectedRecommendations.forEach(index => {
+        previewHTML += `<li>${currentRecommendations[index]}</li>`
+      })
+      previewHTML += '</ul>'
+      
+      preview.innerHTML = previewHTML
+      modal.style.display = 'flex'
+    }
+
+    // close calendar modal
+    function closeCalendarModal() {
+      document.getElementById('calendarAuthModal').style.display = 'none'
+    }
+
+    // connect to Google Calendar
+    function connectGoogleCalendar() {
+      const username = localStorage.getItem('username')
+      const selectedItems = Array.from(selectedRecommendations).map(index => currentRecommendations[index])
+      
+      // Store selected items for after auth
+      localStorage.setItem('pendingCalendarItems', JSON.stringify(selectedItems))
+      
+      // Redirect to Google OAuth
+      window.location.href = `http://localhost:5000/api/calendar/auth?username=${username}&return=calendar_add`
+    }
+
+    // clear recommendations
+    function clearRecommendations() {
+      currentRecommendations = []
+      selectedRecommendations.clear()
+      document.getElementById('recommendationsSection').style.display = 'none'
     }
 
     // load existing reminders
@@ -313,8 +448,56 @@
     if (urlParams.get('calendar') === 'connected') {
       alert('Calendar connected! You can now add reminders')
       loadReminders()
+      
+      // Check if we have pending calendar items to add
+      const pendingItems = localStorage.getItem('pendingCalendarItems')
+      if (pendingItems) {
+        addPendingItemsToCalendar(JSON.parse(pendingItems))
+        localStorage.removeItem('pendingCalendarItems')
+      }
     } else if (urlParams.get('calendar') === 'error') {
       alert('Calendar connection failed')
+    }
+
+    // add pending items to calendar after successful auth
+    async function addPendingItemsToCalendar(items) {
+      const username = localStorage.getItem('username')
+      
+      try {
+        for (const item of items) {
+          const tomorrow = new Date()
+          tomorrow.setDate(tomorrow.getDate() + 1)
+          tomorrow.setHours(10, 0, 0, 0)
+          
+          const reminderData = {
+            title: `MAI Reminder: ${item}`,
+            description: `Wellness reminder from MAI: ${item}`,
+            datetime: tomorrow.toISOString(),
+            username: username
+          }
+
+          const response = await fetch('http://localhost:5000/api/calendar/add-reminder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reminderData)
+          })
+          
+          const result = await response.json()
+          if (!result.success) {
+            console.error('Failed to add reminder:', item)
+          }
+        }
+        
+        alert(`Successfully added ${items.length} reminders to your calendar!`)
+        loadReminders()
+        
+        // Clear selected recommendations
+        clearRecommendations()
+        
+      } catch (error) {
+        console.error('Error adding reminders:', error)
+        alert('There was an error adding some reminders to your calendar.')
+      }
     }
 
     // initialize everything when page loads
@@ -322,6 +505,14 @@
       loadUserInterface()
       loadReminders()
     })
+
+    // close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('calendarAuthModal')
+      if (event.target === modal) {
+        closeCalendarModal()
+      }
+    }
   </script>
 </body>
 </html>

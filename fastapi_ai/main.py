@@ -1,20 +1,21 @@
-# mai fastapi - Semantic understanding with sentence embeddings
+# mai fastapi - Reliable system using your actual training data
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import os, json, pickle
-import numpy as np
+import re
+import random
 
-# Try to import AI libraries for semantic understanding
-try:
-    from sentence_transformers import SentenceTransformer
-    import faiss
-    SEMANTIC_AVAILABLE = True
-    print("Semantic understanding libraries available")
-except ImportError:
-    SEMANTIC_AVAILABLE = False
-    print("Semantic libraries not available - using keyword fallback")
+app = FastAPI(title="MAI Mental Health AI - Using Real Training Data")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ChatRequest(BaseModel):
     user_input: str
@@ -23,292 +24,271 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
-    suggestions: Optional[List[str]] = []
-
-print("Starting MAI with semantic understanding...")
-
-app = FastAPI(title="MAI AI Backend", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"]
-)
+    suggestions: List[str] = []
 
 # Global variables
-KNOWLEDGE_CORPUS = []
-FAISS_INDEX = None
-ENCODER_MODEL = None
-MODEL_LOADED = False
+knowledge_corpus = []
+config = {}
 
-def load_semantic_model():
-    """Load semantic understanding components"""
-    global KNOWLEDGE_CORPUS, FAISS_INDEX, ENCODER_MODEL, MODEL_LOADED
+# Enhanced keyword mapping that will find your training content
+KEYWORD_TO_CONTENT = {
+    # Work/Career stress
+    'work': ['work', 'job', 'career', 'workplace', 'office', 'boss', 'colleague', 'professional', 'deadline', 'meeting', 'project'],
+    'stress': ['stress', 'stressed', 'pressure', 'overwhelmed', 'busy', 'burnout', 'exhausted'],
+    
+    # Anxiety and worry
+    'anxiety': ['anxious', 'anxiety', 'nervous', 'worried', 'panic', 'fear', 'scared'],
+    'worry': ['worry', 'worrying', 'concern', 'concerned', 'afraid'],
+    
+    # Sadness and depression
+    'sad': ['sad', 'sadness', 'down', 'low', 'blue', 'depressed', 'depression'],
+    'hurt': ['hurt', 'pain', 'upset', 'disappointed', 'heartbroken'],
+    
+    # Relationships
+    'relationship': ['relationship', 'partner', 'boyfriend', 'girlfriend', 'husband', 'wife', 'dating'],
+    'fight': ['fight', 'argument', 'conflict', 'disagree', 'angry', 'mad'],
+    'family': ['family', 'parent', 'mother', 'father', 'sibling', 'child'],
+    'friend': ['friend', 'friendship', 'social', 'lonely', 'alone'],
+    
+    # Self-esteem and confidence
+    'confidence': ['confidence', 'self-esteem', 'self-worth', 'insecure', 'doubt'],
+    'failure': ['failure', 'failed', 'not good enough', 'inadequate', 'worthless'],
+    
+    # Sleep and energy
+    'sleep': ['sleep', 'sleeping', 'insomnia', 'tired', 'exhausted', 'rest'],
+    'energy': ['energy', 'motivation', 'drive', 'focus', 'lazy', 'unmotivated'],
+    
+    # General emotional support
+    'feeling': ['feeling', 'feel', 'emotion', 'emotional', 'mood'],
+    'help': ['help', 'support', 'advice', 'guidance', 'assistance']
+}
+
+def load_models():
+    """Load the trained knowledge base"""
+    global knowledge_corpus, config
     
     try:
-        artifacts_path = os.getenv('ARTIFACTS_PATH', './mai_artifacts')
-        print(f"Loading semantic model from: {artifacts_path}")
+        print("Starting MAI - Using your real training data...")
+        artifacts_dir = "./mai_artifacts"
+        print(f"Looking for trained models in: {artifacts_dir}")
         
         # Load knowledge corpus
-        corpus_path = f"{artifacts_path}/knowledge_corpus.pkl"
-        if os.path.exists(corpus_path):
-            with open(corpus_path, 'rb') as f:
-                KNOWLEDGE_CORPUS = pickle.load(f)
-            print(f"SUCCESS: Loaded {len(KNOWLEDGE_CORPUS)} knowledge entries")
-        else:
-            print("ERROR: Knowledge corpus not found")
-            return False
+        with open(os.path.join(artifacts_dir, "knowledge_corpus.pkl"), "rb") as f:
+            knowledge_corpus = pickle.load(f)
+        print(f"SUCCESS: Loaded {len(knowledge_corpus)} real mental health knowledge entries")
         
-        if SEMANTIC_AVAILABLE:
-            # Load sentence transformer for encoding new queries
-            ENCODER_MODEL = SentenceTransformer('all-MiniLM-L6-v2')
-            print("SUCCESS: Loaded sentence transformer")
-            
-            # Load FAISS index for fast similarity search
-            faiss_path = f"{artifacts_path}/faiss_index.bin"
-            if os.path.exists(faiss_path):
-                FAISS_INDEX = faiss.read_index(faiss_path)
-                print(f"SUCCESS: Loaded FAISS index with {FAISS_INDEX.ntotal} vectors")
-            else:
-                print("WARNING: FAISS index not found - using keyword fallback")
+        # Show sample of your training data
+        if knowledge_corpus:
+            print("Sample of your training data:")
+            for i, entry in enumerate(knowledge_corpus[:3]):
+                print(f"  Entry {i+1}: {entry[:60]}...")
         
-        MODEL_LOADED = True
-        return True
+        # Load config
+        try:
+            with open(os.path.join(artifacts_dir, "config.json"), "r") as f:
+                config = json.load(f)
+            print(f"SUCCESS: Loaded training config")
+        except:
+            print("Config file not found, continuing without it")
+        
+        print("AI system ready to use YOUR training data!")
         
     except Exception as e:
-        print(f"ERROR loading semantic model: {e}")
-        return False
+        print(f"ERROR loading models: {e}")
+        raise
 
-def is_physical_health(query):
-    """Check if query is about physical health"""
-    physical_keywords = [
-        'knee', 'back', 'shoulder', 'neck', 'pain', 'hurt', 'ache', 'injury',
-        'muscle', 'joint', 'bone', 'headache', 'migraine', 'stomach', 'nausea',
-        'fever', 'cold', 'flu', 'sick', 'illness', 'medical', 'doctor'
-    ]
-    
-    query_lower = query.lower()
-    physical_count = sum(1 for keyword in physical_keywords if keyword in query_lower)
-    
-    # If multiple physical health indicators, it's probably not mental health
-    if physical_count >= 1:
-        print(f"PHYSICAL HEALTH DETECTED: {physical_count} indicators")
-        return True
-    
-    return False
-
-def semantic_search(user_input, top_k=3):
-    """Use semantic similarity to find relevant content"""
-    if not SEMANTIC_AVAILABLE or not ENCODER_MODEL or not FAISS_INDEX:
-        print("SEMANTIC SEARCH NOT AVAILABLE - using keyword fallback")
-        return keyword_search(user_input, top_k)
-    
-    try:
-        print(f"SEMANTIC SEARCH for: {user_input}")
+def find_best_training_content(user_input: str) -> str:
+    """Find the best match from your actual training data"""
+    if not knowledge_corpus:
+        print("ERROR: No training data loaded")
+        return None
         
-        # Encode the user's query into the same vector space as training data
-        query_embedding = ENCODER_MODEL.encode([user_input])
-        
-        # Normalize for cosine similarity
-        faiss.normalize_L2(query_embedding.astype('float32'))
-        
-        # Search for most similar content
-        similarities, indices = FAISS_INDEX.search(query_embedding.astype('float32'), top_k)
-        
-        results = []
-        for i, (similarity, idx) in enumerate(zip(similarities[0], indices[0])):
-            if similarity > 0.4:  # Similarity threshold (0.4 = moderately similar)
-                content = KNOWLEDGE_CORPUS[idx]
-                results.append({
-                    'content': content,
-                    'similarity': float(similarity),
-                    'index': idx
-                })
-                print(f"SEMANTIC MATCH {i+1} (similarity: {similarity:.3f}): {content[:80]}...")
-        
-        print(f"Found {len(results)} semantic matches")
-        return results
-        
-    except Exception as e:
-        print(f"SEMANTIC SEARCH ERROR: {e}")
-        return keyword_search(user_input, top_k)
-
-def keyword_search(user_input, top_k=3):
-    """Fallback keyword search when semantic search isn't available"""
-    print(f"KEYWORD SEARCH for: {user_input}")
-    
     user_lower = user_input.lower()
     user_words = set(user_lower.split())
     
-    # Contextual keyword mapping
-    context_keywords = {
-        'work_stress': {
-            'triggers': ['work', 'job', 'workplace', 'boss', 'career', 'deadline', 'meeting'],
-            'related': ['stress', 'anxiety', 'burnout', 'overwhelmed', 'pressure']
-        },
-        'relationship_issues': {
-            'triggers': ['relationship', 'partner', 'boyfriend', 'girlfriend', 'marriage'],
-            'related': ['fight', 'argument', 'communication', 'love', 'breakup']
-        },
-        'anxiety_stress': {
-            'triggers': ['anxious', 'anxiety', 'nervous', 'worried', 'panic'],
-            'related': ['breathing', 'calm', 'relax', 'ground']
-        },
-        'depression_sadness': {
-            'triggers': ['sad', 'depressed', 'down', 'depression'],
-            'related': ['feelings', 'valid', 'motivation', 'energy']
-        },
-        'overwhelm': {
-            'triggers': ['overwhelmed', 'too much', 'busy', 'stressed'],
-            'related': ['tasks', 'break', 'pieces', 'small', 'progress']
-        }
-    }
+    print(f"SEARCHING your {len(knowledge_corpus)} training entries for: '{user_input}'")
     
-    # Find context matches
-    context_scores = {}
-    for context, keywords in context_keywords.items():
-        score = 0
-        # Check for trigger words (higher weight)
-        for trigger in keywords['triggers']:
-            if trigger in user_lower:
-                score += 3
-        # Check for related words
-        for related in keywords['related']:
-            if related in user_lower:
-                score += 1
-        
-        if score > 0:
-            context_scores[context] = score
-            print(f"CONTEXT MATCH: {context} (score: {score})")
+    # Find matches by checking how many keywords overlap
+    matches = []
     
-    # Find best matching content based on context
-    results = []
-    if context_scores:
-        # Get the top context
-        best_context = max(context_scores.keys(), key=lambda x: context_scores[x])
-        print(f"BEST CONTEXT: {best_context}")
-        
-        # Search for content related to this context
-        context_terms = context_keywords[best_context]['triggers'] + context_keywords[best_context]['related']
-        
-        for i, entry in enumerate(KNOWLEDGE_CORPUS):
-            if isinstance(entry, str):
-                entry_lower = entry.lower()
-                entry_words = set(entry_lower.split())
-                
-                # Calculate contextual relevance
-                relevance = 0
-                for term in context_terms:
-                    if term in entry_lower:
-                        relevance += 2 if term in context_keywords[best_context]['triggers'] else 1
-                
-                if relevance > 0:
-                    results.append({
-                        'content': entry,
-                        'similarity': relevance / 10,  # Normalize to 0-1 scale
-                        'index': i
-                    })
+    for i, entry in enumerate(knowledge_corpus):
+        if isinstance(entry, str):
+            entry_lower = entry.lower()
+            entry_words = set(entry_lower.split())
+            
+            # Count word overlaps
+            overlap_count = len(user_words.intersection(entry_words))
+            
+            # Also check for keyword matches
+            keyword_matches = 0
+            for keyword_group in KEYWORD_TO_CONTENT.values():
+                for keyword in keyword_group:
+                    if keyword in user_lower and keyword in entry_lower:
+                        keyword_matches += 2
+            
+            total_score = overlap_count + keyword_matches
+            
+            if total_score > 0:
+                matches.append({
+                    'entry': entry,
+                    'score': total_score,
+                    'index': i
+                })
     
-    # Sort by relevance and return top results
-    results.sort(key=lambda x: x['similarity'], reverse=True)
-    return results[:top_k]
+    # Sort by score and return best match
+    if matches:
+        matches.sort(key=lambda x: x['score'], reverse=True)
+        best_match = matches[0]
+        
+        print(f"BEST MATCH (score {best_match['score']}): {best_match['entry'][:80]}...")
+        print(f"Found {len(matches)} total matches in your training data")
+        
+        return best_match['entry']
+    
+    print("NO MATCHES found in your training data")
+    return None
 
-def create_contextual_response(user_input, search_results):
-    """Create response with context awareness"""
-    if not search_results:
-        if is_physical_health(user_input):
-            return "I'm specifically trained for mental health support. For physical health concerns, I'd recommend speaking with a healthcare professional. Is there anything about how this is affecting you emotionally that I can help with?"
-        else:
-            return "I want to help you with that. Can you tell me more about what you're experiencing? I'm here to support your mental wellbeing."
-    
-    # Use the best match
-    best_match = search_results[0]
-    content = best_match['content']
-    similarity = best_match['similarity']
-    
-    print(f"USING CONTENT (similarity: {similarity:.3f}): {content}")
-    
-    # Add contextual introduction based on user's emotional tone
+def is_physical_health_question(user_input: str) -> bool:
+    """Check if this is about physical health (outside mental health scope)"""
+    physical_terms = ['knee', 'back', 'shoulder', 'pain', 'hurt', 'ache', 'headache', 'sick', 'fever', 'cold', 'injury', 'medical', 'doctor visit']
     user_lower = user_input.lower()
     
-    # Detect emotional context and respond appropriately
-    if any(word in user_lower for word in ['work', 'job', 'workplace']):
-        if similarity > 0.6:
-            return content  # High confidence, use content directly
-        else:
-            return f"Work stress can be really challenging. {content}"
+    physical_count = sum(1 for term in physical_terms if term in user_lower)
     
-    elif any(word in user_lower for word in ['sad', 'depressed', 'down']):
-        if 'valid' in content.lower() or 'feeling' in content.lower():
-            return content
-        else:
-            return f"I hear that you're feeling down. {content}"
-    
-    elif any(word in user_lower for word in ['anxious', 'nervous', 'worried']):
-        return content
-    
-    elif any(word in user_lower for word in ['overwhelmed', 'stressed']):
-        return content
-    
-    else:
-        # General case
-        if similarity > 0.7:
-            return content
-        else:
-            return f"I understand what you're going through. {content}"
+    if physical_count >= 1:
+        print(f"PHYSICAL HEALTH DETECTED: {physical_count} indicators")
+        return True
+    return False
 
-# Load the semantic model
-models_loaded = load_semantic_model()
+def generate_response(user_input: str, quiz_summary: str = "") -> dict:
+    """Generate response using your actual training data"""
+    print(f"\n=== PROCESSING: {user_input} ===")
+    
+    # Check for physical health first
+    if is_physical_health_question(user_input):
+        return {
+            "response": "I'm specifically trained for mental health support. For physical health concerns, I'd recommend speaking with a healthcare professional. Is there anything about how this situation is affecting you emotionally that I can help with?",
+            "suggestions": ["How are you feeling about this?", "Any emotional impact?", "Want to talk about stress?"]
+        }
+    
+    # Find the best content from your training data
+    best_content = find_best_training_content(user_input)
+    
+    if best_content:
+        # Use your training content directly
+        response = best_content
+        
+        # Add context-appropriate suggestions that work as calendar reminders
+        user_lower = user_input.lower()
+        suggestions = []
+        
+        if any(word in user_lower for word in ['work', 'job', 'workplace', 'boss', 'colleague']):
+            suggestions = [
+                'Take a 10-minute break every hour',
+                'Practice deep breathing before meetings', 
+                'Set work-life boundaries',
+                'Schedule time for lunch away from desk'
+            ]
+        elif any(word in user_lower for word in ['anxious', 'nervous', 'worried', 'panic']):
+            suggestions = [
+                'Practice 4-7-8 breathing technique',
+                'Do 5-minute grounding exercise',
+                'Take a short walk outside',
+                'Listen to calming music'
+            ]
+        elif any(word in user_lower for word in ['sad', 'down', 'depressed', 'low']):
+            suggestions = [
+                'Call a friend or family member',
+                'Do one small self-care activity',
+                'Write in a gratitude journal',
+                'Get some sunlight or fresh air'
+            ]
+        elif any(word in user_lower for word in ['relationship', 'partner', 'friend', 'family']):
+            suggestions = [
+                'Practice active listening',
+                'Express appreciation to someone',
+                'Set healthy communication boundaries',
+                'Schedule quality time together'
+            ]
+        elif any(word in user_lower for word in ['stress', 'overwhelmed', 'pressure']):
+            suggestions = [
+                'Break large tasks into smaller steps',
+                'Practice 5-minute meditation',
+                'Take three deep breaths',
+                'Prioritize your top 3 tasks'
+            ]
+        elif any(word in user_lower for word in ['sleep', 'tired', 'exhausted']):
+            suggestions = [
+                'Set a consistent bedtime routine',
+                'Avoid screens 1 hour before bed',
+                'Try progressive muscle relaxation',
+                'Keep bedroom cool and dark'
+            ]
+        else:
+            suggestions = [
+                'Take 5 deep breaths mindfully',
+                'Do something kind for yourself',
+                'Check in with your feelings',
+                'Practice one minute of gratitude'
+            ]
+        
+        print(f"USING YOUR TRAINING DATA: {response[:100]}...")
+        
+        return {
+            "response": response,
+            "suggestions": suggestions
+        }
+    
+    # Fallback when no good match found
+    fallback_response = "I want to help you with that. Can you tell me more about what you're experiencing? I'm here to support your mental health and wellbeing."
+    
+    # Provide general wellness suggestions even for fallback
+    fallback_suggestions = [
+        'Take three deep mindful breaths',
+        'Do a quick body scan for tension',
+        'Practice self-compassion',
+        'Take a moment to acknowledge your feelings'
+    ]
+    
+    print("USING FALLBACK: No good match found in training data")
+    
+    return {
+        "response": fallback_response,
+        "suggestions": fallback_suggestions
+    }
+
+# Load models on startup
+load_models()
 
 @app.get("/health")
 async def health_check():
     return {
-        "status": "operational",
-        "semantic_available": SEMANTIC_AVAILABLE,
-        "knowledge_entries": len(KNOWLEDGE_CORPUS),
-        "faiss_index_size": FAISS_INDEX.ntotal if FAISS_INDEX else 0,
-        "understanding_method": "semantic" if SEMANTIC_AVAILABLE else "contextual_keywords"
+        "status": "operational - using your real training data",
+        "knowledge_entries": len(knowledge_corpus),
+        "system": "Direct content matching from your training",
+        "ready": len(knowledge_corpus) > 0
     }
 
 @app.post("/generate", response_model=ChatResponse)
-async def generate_response(request: ChatRequest):
+async def generate_response_endpoint(request: ChatRequest):
     try:
         user_input = request.user_input.strip()
-        print(f"\nPROCESSING: {user_input}")
+        print(f"\nRECEIVED REQUEST: {user_input}")
         
         if not user_input:
             return ChatResponse(response="I'm here to listen. What's on your mind?")
         
-        if not models_loaded:
-            return ChatResponse(response="I'm having trouble accessing my knowledge. Can you tell me more about what's on your mind?")
+        if not knowledge_corpus:
+            return ChatResponse(response="I'm having trouble accessing my knowledge. Let me try to help anyway - what's going on?")
         
-        # Check for physical health first
-        if is_physical_health(user_input):
-            response_text = "I'm specifically trained for mental health support. For physical health concerns, I'd recommend speaking with a healthcare professional. Is there anything about how this is affecting you emotionally that I can help with?"
-        else:
-            # Use semantic search if available, otherwise contextual keywords
-            search_results = semantic_search(user_input, top_k=3)
-            response_text = create_contextual_response(user_input, search_results)
+        # Generate response using your training data
+        result = generate_response(user_input, request.quiz_summary)
         
-        # Context-aware suggestions
-        suggestions = []
-        user_lower = user_input.lower()
-        
-        if any(word in user_lower for word in ["anxious", "nervous", "worried"]):
-            suggestions = ["Try deep breathing", "Practice grounding", "Take breaks"]
-        elif any(word in user_lower for word in ["sad", "depressed", "down"]):
-            suggestions = ["Reach out to someone", "Practice self-care", "Be patient with yourself"]
-        elif any(word in user_lower for word in ["work", "job", "workplace"]):
-            suggestions = ["Set work boundaries", "Take breaks", "Talk to supervisor if needed"]
-        elif any(word in user_lower for word in ["overwhelmed", "stressed"]):
-            suggestions = ["Break tasks into steps", "Prioritize self-care", "Ask for help"]
-        
-        print(f"RESPONSE: {response_text[:100]}...")
+        print(f"SENDING RESPONSE: {result['response'][:100]}...")
         
         return ChatResponse(
-            response=response_text,
-            suggestions=suggestions
+            response=result['response'],
+            suggestions=result.get('suggestions', [])
         )
         
     except Exception as e:
@@ -320,26 +300,26 @@ async def generate_response(request: ChatRequest):
 @app.get("/debug/corpus")
 async def debug_corpus():
     return {
-        "total_entries": len(KNOWLEDGE_CORPUS),
-        "sample_entries": KNOWLEDGE_CORPUS[:3] if KNOWLEDGE_CORPUS else [],
-        "semantic_available": SEMANTIC_AVAILABLE
+        "total_entries": len(knowledge_corpus),
+        "sample_entries": knowledge_corpus[:5] if knowledge_corpus else [],
+        "entry_types": [type(entry).__name__ for entry in knowledge_corpus[:5]]
     }
 
 @app.get("/debug/search/{query}")
 async def debug_search(query: str):
-    if is_physical_health(query):
+    if is_physical_health_question(query):
         return {
             "query": query,
             "physical_health_detected": True,
-            "results": []
+            "results": "Redirected to physical health response"
         }
     
-    results = semantic_search(query, top_k=5)
+    best_content = find_best_training_content(query)
     return {
         "query": query,
-        "search_method": "semantic" if SEMANTIC_AVAILABLE else "contextual_keywords",
-        "results_found": len(results),
-        "results": results
+        "best_match": best_content[:200] + "..." if best_content else None,
+        "total_training_entries": len(knowledge_corpus),
+        "match_found": best_content is not None
     }
 
 if __name__ == "__main__":
