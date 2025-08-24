@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap');
 
-/* color scheme and variables */
+/* COLOR scheme and variables - these control the whole app's look */
 :root{
   --bg1:#f0c6ff;
   --bg2:#c8b3ff;
@@ -19,7 +19,7 @@
   --muted:#4e3f7a;
 }
 
-/* basic reset */
+/* basic RESET - makes everything behave consistently */
 *{box-sizing:border-box}
 html,body{height:100%}
 
@@ -30,7 +30,7 @@ body{
   background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;
 }
 
-/* sticky header */
+/* STICKY header - stays at the top when you scroll */
 .topbar{
   position:sticky; top:0; z-index:15;
   display:flex; align-items:center; justify-content:space-between;
@@ -49,7 +49,7 @@ body{
 
 .top-actions{display:flex; gap:10px}
 
-/* button styles for everything */
+/* button STYLES for everything - this makes all buttons look consistent */
 .pill{
   display:inline-block;
   padding:12px 20px;
@@ -69,7 +69,7 @@ body{
 }
 .pill:active{transform:translateY(0) scale(.99)}
 
-/* Small pill for recommendation controls */
+/* Small PILL for recommendation controls */
 .small-pill {
   padding: 8px 16px;
   font-size: 13px;
@@ -100,37 +100,59 @@ body{
 
 .go-pro-btn:active{transform:translateY(0) scale(1.1)}
 
-/* glowing text for caring instructions */
+/* INVISIBLE instructions until box hover - with warm colors and jiggle! */
 .glowing-text{
-  color:var(--calm-green) !important; 
+  color: transparent !important; 
   font-weight:700 !important; 
   font-size:15px !important; 
-  text-shadow:0 0 10px var(--glow-green), 0 0 20px var(--glow-green), 0 0 30px var(--glow-green);
-  animation:gentle-glow 3s ease-in-out infinite alternate;
+  opacity: 0;
+  transition: all 0.5s ease;
+  cursor: pointer;
 }
 
-@keyframes gentle-glow {
-  from {
-    text-shadow:0 0 8px var(--glow-green), 0 0 15px var(--glow-green), 0 0 25px var(--glow-green);
-  }
-  to {
-    text-shadow:0 0 12px var(--glow-green), 0 0 25px var(--glow-green), 0 0 35px var(--glow-green);
-  }
-}
-
-/* caring instruction text (fallback for non-glowing) */
+/* caring INSTRUCTION text - completely invisible by default */
 .caring-instruction{
-  color:#6a4c93; font-weight:600; font-size:14px; 
+  color: transparent; 
+  font-weight:600; font-size:14px; 
   margin:0 0 16px; text-align:center; font-style:italic;
+  transition: all 0.5s ease;
+  opacity: 0;
+  cursor: pointer;
 }
 
-/* mai welcome message */
+/* SHOW instructions when hovering over the entire card - SOFTER PINK-PURPLE colors */
+.card:hover .glowing-text {
+  color: #c68fc4 !important;
+  opacity: 1;
+  text-shadow: 0 0 10px rgba(198, 143, 196, 0.7), 0 0 20px rgba(210, 160, 210, 0.5), 0 0 25px rgba(220, 170, 255, 0.3);
+  transform: translateY(-2px);
+  animation: gentle-jiggle 0.6s ease-in-out;
+}
+
+.card:hover .caring-instruction {
+  opacity: 1;
+  color: #b88ab8;
+  text-shadow: 0 0 8px rgba(184, 138, 184, 0.6), 0 0 15px rgba(200, 150, 220, 0.4);
+  transform: translateY(-1px);
+  animation: gentle-jiggle 0.6s ease-in-out;
+}
+
+/* gentle JIGGLE animation for discovered text */
+@keyframes gentle-jiggle {
+  0% { transform: translateY(-1px) rotate(0deg); }
+  25% { transform: translateY(-2px) rotate(-1deg); }
+  50% { transform: translateY(-1px) rotate(1deg); }
+  75% { transform: translateY(-2px) rotate(-0.5deg); }
+  100% { transform: translateY(-1px) rotate(0deg); }
+}
+
+/* mai WELCOME message */
 .mai-welcome{
   background:#f8f5ff; border:1px solid #e0d4ff; border-radius:12px;
   padding:12px 16px; margin:8px 0; color:#5a4fcf; font-size:14px;
 }
 
-/* main layout grid */
+/* MAIN layout grid - this controls where everything goes on the page */
 .shell{
   max-width:1180px;
   margin:24px auto 80px;
@@ -143,13 +165,19 @@ body{
   gap:26px;
 }
 
-/* card containers */
+/* CARD containers - now JUMP UP when hovered to reveal instructions! */
 .card{
   background:var(--glass);
   border:1px solid var(--edge);
   border-radius:28px;
   padding:24px 26px;
   box-shadow:0 14px 40px rgba(75,55,140,0.18);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 50px rgba(75,55,140,0.25), 0 0 30px rgba(200,150,255,0.15);
 }
 .left{grid-area:left}
 .right{grid-area:right}
@@ -159,7 +187,7 @@ body{
 .soft{ text-shadow:0 1px 0 var(--halo), 0 2px 10px var(--halo) }
 .muted{color:#4e3f7a}
 
-/* quiz visualization circle */
+/* QUIZ visualization circle - back to original purple colors, smaller size */
 .viz-wrap{
   position:relative; height:430px; background:#fff; border-radius:22px;
   border:1px dashed rgba(120,90,200,0.18);
@@ -167,7 +195,7 @@ body{
 }
 
 .viz-circle{
-  width:240px; height:240px; border-radius:50%;
+  width:200px; height:200px; border-radius:50%;
   background:radial-gradient(circle at 35% 25%, #e8c8ff, #b79dff);
   display:flex; align-items:center; justify-content:center;
   box-shadow:inset 0 10px 40px rgba(90,60,170,0.25), 0 10px 24px rgba(100,70,180,0.18);
@@ -177,22 +205,34 @@ body{
   color:#fff; font-weight:800; font-size:20px; text-align:center; padding:0 18px;
 }
 
-/* quiz buttons positioned around circle */
+/* quiz BUTTONS positioned around smaller circle - ENLARGE instead of move */
 .orbit{ 
   position:absolute; transform:translate(-50%,-50%); white-space:nowrap;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .viz-wrap .orbit{
-  --R: 190px; --cx:50%; --cy:50%;
+  --R: 160px; --cx:50%; --cy:50%;
   left: calc(var(--cx) + cos(var(--deg)) * var(--R));
   top:  calc(var(--cy) + sin(var(--deg)) * var(--R));
 }
 
-/* reminder list */
+/* ENLARGE quiz buttons on hover instead of moving */
+.viz-wrap .orbit:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 12px 28px rgba(123,93,215,0.35), 0 0 20px rgba(200,150,255,0.2);
+  z-index: 5;
+}
+
+.viz-wrap .orbit:active {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* reminder LIST */
 .rem-list{display:flex; flex-direction:column; gap:10px; margin:14px 0}
 .cta{margin-top:8px}
 
-/* recommendations list styling */
+/* recommendations LIST styling */
 .recommendations-list {
   max-height: 200px;
   overflow-y: auto;
@@ -231,7 +271,7 @@ body{
   flex: 1;
 }
 
-/* Custom scrollbar for recommendations */
+/* Custom SCROLLBAR for recommendations */
 .recommendations-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -250,7 +290,7 @@ body{
   background: var(--pill1);
 }
 
-/* chat interface */
+/* CHAT interface */
 .chat-box{display:flex; flex-direction:column; gap:14px}
 
 .chat-feed{
@@ -266,7 +306,7 @@ body{
   background:linear-gradient(180deg,#fff, #fbf8ff); outline:none;
 }
 
-/* calendar modal styles */
+/* CALENDAR modal styles */
 .calendar-modal {
   position: fixed;
   top: 0; left: 0;
@@ -350,7 +390,7 @@ body{
   color: var(--ink-soft);
 }
 
-/* quiz modal styles */
+/* QUIZ modal styles - the popup windows for taking quizzes */
 .quiz-modal {
   position: fixed;
   top: 0; left: 0;
@@ -423,11 +463,82 @@ body{
   line-height: 1.5;
 }
 
+/* QUIZ options - scrollbars TRULY INVISIBLE until side hover */
 .quiz-options {
   display: flex;
   flex-direction: column;
   gap: 15px;
   margin: 20px 0;
+  max-height: 280px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-right: 12px;
+  position: relative;
+  mask: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
+  -webkit-mask: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* HIDE scrollbar completely by default */
+.quiz-options::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* HOVER zone on right side to reveal scrollbar */
+.quiz-options::before {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  width: 15px;
+  z-index: 10;
+  background: transparent;
+}
+
+/* show SCROLLBAR when hovering the right edge */
+.quiz-options:hover::-webkit-scrollbar {
+  width: 8px;
+}
+
+.quiz-options:hover::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.quiz-options:hover::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--pill1), var(--pill2));
+  border-radius: 4px;
+}
+
+.quiz-options:hover::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #e8b3ff, #9d87ff);
+}
+
+/* scroll INDICATOR that appears when hovering */
+.quiz-options::after {
+  content: "scroll ↕";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, var(--pill1), var(--pill2));
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* show scroll indicator on hover */
+.quiz-options:hover::after {
+  opacity: 0.9;
 }
 
 .quiz-option {
@@ -505,7 +616,7 @@ body{
   color: var(--ink);
 }
 
-/* responsive breakpoint */
+/* RESPONSIVE breakpoint - makes it work on phones and tablets */
 @media (max-width: 980px){
   .shell{
     grid-template-columns:1fr; 
@@ -514,8 +625,8 @@ body{
   .title{font-size:34px}
   .brand{font-size:46px}
   .viz-wrap{height:400px}
-  .viz-circle{width:210px; height:210px}
-  .viz-wrap .orbit{--R: 170px}
+  .viz-circle{width:150px; height:150px}
+  .viz-wrap .orbit{--R: 120px}
   
   .quiz-book {
     width: 95%;
