@@ -1,0 +1,21 @@
+{
+  "training_date": "2025-08-25T22:44:38.529816",
+  "corpus_size": 86,
+  "embedding_dimension": 384,
+  "model_info": "Enhanced mental health training with comprehensive coverage",
+  "categories": [
+    "anxiety_stress",
+    "depression_mood",
+    "overwhelm_tasks",
+    "relationships_communication",
+    "self_esteem_confidence",
+    "work_career",
+    "life_transitions",
+    "sleep_routines",
+    "social_anxiety",
+    "trauma_healing",
+    "motivation_purpose",
+    "crisis_support",
+    "general_mental_health"
+  ]
+}

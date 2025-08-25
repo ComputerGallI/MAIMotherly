@@ -14,7 +14,13 @@ backend/
   - auth.py → Google Login / OAuth endpoints (uses services/google_auth.py)
   - calendar.py → Calendar endpoints (uses services/google_calendar.py)
   - chat.py → Chat endpoints: /health, /generate, /debug/*
-- artifacts/ → pkls will go here
+- artifacts/ 
+  - knowledge_corpus.pkl → REQUIRED. Knowledge base of guidance/advice entries.
+  - faiss_index.bin → OPTIONAL but recommended. FAISS vector index for semantic retrieval.
+  - config.json → OPTIONAL. Metadata (date, corpus size, categories, embedding dimension, etc.).
+  - retriever_model/ → OPTIONAL. Saved SentenceTransformer directory (enables local embedding on server if present).
+  - generator_model/ → OPTIONAL. Saved seq2seq model (e.g., BART) for local text generation.
+  - generator_tokenizer/ → OPTIONAL. Tokenizer directory for the generator model.
 - modelsAI/
   - model_loader.py → Loads the knowledge corpus
   - search_engine.py → Search and response logic
