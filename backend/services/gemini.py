@@ -7,8 +7,7 @@ try:
 except Exception:
     genai = None
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "models/gemini-1.5-flash")
+# Import Enviromental Variables
 
 def is_configured() -> bool:
     return bool(genai and GEMINI_API_KEY)
@@ -27,10 +26,8 @@ def generate_with_gemini(user_message: str, context_docs: List[str], quiz_summar
     _init()
 
     system_preamble = (
-        "You are MAI, a warm, concise mental-health buddy. "
-        "Be empathetic, practical, and avoid medical diagnoses. "
-        "Use the provided context and quiz results when helpful. "
-        "Keep answers to 1–3 short paragraphs."
+        #Add Preamble to let know Gemini what role is taking. Include response format and 
+        #use techniques learnt in class
     )
 
     quiz_block = f"Quiz results: {quiz_summary}\n" if quiz_summary else ""
