@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 from datetime import datetime
-from models.schema import ChatRequest, ChatResponse
-from core.model_loader import load_your_trained_models, KNOWLEDGE_CORPUS, MODEL_LOADED
-from core.search_engine import improved_search, use_best_training_content
+from pydantic.schema import ChatRequest, ChatResponse
+from modelsAI.model_loader import load_your_trained_models, KNOWLEDGE_CORPUS, MODEL_LOADED
+from modelsAI.search_engine import improved_search, use_best_training_content
+
 
 router = APIRouter()
 
