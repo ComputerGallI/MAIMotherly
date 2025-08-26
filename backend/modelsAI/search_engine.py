@@ -11,7 +11,7 @@ from .model_loader import (
 )
 
 # -----------------------------
-# Fallback keyword search (your original logic, slightly refactored)
+# Fallback keyword search
 # -----------------------------
 def _keyword_search(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
     if not KNOWLEDGE_CORPUS:
