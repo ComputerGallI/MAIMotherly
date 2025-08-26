@@ -84,14 +84,28 @@ backend/
   - `GOOGLE_CALENDAR_SCOPES=https://www.googleapis.com/auth/calendar.events`
 
   
-4. **Run the server**
-```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
+4. **Run the server**\
+  On windows PowerShell:
+    ```bash
+    python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+    ```
+    Other:
+      ```bash
+      uvicorn main:app --reload --host 0.0.0.0 --port 8000
+      ```
+5. **Run the tests**\
+Make sure that the server is running before in another terminal.\
+  On windows PowerShell:
+    ```bash
+    python -m pytest -q
+    ```
+    Other
+    ```bash
+    pytest -q
+    ```
 ## Current Endpoints
 
-- `GET /health` → Returns service status and model info  
+- `GET /health` → Returns service status and model info
 
 - `POST /generate` → Generates a chat reply  
   - **Request body:**

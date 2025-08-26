@@ -34,12 +34,22 @@ async def generate_response(request: ChatRequest):
     else:
         response_text = "I'm having trouble accessing my knowledge. Can you tell me more?"
 
+    # --- suggestions (additive, deduped) ---
     suggestions = []
     user_lower = user_input.lower()
-    if "anxious" in user_lower or "nervous" in user_lower:
-        suggestions = ["Try deep breathing", "Practice positive visualization"]
-    elif "doctor" in user_lower:
-        suggestions = ["Prepare questions", "Bring support person"]
+
+    # medical/doctor related
+    if any(w in user_lower for w in ["doctor", "medical", "appointment", "test results", "health"]):
+        suggestions += ["Prepare questions", "Bring support person", "Practice self-care"]
+
+    # anxiety/stress related
+    if any(w in user_lower for w in ["anxious", "nervous", "worry", "worried", "stress", "stressed"]):
+        suggestions += ["Try deep breathing", "Practice positive visualization", "Take breaks"]
+
+    # dedupe while preserving order
+    seen = set()
+    suggestions = [s for s in suggestions if not (s in seen or seen.add(s))]
+
 
     return ChatResponse(response=response_text, suggestions=suggestions)
 
