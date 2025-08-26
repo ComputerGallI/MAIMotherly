@@ -1,9 +1,30 @@
-fastapi
-uvicorn
-sentence-transformers
-transformers
-faiss-cpu
-numpy
-pydantic
-python-dotenv
-google-generativeai
+# MAI FastAPI Requirements - All the AI tools we need
+# Install these with: pip install -r requirements.txt
+
+# Core FastAPI stuff
+fastapi                 # The web framework that makes the API
+uvicorn                # The server that runs FastAPI
+
+# AI and Machine Learning tools
+sentence-transformers   # Understands what sentences mean (for finding similar questions)
+transformers           # The base AI library (automatically installed with sentence-transformers)
+faiss-cpu             # Super fast similarity search (finds matching mental health questions)
+numpy                 # Math library (needed by all the AI tools)
+torch                 # PyTorch - the AI framework that powers everything
+
+# Google's AI
+google-generativeai   # Gemini AI for general questions and personalization
+
+# Database connection
+pymongo               # Connects to MongoDB to get user info and save chats
+
+# Utilities
+pydantic             # Makes sure data is formatted correctly
+python-dotenv        # Loads secret keys from .env file
+
+# Note: If you get errors installing, try:
+# pip install --upgrade pip
+# pip install torch --index-url https://download.pytorch.org/whl/cpu
+# pip install sentence-transformers
+# pip install google-generativeai
+# pip install pymongo
