@@ -17,7 +17,7 @@ KNOWLEDGE_CORPUS = []  # list[str]
 MODEL_LOADED = False   # at least the corpus was loaded
 
 def _artifacts_path() -> str:
-    return os.getenv("ARTIFACTS_PATH", "./backend/artifacts")
+    return os.getenv("ARTIFACTS_PATH", "./artifacts")
 
 def _exists(path: str) -> bool:
     return os.path.exists(path)

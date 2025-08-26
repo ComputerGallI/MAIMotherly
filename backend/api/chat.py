@@ -1,20 +1,23 @@
 from fastapi import APIRouter
 from datetime import datetime
-from pydantic.schema import ChatRequest, ChatResponse
-from modelsAI.model_loader import load_your_trained_models, KNOWLEDGE_CORPUS, MODEL_LOADED
-from modelsAI.search_engine import improved_search, use_best_training_content
 
+from pydantic_schemas.schema import ChatRequest, ChatResponse
+
+# Import the module so we always see the current globals
+import modelsAI.model_loader as ml
+from modelsAI.search_engine import improved_search, use_best_training_content
 
 router = APIRouter()
 
-models_loaded = load_your_trained_models()
+# Ensure models/artifacts are loaded in THIS process
+ml.load_your_trained_models()
 
 @router.get("/health")
 async def health_check():
     return {
         "status": "operational",
-        "models_loaded": models_loaded,
-        "knowledge_entries": len(KNOWLEDGE_CORPUS),
+        "models_loaded": ml.MODEL_LOADED,
+        "knowledge_entries": len(ml.KNOWLEDGE_CORPUS),
         "timestamp": datetime.now().isoformat()
     }
 
@@ -24,9 +27,10 @@ async def generate_response(request: ChatRequest):
     if not user_input:
         return ChatResponse(response="I'm here to listen. What's on your mind?")
 
-    if models_loaded:
+    if ml.MODEL_LOADED:
         relevant_docs = improved_search(user_input, top_k=3)
-        response_text = use_best_training_content(user_input, relevant_docs)
+        # If your function accepts quiz_summary, pass it:
+        response_text = use_best_training_content(user_input, relevant_docs, request.quiz_summary)
     else:
         response_text = "I'm having trouble accessing my knowledge. Can you tell me more?"
 
@@ -42,8 +46,8 @@ async def generate_response(request: ChatRequest):
 @router.get("/debug/corpus")
 async def debug_corpus():
     return {
-        "total_entries": len(KNOWLEDGE_CORPUS),
-        "sample_entries": KNOWLEDGE_CORPUS[:5]
+        "total_entries": len(ml.KNOWLEDGE_CORPUS),
+        "sample_entries": ml.KNOWLEDGE_CORPUS[:5]
     }
 
 @router.get("/debug/search/{query}")
