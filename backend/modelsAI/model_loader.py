@@ -1,46 +1,46 @@
-# modelsAI/model_loader.py
 import os
 import pickle
+from pathlib import Path
 
-# Optional imports (only used if artifacts exist)
+# Optional deps
 try:
     import faiss  # type: ignore
 except Exception:
     faiss = None
 
-RETRIEVER = None       # SentenceTransformer model (optional)
-GENERATOR = None       # transformers text2text pipeline/model (optional)
-GEN_TOKENIZER = None   # tokenizer for generator (optional)
-FAISS_INDEX = None     # faiss.Index (optional)
+RETRIEVER = None          # SentenceTransformer model (optional)
+GENERATOR = None          # transformers pipeline (optional)
+GEN_TOKENIZER = None      # tokenizer for generator (optional)
+FAISS_INDEX = None        # faiss.Index (optional)
 
-KNOWLEDGE_CORPUS = []  # list[str]
-MODEL_LOADED = False   # at least the corpus was loaded
+KNOWLEDGE_CORPUS = []     # list of strings (or entries)
+MODEL_LOADED = False
 
 def _artifacts_path() -> str:
-    return os.getenv("ARTIFACTS_PATH", "./artifacts")
-
-def _exists(path: str) -> bool:
-    return os.path.exists(path)
+    """
+    Resolve artifacts folder:
+    1) ARTIFACTS_PATH env var (if set)
+    2) <backend_root>/artifacts relative to this file
+    """
+    env_path = os.getenv("ARTIFACTS_PATH")
+    if env_path:
+        return env_path
+    backend_root = Path(__file__).resolve().parents[1]  # .../backend
+    return str(backend_root / "artifacts")
 
 def load_your_trained_models() -> bool:
-    """
-    Load artifacts exported from your Colab training:
-      - knowledge_corpus.pkl (REQUIRED for any search)
-      - faiss_index.bin (optional, enables vector search)
-      - retriever_model/ (optional: SentenceTransformer model dir)
-      - generator_model/, generator_tokenizer/ (optional: BART model/tokenizer dirs)
-    Falls back to keyword search if vector stack not available.
-    """
+    """Load your exported artifacts (corpus required; vector/gen optional)."""
     global KNOWLEDGE_CORPUS, MODEL_LOADED
     global FAISS_INDEX, RETRIEVER, GENERATOR, GEN_TOKENIZER
 
     artifacts = _artifacts_path()
     print(f"[model_loader] Looking for artifacts under: {artifacts}")
 
-    # 1) Load knowledge corpus (required)
+    # 1) Knowledge corpus (REQUIRED)
     corpus_path = os.path.join(artifacts, "knowledge_corpus.pkl")
-    if not _exists(corpus_path):
+    if not os.path.exists(corpus_path):
         print(f"[model_loader] WARNING: Missing corpus: {corpus_path}")
+        KNOWLEDGE_CORPUS = []
         MODEL_LOADED = False
         return False
 
@@ -51,13 +51,14 @@ def load_your_trained_models() -> bool:
         print(f"[model_loader] Loaded corpus with {len(KNOWLEDGE_CORPUS)} entries")
     except Exception as e:
         print(f"[model_loader] ERROR loading corpus: {e}")
+        KNOWLEDGE_CORPUS = []
         MODEL_LOADED = False
         return False
 
-    # 2) Try to load FAISS index + retriever for vector search (optional)
+    # 2) Vector search (optional): FAISS + SentenceTransformer
     faiss_path = os.path.join(artifacts, "faiss_index.bin")
     retriever_dir = os.path.join(artifacts, "retriever_model")
-    if faiss and _exists(faiss_path) and _exists(retriever_dir):
+    if faiss and os.path.exists(faiss_path) and os.path.exists(retriever_dir):
         try:
             from sentence_transformers import SentenceTransformer
             FAISS_INDEX = faiss.read_index(faiss_path)
@@ -70,20 +71,20 @@ def load_your_trained_models() -> bool:
     else:
         print("[model_loader] Vector search artifacts not found. Using keyword search fallback.")
 
-    # 3) Try to load generator (optional)
+    # 3) Local generator (optional): transformers seq2seq
     gen_dir = os.path.join(artifacts, "generator_model")
     tok_dir = os.path.join(artifacts, "generator_tokenizer")
-    if _exists(gen_dir) and _exists(tok_dir):
+    if os.path.exists(gen_dir) and os.path.exists(tok_dir):
         try:
             from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
             GEN_TOKENIZER = AutoTokenizer.from_pretrained(tok_dir)
             gen_model = AutoModelForSeq2SeqLM.from_pretrained(gen_dir)
             GENERATOR = pipeline("text2text-generation", model=gen_model, tokenizer=GEN_TOKENIZER)
-            print("[model_loader] Text generation enabled (transformers)")
+            print("[model_loader] Local text generation enabled (transformers)")
         except Exception as e:
             GENERATOR = None
             GEN_TOKENIZER = None
-            print(f"[model_loader] WARNING: Failed enabling generator: {e}")
+            print(f"[model_loader] WARNING: Failed enabling local generator: {e}")
     else:
         print("[model_loader] Generator artifacts not found. Using templated response fallback.")
 

@@ -1,16 +1,14 @@
-# services/gemini.py
 import os
 from typing import List, Optional
 
-# If you're using Google's official SDK:
 # pip install google-generativeai
 try:
     import google.generativeai as genai
 except Exception:
     genai = None
 
-GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "models/gemini-1.5-flash")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "models/gemini-1.5-flash")
 
 def is_configured() -> bool:
     return bool(genai and GEMINI_API_KEY)
@@ -21,34 +19,43 @@ def _init():
 
 def generate_with_gemini(user_message: str, context_docs: List[str], quiz_summary: str = "") -> Optional[str]:
     """
-    Call Gemini with retrieval-augmented context. Returns a string or None if not available.
+    RAG: Provide retrieved docs + quiz results to Gemini. No chat memory.
     """
     if not is_configured():
         return None
 
     _init()
 
-    # Build an instruction-grounded prompt
     system_preamble = (
-        "You are MAI, a warm, concise mental health buddy. "
-        "Be empathetic, practical, and avoid medical claims or diagnoses. "
-        "Use the provided context when helpful. Keep answers to 1–3 short paragraphs."
+        "You are MAI, a warm, concise mental-health buddy. "
+        "Be empathetic, practical, and avoid medical diagnoses. "
+        "Use the provided context and quiz results when helpful. "
+        "Keep answers to 1–3 short paragraphs."
     )
-    soft_profile = f"User profile hints: {quiz_summary}\n" if quiz_summary else ""
-    context = "\n\n".join([f"- {c}" for c in context_docs[:5]])
+
+    quiz_block = f"Quiz results: {quiz_summary}\n" if quiz_summary else ""
+    bullet_context = "\n".join(f"- {c}" for c in context_docs[:5])
+
     prompt = (
         f"{system_preamble}\n\n"
-        f"{soft_profile}"
-        f"Context (retrieved):\n{context}\n\n"
+        f"{quiz_block}"
+        f"Context (retrieved from training corpus):\n{bullet_context}\n\n"
         f"User: {user_message}\n\n"
-        "Assistant: "
+        "Assistant:"
     )
 
     try:
-        # SDK: text-only generation
         model = genai.GenerativeModel(GEMINI_MODEL_NAME)
         resp = model.generate_content(prompt)
-        return resp.text.strip() if hasattr(resp, "text") else None
+        if hasattr(resp, "text") and resp.text:
+            return resp.text.strip()
+        # Fallback parse for older SDK response shapes
+        if hasattr(resp, "candidates") and resp.candidates:
+            c = resp.candidates[0]
+            if getattr(c, "content", None) and getattr(c.content, "parts", None):
+                txt = " ".join(getattr(p, "text", "") for p in c.content.parts if getattr(p, "text", ""))
+                return txt.strip() or None
+        return None
     except Exception as e:
         print(f"[gemini] generation failed: {e}")
         return None
