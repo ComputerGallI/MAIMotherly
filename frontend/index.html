@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
 
   <header class="topbar">
@@ -22,7 +20,7 @@
   </header>
 
   <main class="shell">
-    <!-- quiz results section -->
+    <!-- LEFT: quiz results -->
     <section class="card left">
       <h2 class="title soft">Quiz Results</h2>
       <p class="caring-instruction glowing-text">Want to learn more about you? Take a quiz</p>
@@ -32,18 +30,14 @@
         </div>
 
         <!-- quiz buttons -->
-        <button class="orbit pill soft" style="--deg:10deg;" data-target="quizzes/quiz_personality.html"
-          id="btnPersonality">Personality</button>
-        <button class="orbit pill soft" style="--deg:190deg;" data-target="quizzes/quiz_stress.html"
-          id="btnStress">Stress & Anxiety</button>
-        <button class="orbit pill soft" style="--deg:350deg;" data-target="quizzes/quiz_love.html" id="btnLove">Love
-          Language</button>
-        <button class="orbit pill soft" style="--deg:95deg;" data-target="quizzes/quiz_21.html" id="btn21">21
-          Questions</button>
+        <button class="orbit pill soft" style="--deg:10deg;" data-target="quizzes/quiz_personality.html" id="btnPersonality">Personality</button>
+        <button class="orbit pill soft" style="--deg:190deg;" data-target="quizzes/quiz_stress.html" id="btnStress">Stress & Anxiety</button>
+        <button class="orbit pill soft" style="--deg:350deg;" data-target="quizzes/quiz_love.html" id="btnLove">Love Language</button>
+        <button class="orbit pill soft" style="--deg:95deg;" data-target="quizzes/quiz_21.html" id="btn21">21 Questions</button>
       </div>
     </section>
 
-    <!-- wellness reminders + google connect -->
+    <!-- RIGHT: reminders + google + calendar -->
     <section class="card right">
       <h2 class="title soft">Reminders</h2>
       <p class="caring-instruction glowing-text">Fueled by your personal quiz results and our conversations</p>
@@ -57,11 +51,63 @@
       <p class="muted" id="remindersEmpty">No reminders yet</p>
       <div id="reminderList" class="rem-list"></div>
 
-      <button class="cta pill soft" id="addCalBtn" onclick="addWellnessReminder()">Add Reminder to your
-        Calendar</button>
+      <!-- Quick add keeps your original 1-day flow -->
+      <button class="cta pill soft" id="addCalBtn" onclick="addWellnessReminder()">Quick Add (1 day)</button>
+
+      <!-- NEW: Custom Calendar Event -->
+      <details style="margin-top:16px;">
+        <summary class="pill soft" style="cursor:pointer; display:inline-block;">Custom Calendar Event</summary>
+        <form id="calendarForm" style="margin-top:12px;">
+          <label>Title *</label>
+          <input id="evSummary" type="text" placeholder="Doctor appointment" required style="width:100%;margin-bottom:.6rem;">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+            <div>
+              <label>Start *</label>
+              <input id="evStart" type="datetime-local" required style="width:100%;">
+            </div>
+            <div>
+              <label>End *</label>
+              <input id="evEnd" type="datetime-local" required style="width:100%;">
+            </div>
+          </div>
+
+          <!-- Timezone is automatic for everyone -->
+          <div class="muted" style="margin:.6rem 0;">
+            Using timezone: <strong id="tzDisplay">loading…</strong>
+          </div>
+
+          <label>Description</label>
+          <textarea id="evDesc" rows="2" placeholder="Anything important to remember…" style="width:100%;margin-bottom:.6rem;"></textarea>
+
+          <label>Location</label>
+          <input id="evLoc" type="text" placeholder="Clinic address" style="width:100%;margin-bottom:.6rem;">
+
+          <label>Attendees (comma-separated emails)</label>
+          <input id="evAtt" type="text" placeholder="you@example.com, friend@example.com" style="width:100%;margin-bottom:.6rem;">
+
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin:.25rem 0 .5rem 0;">
+            <strong>Reminder:</strong>
+            <button type="button" class="remBtn pill soft" data-preset="15m">15 min</button>
+            <button type="button" class="remBtn pill soft" data-preset="30m">30 min</button>
+            <button type="button" class="remBtn pill soft" data-preset="1h">1 hour</button>
+            <button type="button" class="remBtn pill soft" data-preset="1d">1 day</button>
+            <span style="margin-left:.25rem;">Custom</span>
+            <input id="remHours" type="number" min="0" value="24" style="width:90px;" /> <span>hr</span>
+            <input id="remMins" type="number" min="0" max="59" value="0" style="width:90px;margin-left:.5rem;" /> <span>min</span>
+          </div>
+
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+            <button id="createBtn" type="submit" class="pill soft">Create Event</button>
+            <button type="button" id="clearBtn" class="pill">Clear</button>
+          </div>
+        </form>
+
+        <div id="calMsg" style="margin-top:.6rem;font-weight:600;"></div>
+      </details>
     </section>
 
-    <!-- mai chat interface -->
+    <!-- CHAT -->
     <section class="card full">
       <h2 class="title soft" style="text-align:center">Talk to MAI</h2>
       <p class="caring-instruction glowing-text" style="text-align:center">Get some guidance from MAI</p>
@@ -83,6 +129,12 @@
   <script>
     const BACKEND = 'http://127.0.0.1:8000';
 
+    // ---- Global timezone (auto). To force one for everyone, change the line below. ----
+    const DEFAULT_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    // Example to force one globally:
+    // const DEFAULT_TZ = 'America/Chicago';
+
+    // === user helpers ===
     function getUsername() {
       return localStorage.getItem('username') || '';
     }
@@ -103,16 +155,15 @@
           `<strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜`;
       }
 
-      // quiz buttons labels from localStorage
+      // quiz button labels
       const personality = localStorage.getItem('quiz_personality') || 'Personality';
       const stress = localStorage.getItem('quiz_stress') || 'Stress & Anxiety';
       const love = localStorage.getItem('quiz_love') || 'Love Language';
-      const questions21 = localStorage.getItem('quiz_21') || '21 Questions';
-
-      document.getElementById('btnPersonality').textContent = personality;
-      document.getElementById('btnStress').textContent = stress;
-      document.getElementById('btnLove').textContent = love;
-      document.getElementById('btn21').textContent = questions21;
+      const q21 = localStorage.getItem('quiz_21') || '21 Questions';
+      btnPersonality.textContent = personality;
+      btnStress.textContent = stress;
+      btnLove.textContent = love;
+      btn21.textContent = q21;
     }
 
     function handleLogout() {
@@ -121,7 +172,7 @@
         localStorage.removeItem('email');
         loadUserInterface();
         alert('Logged out successfully!');
-        document.getElementById('chatFeed').innerHTML = `
+        chatFeed.innerHTML = `
           <div class="mai-welcome">
             <strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜
           </div>
@@ -133,13 +184,11 @@
     function goToPremium() { window.location.href = 'premium.html'; }
 
     // quiz nav
-    document.querySelectorAll('.orbit').forEach(button => {
-      button.addEventListener('click', () => {
-        window.location.href = button.dataset.target;
-      });
+    document.querySelectorAll('.orbit').forEach(b => {
+      b.addEventListener('click', () => { window.location.href = b.dataset.target; });
     });
 
-    // === CHAT ===
+    // === chat ===
     async function sendMessage() {
       const input = document.getElementById('chatText');
       const message = input.value.trim();
@@ -148,7 +197,6 @@
       appendChatMessage('You: ' + message);
       input.value = '';
 
-      const username = getUsername();
       const personality = localStorage.getItem('quiz_personality') || '';
       const stress = localStorage.getItem('quiz_stress') || '';
       const love = localStorage.getItem('quiz_love') || '';
@@ -167,20 +215,16 @@
         });
         const data = await resp.json();
         const aiResponse = data.response || "Tell me more about that. I'm here to listen.";
-
         appendChatMessage('MAI: ' + aiResponse);
-
         if (Array.isArray(data.suggestions) && data.suggestions.length) {
           appendChatMessage('Suggestions: ' + data.suggestions.join(', '), 'suggestion');
         }
-      } catch (e) {
-        console.error(e);
+      } catch {
         appendChatMessage("MAI: I'm having trouble connecting right now. Can you tell me more about how you're feeling?");
       }
     }
 
     function appendChatMessage(message, type = 'normal') {
-      const chatFeed = document.getElementById('chatFeed');
       const div = document.createElement('div');
       div.textContent = message;
       div.style.margin = '8px 0';
@@ -203,7 +247,7 @@
       chatFeed.scrollTop = chatFeed.scrollHeight;
     }
 
-    // === GOOGLE OAUTH ===
+    // === google oauth ===
     async function connectGoogle() {
       const user = getUsername();
       if (!user) { alert('Please log in (top-right) before connecting Google.'); return; }
@@ -211,13 +255,12 @@
         const r = await fetch(`${BACKEND}/auth/login?user_id=${encodeURIComponent(user)}`);
         const j = await r.json();
         if (j.auth_url) {
-          // Open Google consent in a new tab
           window.open(j.auth_url, '_blank');
           alert('After finishing Google consent, click "Check Status".');
         } else {
           alert('Could not get auth URL. Check backend logs.');
         }
-      } catch (e) {
+      } catch {
         alert('Error requesting Google auth URL.');
       }
     }
@@ -229,24 +272,21 @@
         const r = await fetch(`${BACKEND}/auth/status?user_id=${encodeURIComponent(user)}`);
         const j = await r.json();
         document.getElementById('googleStatus').textContent = j.connected ? 'Google: Connected ✅' : 'Google: Not connected';
-      } catch (e) {
+        const createBtn = document.getElementById('createBtn');
+        if (createBtn) createBtn.disabled = !j.connected;
+      } catch {
         document.getElementById('googleStatus').textContent = 'Google: Unknown';
       }
     }
 
-    // === CALENDAR: create event tomorrow 10:00-10:30 (America/Chicago), reminder 1 day ===
+    // === quick add (1 day) – original flow ===
     async function addWellnessReminder() {
       const user = getUsername();
       if (!user) { alert('Please log in first.'); return; }
 
-      // simple check connection
       const status = await fetch(`${BACKEND}/auth/status?user_id=${encodeURIComponent(user)}`).then(r => r.json()).catch(() => ({ connected: false }));
-      if (!status.connected) {
-        alert('Please connect Google first (Connect Google → complete consent → Check Status).');
-        return;
-      }
+      if (!status.connected) { alert('Please connect Google first.'); return; }
 
-      const tz = 'America/Chicago';
       const start = new Date();
       start.setDate(start.getDate() + 1);
       start.setHours(10, 0, 0, 0);
@@ -256,7 +296,7 @@
         summary: 'MAI wellness check-in',
         start_iso: start.toISOString().slice(0, 19),
         end_iso: end.toISOString().slice(0, 19),
-        timezone: tz,
+        timezone: DEFAULT_TZ,      // <-- use global default
         description: 'Quick check-in: breathing exercise + 2 wins from yesterday',
         location: '',
         attendees: [],
@@ -270,68 +310,168 @@
           body: JSON.stringify(body)
         });
         const j = await r.json();
-        if (j.ok) {
-          alert('Calendar event created with a 1-day reminder ✅');
-        } else {
-          alert('Calendar error: ' + (j.detail || j.error || 'unknown'));
-        }
-      } catch (e) {
+        if (j.ok) alert('Calendar event created with a 1-day reminder ✅');
+        else alert('Calendar error: ' + (j.detail || j.error || 'unknown'));
+      } catch {
         alert('Calendar request failed.');
       }
     }
 
-    // enter to send
-    document.getElementById('chatText').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    // === custom event form ===
+    function toDatetimeLocal(d) {
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function initCalendarFormDefaults() {
+      const startEl = document.getElementById('evStart');
+      const endEl = document.getElementById('evEnd');
+      const tzLabel = document.getElementById('tzDisplay');
+      if (tzLabel) tzLabel.textContent = DEFAULT_TZ;
+
+      if (!startEl || !endEl) return;
+
+      const now = new Date();
+      const start = new Date(now.getTime() + 10 * 60 * 1000);
+      const end = new Date(start.getTime() + 30 * 60 * 1000);
+      startEl.value = toDatetimeLocal(start);
+      endEl.value = toDatetimeLocal(end);
+    }
+
+    function wireReminderPresetButtons() {
+      const hoursEl = document.getElementById('remHours');
+      const minsEl = document.getElementById('remMins');
+
+      document.querySelectorAll('.remBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const preset = btn.dataset.preset;
+          if (preset === '15m') { hoursEl.value = 0; minsEl.value = 15; }
+          if (preset === '30m') { hoursEl.value = 0; minsEl.value = 30; }
+          if (preset === '1h')  { hoursEl.value = 1; minsEl.value = 0; }
+          if (preset === '1d')  { hoursEl.value = 24; minsEl.value = 0; }
+        });
+      });
+    }
+
+    function wireCalendarForm() {
+      const form = document.getElementById('calendarForm');
+      const msgEl = document.getElementById('calMsg');
+      const clearBtn = document.getElementById('clearBtn');
+      if (!form) return;
+
+      clearBtn.addEventListener('click', () => {
+        evSummary.value = '';
+        evDesc.value = '';
+        evLoc.value = '';
+        evAtt.value = '';
+        remHours.value = 24;
+        remMins.value = 0;
+        msgEl.textContent = '';
+        initCalendarFormDefaults();
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msgEl.textContent = 'Creating event…';
+
+        const user = getUsername();
+        if (!user) { msgEl.textContent = 'Please log in first.'; return; }
+
+        // confirm connection
+        try {
+          const st = await fetch(`${BACKEND}/auth/status?user_id=${encodeURIComponent(user)}`).then(r => r.json());
+          if (!st.connected) { msgEl.textContent = 'Please connect Google first.'; return; }
+        } catch { msgEl.textContent = 'Unable to verify Google connection.'; return; }
+
+        const summary = evSummary.value.trim();
+        const start = evStart.value;  // YYYY-MM-DDTHH:MM
+        const end = evEnd.value;
+        const desc = evDesc.value.trim();
+        const loc = evLoc.value.trim();
+        const attendees = evAtt.value.split(',').map(s => s.trim()).filter(Boolean);
+
+        let hrs = parseInt(remHours.value, 10);
+        let mins = parseInt(remMins.value, 10);
+        if (Number.isNaN(hrs) || hrs < 0) hrs = 0;
+        if (Number.isNaN(mins) || mins < 0) mins = 0;
+        mins = Math.min(mins, 59); // clamp 0..59
+        const remindMinutes = Math.max(0, hrs * 60 + mins);
+
+        if (!summary || !start || !end) { msgEl.textContent = 'Please fill Title, Start and End.'; return; }
+
+        const toIso = s => (s.length === 16 ? `${s}:00` : s);
+        const payload = {
+          summary,
+          start_iso: toIso(start),
+          end_iso: toIso(end),
+          timezone: DEFAULT_TZ,      // <-- global default used here
+          description: desc,
+          location: loc,
+          attendees,
+          remind_minutes: remindMinutes
+        };
+
+        try {
+          const resp = await fetch(`${BACKEND}/calendar/events?user_id=${encodeURIComponent(user)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await resp.json();
+          if (!resp.ok || data.error) {
+            msgEl.textContent = `Calendar error: ${data.error || resp.statusText}`;
+            return;
+          }
+          msgEl.textContent = '✅ Event created with custom reminder';
+        } catch (err) {
+          msgEl.textContent = `Calendar error: ${err.message}`;
+        }
+      });
+    }
+
+    // send on Enter
+    document.getElementById('chatText').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
 
     // init
     window.addEventListener('load', () => {
-      loadUserInterface();
-      checkGoogleStatus(); // on load, try to show connection status if any
-    });
-  </script>
-  <!-- Display logged-in username -->
-  <div style="margin-top:1rem;font-weight:600;">
-    Logged in as: <span id="usernameDisplay">Guest</span>
-    <span id="googleConnected" style="margin-left:8px;font-weight:400;"></span>
-  </div>
-
-  <script>
-    // 1) Capture ?user_id=... from the redirect and persist it
-    (function () {
+      // capture ?user_id= after OAuth
       const params = new URLSearchParams(window.location.search);
       const returned = params.get("user_id");
       if (returned && returned.trim()) {
         localStorage.setItem("username", returned.trim());
-        // Clean the URL so the param disappears
         const url = new URL(window.location.href);
         url.searchParams.delete("user_id");
         window.history.replaceState({}, "", url.toString());
       }
-    })();
 
-    // 2) Show the username on the page (fallback to any existing value)
-    (function () {
+      loadUserInterface();
+      checkGoogleStatus();
+      initCalendarFormDefaults();
+      wireReminderPresetButtons();
+      wireCalendarForm();
+
+      // footer widget
       const el = document.getElementById("usernameDisplay");
       const uid = localStorage.getItem("username") || "Guest";
       if (el) el.textContent = uid;
-    })();
-
-    // 3) (Optional) Ping the backend to show Google connection status
-    (async function () {
-      const statusEl = document.getElementById("googleConnected");
-      const uid = localStorage.getItem("username");
-      if (!uid || !statusEl) return;
-
-      try {
-        const r = await fetch(`http://127.0.0.1:8000/auth/status?user_id=${encodeURIComponent(uid)}`);
-        const data = await r.json();
-        statusEl.textContent = data.connected ? "• Google connected ✅" : "• Not connected";
-      } catch (e) {
-        statusEl.textContent = "• Status unavailable";
-      }
-    })();
+      (async function () {
+        const statusEl = document.getElementById("googleConnected");
+        if (!uid || !statusEl) return;
+        try {
+          const r = await fetch(`${BACKEND}/auth/status?user_id=${encodeURIComponent(uid)}`);
+          const data = await r.json();
+          statusEl.textContent = data.connected ? "• Google connected ✅" : "• Not connected";
+        } catch { statusEl.textContent = "• Status unavailable"; }
+      })();
+    });
   </script>
 
+  <!-- small footer widget -->
+  <div style="margin-top:1rem;font-weight:600;">
+    Logged in as: <span id="usernameDisplay">Guest</span>
+    <span id="googleConnected" style="margin-left:8px;font-weight:400;"></span>
+  </div>
 </body>
-
 </html>
