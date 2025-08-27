@@ -103,409 +103,416 @@
     </div>
   </div>
 
-  <!-- Add this JavaScript to your index.html file, replacing the existing chat functions -->
+  <script>
+    // Global variables for recommendations
+    let currentRecommendations = [];
+    let selectedRecommendations = new Set();
 
-<script>
-// Global variables for recommendations (suggestions from MAI)
-let currentRecommendations = [];
-let selectedRecommendations = new Set();
-
-// Send a message to MAI - this is where the real AI magic happens!
-async function sendMessage() {
-  const textInput = document.getElementById('chatText')
-  const message = textInput.value.trim()  // Get what they typed and remove spaces
-  
-  // Don't send empty messages
-  if (!message) return
-  
-  // Make sure they're logged in (we need to know who is talking)
-  const username = localStorage.getItem('username')
-  if (!username) {
-    alert('Please log in first to chat with MAI!')
-    window.location.href = 'login.html'
-    return
-  }
-  
-  // Show their message in the chat
-  appendChatMessage('You: ' + message)
-  textInput.value = ''  // Clear the input box
-  
-  // Show that MAI is thinking (this makes it feel more human)
-  const thinkingId = appendThinkingMessage()
-  
-  try {
-    console.log('📤 Sending to backend:', { user_input: message, username })
-    
-    // Send the message to our backend, which sends it to the AI
-    const response = await fetch('http://localhost:5000/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        user_input: message,    // What the user said
-        username: username      // Who said it (AI gets their quiz results automatically)
-      })
-    })
-    
-    // Remove the "thinking..." indicator
-    removeThinkingMessage(thinkingId)
-    
-    // Check if the request worked
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || `Server error: ${response.status}`)
-    }
-    
-    // Get the AI's response
-    const data = await response.json()
-    console.log('📥 Backend response:', data)
-    
-    // Check if there was an error
-    if (data.error) {
-      throw new Error(data.error)
-    }
-    
-    // Make sure we got a response from the AI
-    const aiResponse = data.response
-    if (!aiResponse) {
-      throw new Error('No response from AI')
-    }
-    
-    // Show MAI's response in the chat
-    appendChatMessage('MAI: ' + aiResponse, 'ai')
-    
-    // Handle recommendations (wellness suggestions)
-    if (data.suggestions && data.suggestions.length > 0) {
-      appendRecommendationsBubble(data.suggestions)  // Show in chat
-      addRecommendationsToSidebar(data.suggestions)  // Add to sidebar
-    }
-    
-    // Log AI status (for debugging)
-    if (data.debug_info) {
-      console.log('🤖 AI Status:', {
-        ai_powered: data.ai_powered,
-        no_templates: data.no_templates,
-        response_length: data.debug_info.response_length
-      })
-    }
-    
-  } catch (error) {
-    console.error('💥 Chat error:', error)
-    
-    // Remove thinking indicator if something went wrong
-    removeThinkingMessage(thinkingId)
-    
-    // Show helpful error messages based on what went wrong
-    let errorMessage = 'MAI: '
-    
-    if (error.message.includes('AI brain is offline')) {
-      errorMessage += "I'm having trouble connecting to my AI brain right now. The person running me needs to start the FastAPI server by running: cd fastapi_ai && python main.py"
-    } else if (error.message.includes('taking longer than usual')) {
-      errorMessage += "I'm thinking extra hard about your question - it's taking longer than usual. Please try again in a moment."
-    } else if (error.message.includes('AI system isn\'t fully set up')) {
-      errorMessage += "My AI system isn't fully configured yet. Please check that both my training data and Gemini API key are properly set up."
-    } else if (error.message.includes('need to be logged in')) {
-      errorMessage += "I need you to be logged in to have a proper conversation. Please log in and try again."
-      setTimeout(() => window.location.href = 'login.html', 2000)  // Redirect to login after 2 seconds
-    } else if (error.message.includes('Server error: 503')) {
-      errorMessage += "My AI services are temporarily unavailable. Please make sure the FastAPI server is running and try again."
-    } else {
-      errorMessage += "I'm experiencing some technical difficulties right now. Please try again in a moment. If this continues, please check that my AI system is properly set up."
-    }
-    
-    appendChatMessage(errorMessage)
-  }
-}
-
-// Show the "thinking..." animation while MAI is processing
-function appendThinkingMessage() {
-  const chatFeed = document.getElementById('chatFeed')
-  const thinkingDiv = document.createElement('div')
-  const thinkingId = 'thinking_' + Date.now()  // Unique ID for this thinking message
-  
-  thinkingDiv.id = thinkingId
-  thinkingDiv.style.cssText = `
-    margin: 8px 0; padding: 8px 12px; border-radius: 12px;
-    background: #f8f5ff; border: 1px solid #e0d4ff;
-    color: #5a4fcf; font-style: italic;
-  `
-  thinkingDiv.innerHTML = '<strong>MAI:</strong> <span class="thinking-dots">Thinking</span>'
-  
-  chatFeed.appendChild(thinkingDiv)
-  chatFeed.scrollTop = chatFeed.scrollHeight  // Scroll to bottom
-  
-  // Animate the dots (...) to show MAI is thinking
-  const dotsSpan = thinkingDiv.querySelector('.thinking-dots')
-  let dotCount = 0
-  const thinkingInterval = setInterval(() => {
-    dotCount = (dotCount + 1) % 4  // Cycle through 0, 1, 2, 3
-    dotsSpan.textContent = 'Thinking' + '.'.repeat(dotCount)  // "Thinking", "Thinking.", "Thinking..", "Thinking..."
-  }, 500)  // Update every half second
-  
-  // Store the interval so we can stop it later
-  thinkingDiv.thinkingInterval = thinkingInterval
-  
-  return thinkingId
-}
-
-// Remove the thinking message when MAI responds
-function removeThinkingMessage(thinkingId) {
-  const thinkingDiv = document.getElementById(thinkingId)
-  if (thinkingDiv) {
-    // Stop the thinking animation
-    if (thinkingDiv.thinkingInterval) {
-      clearInterval(thinkingDiv.thinkingInterval)
-    }
-    thinkingDiv.remove()  // Remove from the chat
-  }
-}
-
-// Add a message to the chat display
-function appendChatMessage(message, type = 'normal') {
-  const chatFeed = document.getElementById('chatFeed')
-  const messageDiv = document.createElement('div')
-  
-  // Basic styling for all messages
-  messageDiv.style.margin = '8px 0'
-  messageDiv.style.padding = '8px 12px'
-  messageDiv.style.borderRadius = '12px'
-  messageDiv.style.wordWrap = 'break-word'  // Wrap long words
-  messageDiv.style.lineHeight = '1.4'
-  
-  // Style user messages differently from MAI messages
-  if (message.startsWith('You:')) {
-    // User messages (right side, purple background)
-    messageDiv.style.background = 'linear-gradient(135deg, #f0c6ff, #e8c8ff)'
-    messageDiv.style.marginLeft = '20px'
-    messageDiv.style.textAlign = 'right'
-    messageDiv.style.color = '#1f133a'
-    messageDiv.style.fontWeight = '600'
-  } else if (message.startsWith('MAI:')) {
-    // MAI messages (left side, white background)
-    messageDiv.style.background = '#fff'
-    messageDiv.style.border = '1px solid #e0d4ff'
-    messageDiv.style.color = '#2e2156'
-    
-    // Highlight AI-powered responses with a green border
-    if (type === 'ai') {
-      messageDiv.style.borderLeft = '4px solid #7dd87d'
-      messageDiv.style.paddingLeft = '12px'
-    }
-  }
-  
-  messageDiv.textContent = message
-  chatFeed.appendChild(messageDiv)
-  chatFeed.scrollTop = chatFeed.scrollHeight  // Always scroll to the bottom
-}
-
-// Show recommendations in a chat bubble
-function appendRecommendationsBubble(suggestions) {
-  const chatFeed = document.getElementById('chatFeed')
-  const recommendationsDiv = document.createElement('div')
-  
-  // Style the recommendations bubble
-  recommendationsDiv.style.cssText = `
-    margin: 8px 0; padding: 12px; border-radius: 12px;
-    background: linear-gradient(135deg, #e8f4fd, #d1ecf1);
-    border: 2px solid #bee5eb; font-size: 14px;
-  `
-  
-  // Build the content
-  let content = '<strong>💡 Wellness Recommendations:</strong><br>'
-  suggestions.forEach((suggestion, index) => {
-    content += `<span style="display: block; margin: 4px 0; padding: 4px 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">• ${suggestion}</span>`
-  })
-  
-  recommendationsDiv.innerHTML = content
-  chatFeed.appendChild(recommendationsDiv)
-  chatFeed.scrollTop = chatFeed.scrollHeight
-}
-
-// Add recommendations to the sidebar for calendar scheduling
-function addRecommendationsToSidebar(suggestions) {
-  currentRecommendations = [...currentRecommendations, ...suggestions]
-  displayRecommendations()
-}
-
-// Display recommendations in the sidebar
-function displayRecommendations() {
-  const recommendationsSection = document.getElementById('recommendationsSection')
-  const recommendationsList = document.getElementById('recommendationsList')
-  
-  // Hide section if no recommendations
-  if (currentRecommendations.length === 0) {
-    recommendationsSection.style.display = 'none'
-    return
-  }
-  
-  // Show the section and build the list
-  recommendationsSection.style.display = 'block'
-  recommendationsList.innerHTML = ''
-  
-  currentRecommendations.forEach((recommendation, index) => {
-    const recDiv = document.createElement('div')
-    recDiv.className = 'recommendation-item'
-    recDiv.innerHTML = `
-      <input type="checkbox" id="rec_${index}" onchange="toggleRecommendation(${index}, this.checked)">
-      <label for="rec_${index}" style="margin-left: 8px; font-size: 14px; cursor: pointer;">${recommendation}</label>
-    `
-    recommendationsList.appendChild(recDiv)
-  })
-  
-  updateSelectedCount()
-}
-
-// Handle selecting/deselecting recommendations
-function toggleRecommendation(index, checked) {
-  if (checked) {
-    selectedRecommendations.add(index)
-  } else {
-    selectedRecommendations.delete(index)
-  }
-  updateSelectedCount()
-}
-
-// Select all recommendations at once
-function selectAllRecommendations() {
-  currentRecommendations.forEach((_, index) => {
-    selectedRecommendations.add(index)
-    document.getElementById(`rec_${index}`).checked = true
-  })
-  updateSelectedCount()
-}
-
-// Clear all selected recommendations
-function clearAllRecommendations() {
-  selectedRecommendations.clear()
-  currentRecommendations.forEach((_, index) => {
-    document.getElementById(`rec_${index}`).checked = false
-  })
-  updateSelectedCount()
-}
-
-// Update the count display and button text
-function updateSelectedCount() {
-  const count = selectedRecommendations.size
-  document.getElementById('selectedCount').textContent = `${count} selected`
-  
-  // Update the calendar button
-  const addBtn = document.getElementById('addCalBtn')
-  if (count > 0) {
-    addBtn.textContent = `Add ${count} Selected to Calendar`
-    addBtn.style.background = 'linear-gradient(135deg, #7dd87d, #5cb85c)'
-  } else {
-    addBtn.textContent = 'Add Selected to Calendar'
-    addBtn.style.background = ''
-  }
-}
-
-// Load user chat history when they log in
-async function loadChatHistory() {
-  const username = localStorage.getItem('username')
-  if (!username) return
-  
-  try {
-    console.log(`📊 Loading chat history for ${username}`)
-    const response = await fetch(`http://localhost:5000/api/chat/history/${username}`)
-    if (response.ok) {
-      const stats = await response.json()
-      console.log('✅ User chat stats:', stats)
+    // load user data and update UI
+    function loadUserInterface(){
+      const user = localStorage.getItem('username')
       
-      // You could display stats somewhere in the UI if desired
-      if (stats.total_conversations > 0) {
-        console.log(`${username} has had ${stats.total_conversations} conversations with MAI`)
+      if (user) {
+        // user is logged in
+        document.getElementById('centerLabel').textContent = `hey ${user}!`
+        
+        // show logout button, hide login button
+        document.getElementById('loginBtn').style.display = 'none'
+        document.getElementById('logoutBtn').style.display = 'inline-block'
+        
+        // update welcome message to be more personal
+        document.getElementById('welcomeMessage').innerHTML = 
+          `<strong>MAI:</strong> Welcome back, ${user}! I'm here whenever you need to talk. What's been on your mind lately? 💜`
+        
+      } else {
+        // user is not logged in
+        document.getElementById('loginBtn').style.display = 'inline-block'
+        document.getElementById('logoutBtn').style.display = 'none'
+        
+        // keep default welcome message
+        document.getElementById('welcomeMessage').innerHTML = 
+          `<strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜`
+      }
+
+      // update quiz buttons with results
+      const personality = localStorage.getItem('quiz_personality') || 'Personality'
+      const stress = localStorage.getItem('quiz_stress') || 'Stress & Anxiety'  
+      const love = localStorage.getItem('quiz_love') || 'Love Language'
+      const questions21 = localStorage.getItem('quiz_21') || '21 Questions'
+      
+      document.getElementById('btnPersonality').textContent = personality
+      document.getElementById('btnStress').textContent = stress
+      document.getElementById('btnLove').textContent = love
+      document.getElementById('btn21').textContent = questions21
+    }
+
+    // logout functionality
+    function handleLogout() {
+      if (confirm('Are you sure you want to log out?')) {
+        localStorage.removeItem('username')
+        localStorage.removeItem('email')
+        loadUserInterface()
+        alert('Logged out successfully!')
+        
+        // clear chat history and recommendations
+        document.getElementById('chatFeed').innerHTML = `
+          <div class="mai-welcome">
+            <strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜
+          </div>
+        `
+        clearRecommendations()
       }
     }
-  } catch (error) {
-    console.log('⚠️  Could not load chat history:', error.message)
-  }
-}
 
-// Set up the user interface when the page loads
-function loadUserInterface(){
-  const user = localStorage.getItem('username')
-  
-  if (user) {
-    // User is logged in - personalize the interface
-    document.getElementById('centerLabel').textContent = `hey ${user}!`
-    document.getElementById('loginBtn').style.display = 'none'
-    document.getElementById('logoutBtn').style.display = 'inline-block'
-    
-    // Update welcome message to mention AI capabilities
-    document.getElementById('welcomeMessage').innerHTML = 
-      `<strong>MAI:</strong> Welcome back, ${user}! I'm now powered by real AI and remember our conversations. What's on your mind? 💜`
-    
-    // Load their chat history for context
-    loadChatHistory()
-    
-  } else {
-    // User is not logged in
-    document.getElementById('loginBtn').style.display = 'inline-block'
-    document.getElementById('logoutBtn').style.display = 'none'
-    
-    // Show AI capabilities in welcome message
-    document.getElementById('welcomeMessage').innerHTML = 
-      `<strong>MAI:</strong> I'm powered by advanced AI! Log in so I can remember our conversations and personalize my responses to your personality and needs 💜`
-  }
+    // go to premium page
+    function goToPremium() {
+      window.location.href = 'premium.html'
+    }
 
-  // Update quiz button labels with completed results
-  const personality = localStorage.getItem('quiz_personality') || 'Personality'
-  const stress = localStorage.getItem('quiz_stress') || 'Stress & Anxiety'  
-  const love = localStorage.getItem('quiz_love') || 'Love Language'
-  const questions21 = localStorage.getItem('quiz_21') || '21 Questions'
-  
-  document.getElementById('btnPersonality').textContent = personality
-  document.getElementById('btnStress').textContent = stress
-  document.getElementById('btnLove').textContent = love
-  document.getElementById('btn21').textContent = questions21
-}
+    // quiz button navigation
+    document.querySelectorAll('.orbit').forEach(button => {
+      button.addEventListener('click', () => {
+        window.location.href = button.dataset.target
+      })
+    })
 
-// Handle logout
-function handleLogout() {
-  if (confirm('Are you sure you want to log out?')) {
-    // Clear user data
-    localStorage.removeItem('username')
-    localStorage.removeItem('email')
-    
-    // Reset interface
-    loadUserInterface()
-    alert('Logged out successfully!')
-    
-    // Clear chat and recommendations
-    document.getElementById('chatFeed').innerHTML = `
-      <div class="mai-welcome">
-        <strong>MAI:</strong> I'm powered by advanced AI! Log in so I can remember our conversations and personalize my responses 💜
-      </div>
-    `
-    clearRecommendations()
-  }
-}
+    // send chat message
+    async function sendMessage() {
+      const textInput = document.getElementById('chatText')
+      const message = textInput.value.trim()
+      
+      if (!message) return
+      
+      // add user message to chat
+      appendChatMessage('You: ' + message)
+      textInput.value = ''
+      
+      // get user context
+      const username = localStorage.getItem('username') || ''
+      const personality = localStorage.getItem('quiz_personality') || ''
+      const stress = localStorage.getItem('quiz_stress') || ''
+      const love = localStorage.getItem('quiz_love') || ''
+      const quiz21 = localStorage.getItem('quiz_21') || ''
+      const quizSummary = `${personality}, ${stress}, ${love}, ${quiz21}`.replace(/^,+|,+$/g, '')
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            user_input: message,
+            username: username,
+            quiz_summary: quizSummary
+          })
+        })
+        
+        const data = await response.json()
+        const aiResponse = data.response || 'Tell me more about that. I\'m here to listen.'
+        
+        // add AI response to chat
+        appendChatMessage('MAI: ' + aiResponse)
+        
+        // handle recommendations separately
+        if (data.suggestions && data.suggestions.length > 0) {
+          appendRecommendationsBubble(data.suggestions)
+          addRecommendationsToSidebar(data.suggestions)
+        }
+        
+      } catch (error) {
+        console.error('Chat error:', error)
+        appendChatMessage('MAI: I\'m having trouble connecting right now, but I\'m still here for you. Can you tell me more about how you\'re feeling?')
+      }
+    }
 
-// Clear all recommendations
-function clearRecommendations() {
-  currentRecommendations = []
-  selectedRecommendations.clear()
-  document.getElementById('recommendationsSection').style.display = 'none'
-}
+    // add message to chat feed
+    function appendChatMessage(message, type = 'normal') {
+      const chatFeed = document.getElementById('chatFeed')
+      const messageDiv = document.createElement('div')
+      
+      messageDiv.textContent = message
+      messageDiv.style.margin = '8px 0'
+      messageDiv.style.padding = '8px 12px'
+      messageDiv.style.borderRadius = '12px'
+      
+      if (message.startsWith('You:')) {
+        messageDiv.style.background = '#f0c6ff'
+        messageDiv.style.marginLeft = '20px'
+        messageDiv.style.textAlign = 'right'
+      } else {
+        messageDiv.style.background = '#fff'
+        messageDiv.style.border = '1px solid #e0e0e0'
+      }
+      
+      chatFeed.appendChild(messageDiv)
+      chatFeed.scrollTop = chatFeed.scrollHeight
+    }
 
-// Handle Enter key in chat input
-document.addEventListener('DOMContentLoaded', function() {
-  const chatInput = document.getElementById('chatText')
-  if (chatInput) {
-    chatInput.addEventListener('keypress', (e) => {
+    // add recommendations bubble to chat
+    function appendRecommendationsBubble(suggestions) {
+      const chatFeed = document.getElementById('chatFeed')
+      const recommendationsDiv = document.createElement('div')
+      
+      recommendationsDiv.style.cssText = `
+        margin: 8px 0; padding: 12px; border-radius: 12px;
+        background: linear-gradient(135deg, #e8f4fd, #d1ecf1);
+        border: 2px solid #bee5eb; font-size: 14px;
+      `
+      
+      let content = '<strong>💡 Recommendations:</strong><br>'
+      suggestions.forEach((suggestion, index) => {
+        content += `<span style="display: block; margin: 4px 0; padding: 4px 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">• ${suggestion}</span>`
+      })
+      
+      recommendationsDiv.innerHTML = content
+      chatFeed.appendChild(recommendationsDiv)
+      chatFeed.scrollTop = chatFeed.scrollHeight
+    }
+
+    // add recommendations to sidebar
+    function addRecommendationsToSidebar(suggestions) {
+      currentRecommendations = [...currentRecommendations, ...suggestions]
+      displayRecommendations()
+    }
+
+    // display recommendations in sidebar
+    function displayRecommendations() {
+      const recommendationsSection = document.getElementById('recommendationsSection')
+      const recommendationsList = document.getElementById('recommendationsList')
+      
+      if (currentRecommendations.length === 0) {
+        recommendationsSection.style.display = 'none'
+        return
+      }
+      
+      recommendationsSection.style.display = 'block'
+      recommendationsList.innerHTML = ''
+      
+      currentRecommendations.forEach((recommendation, index) => {
+        const recDiv = document.createElement('div')
+        recDiv.className = 'recommendation-item'
+        recDiv.innerHTML = `
+          <input type="checkbox" id="rec_${index}" onchange="toggleRecommendation(${index}, this.checked)">
+          <label for="rec_${index}" style="margin-left: 8px; font-size: 14px; cursor: pointer;">${recommendation}</label>
+        `
+        recommendationsList.appendChild(recDiv)
+      })
+      
+      updateSelectedCount()
+    }
+
+    // toggle recommendation selection
+    function toggleRecommendation(index, checked) {
+      if (checked) {
+        selectedRecommendations.add(index)
+      } else {
+        selectedRecommendations.delete(index)
+      }
+      updateSelectedCount()
+    }
+
+    // select all recommendations
+    function selectAllRecommendations() {
+      currentRecommendations.forEach((_, index) => {
+        selectedRecommendations.add(index)
+        document.getElementById(`rec_${index}`).checked = true
+      })
+      updateSelectedCount()
+    }
+
+    // clear all recommendations
+    function clearAllRecommendations() {
+      selectedRecommendations.clear()
+      currentRecommendations.forEach((_, index) => {
+        document.getElementById(`rec_${index}`).checked = false
+      })
+      updateSelectedCount()
+    }
+
+    // update selected count display
+    function updateSelectedCount() {
+      const count = selectedRecommendations.size
+      document.getElementById('selectedCount').textContent = `${count} selected`
+      
+      // Update button text
+      const addBtn = document.getElementById('addCalBtn')
+      if (count > 0) {
+        addBtn.textContent = `Add ${count} Selected to Calendar`
+        addBtn.style.background = 'linear-gradient(135deg, #7dd87d, #5cb85c)'
+      } else {
+        addBtn.textContent = 'Add Selected to Calendar'
+        addBtn.style.background = ''
+      }
+    }
+
+    // add selected recommendations to calendar
+    function addSelectedToCalendar() {
+      const username = localStorage.getItem('username')
+      
+      if (!username) {
+        alert('Please log in first to add calendar reminders!')
+        return
+      }
+      
+      if (selectedRecommendations.size === 0) {
+        alert('Please select at least one recommendation to add to your calendar.')
+        return
+      }
+      
+      // Show selected items and Google auth modal
+      showCalendarAuthModal()
+    }
+
+    // show calendar authentication modal
+    function showCalendarAuthModal() {
+      const modal = document.getElementById('calendarAuthModal')
+      const preview = document.getElementById('selectedItemsPreview')
+      
+      // Show selected recommendations
+      let previewHTML = '<h4>Selected Reminders:</h4><ul>'
+      selectedRecommendations.forEach(index => {
+        previewHTML += `<li>${currentRecommendations[index]}</li>`
+      })
+      previewHTML += '</ul>'
+      
+      preview.innerHTML = previewHTML
+      modal.style.display = 'flex'
+    }
+
+    // close calendar modal
+    function closeCalendarModal() {
+      document.getElementById('calendarAuthModal').style.display = 'none'
+    }
+
+    // connect to Google Calendar
+    function connectGoogleCalendar() {
+      const username = localStorage.getItem('username')
+      const selectedItems = Array.from(selectedRecommendations).map(index => currentRecommendations[index])
+      
+      // Store selected items for after auth
+      localStorage.setItem('pendingCalendarItems', JSON.stringify(selectedItems))
+      
+      // Redirect to Google OAuth
+      window.location.href = `http://localhost:5000/api/calendar/auth?username=${username}&return=calendar_add`
+    }
+
+    // clear recommendations
+    function clearRecommendations() {
+      currentRecommendations = []
+      selectedRecommendations.clear()
+      document.getElementById('recommendationsSection').style.display = 'none'
+    }
+
+    // load existing reminders
+    async function loadReminders() {
+      const username = localStorage.getItem('username')
+      if (!username) return
+      
+      try {
+        const response = await fetch(`http://localhost:5000/api/calendar/reminders/${username}`)
+        const data = await response.json()
+        
+        const reminderList = document.getElementById('reminderList')
+        const emptyMsg = document.getElementById('remindersEmpty')
+        
+        if (data.reminders && data.reminders.length > 0) {
+          emptyMsg.style.display = 'none'
+          reminderList.innerHTML = ''
+          
+          data.reminders.forEach(reminder => {
+            const div = document.createElement('div')
+            div.style.cssText = 'background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin:8px 0'
+            div.innerHTML = `
+              <strong>${reminder.title}</strong><br>
+              <small>${new Date(reminder.datetime).toLocaleDateString()}</small>
+            `
+            reminderList.appendChild(div)
+          })
+        } else {
+          emptyMsg.style.display = 'block'
+          reminderList.innerHTML = ''
+        }
+      } catch (error) {
+        console.log('Couldn\'t load reminders:', error)
+      }
+    }
+
+    // enter key sends message
+    document.getElementById('chatText').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         sendMessage()
       }
     })
-  }
-  
-  // Initialize the interface
-  loadUserInterface()
-})
 
-// Initialize everything when page loads
-window.addEventListener('load', () => {
-  loadUserInterface()
-})
+    // check for calendar connection status in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('calendar') === 'connected') {
+      alert('Calendar connected! You can now add reminders')
+      loadReminders()
+      
+      // Check if we have pending calendar items to add
+      const pendingItems = localStorage.getItem('pendingCalendarItems')
+      if (pendingItems) {
+        addPendingItemsToCalendar(JSON.parse(pendingItems))
+        localStorage.removeItem('pendingCalendarItems')
+      }
+    } else if (urlParams.get('calendar') === 'error') {
+      alert('Calendar connection failed')
+    }
+
+    // add pending items to calendar after successful auth
+    async function addPendingItemsToCalendar(items) {
+      const username = localStorage.getItem('username')
+      
+      try {
+        for (const item of items) {
+          const tomorrow = new Date()
+          tomorrow.setDate(tomorrow.getDate() + 1)
+          tomorrow.setHours(10, 0, 0, 0)
+          
+          const reminderData = {
+            title: `MAI Reminder: ${item}`,
+            description: `Wellness reminder from MAI: ${item}`,
+            datetime: tomorrow.toISOString(),
+            username: username
+          }
+
+          const response = await fetch('http://localhost:5000/api/calendar/add-reminder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reminderData)
+          })
+          
+          const result = await response.json()
+          if (!result.success) {
+            console.error('Failed to add reminder:', item)
+          }
+        }
+        
+        alert(`Successfully added ${items.length} reminders to your calendar!`)
+        loadReminders()
+        
+        // Clear selected recommendations
+        clearRecommendations()
+        
+      } catch (error) {
+        console.error('Error adding reminders:', error)
+        alert('There was an error adding some reminders to your calendar.')
+      }
+    }
+
+    // initialize everything when page loads
+    window.addEventListener('load', () => {
+      loadUserInterface()
+      loadReminders()
+    })
+
+    // close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('calendarAuthModal')
+      if (event.target === modal) {
+        closeCalendarModal()
+      }
+    }
   </script>
 </body>
 </html>

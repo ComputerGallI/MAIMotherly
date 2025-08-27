@@ -1,76 +1,71 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap');
 
-/* NEW soft lavender color scheme */
+/* COLOR scheme and variables - these control the whole app's look */
 :root{
-  --primary-lavender:#C8B3FF;
-  --pale-lavender:#EBDFFF;
-  --almost-white-lilac:#F5EFFF;
-  --baby-blue:#B3D1FF;
-  --soft-pink:#FFD6F5;
-  --warm-cream:#FDF6E3;
-  --minty-teal:#D5F2EA;
-  --soft-sky:#A4DDED;
-  --deep-purple:#5E4B8B;
-  --deep-navy:#1E1E2F;
-  --warm-coral:#FF8A8A;
-  --deep-teal:#004E64;
-  --soft-charcoal:#2B2B2B;
-  --dusty-violet:#4C3C75;
-  --white:#FFFFFF;
+  --bg1:#f0c6ff;
+  --bg2:#c8b3ff;
+  --ink:#1f133a;
+  --ink-soft:#2e2156;
+  --white:#ffffff;
+  --glass:rgba(255,255,255,0.82);
+  --edge:rgba(79,56,140,0.18);
+  --halo:rgba(120,80,200,0.22);
+  --pill1:#f4c2ff;
+  --pill2:#b4a1ff;
+  --pillTxt:#fff;
+  --calm-green:#7dd87d;
+  --glow-green:rgba(125, 216, 125, 0.6);
+  --glow-yellow:rgba(255, 215, 0, 0.8);
+  --muted:#4e3f7a;
 }
 
-/* basic RESET with Manrope font */
+/* basic RESET - makes everything behave consistently */
 *{box-sizing:border-box}
 html,body{height:100%}
 
 body{
   margin:0;
-  font-family: Manrope, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-weight: 600;
-  color: var(--soft-charcoal);
-  background: linear-gradient(135deg, var(--pale-lavender), var(--primary-lavender), var(--baby-blue)) fixed;
+  font-family:Manrope, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--ink);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;
 }
 
-/* STICKY header with smooth gradient */
+/* STICKY header - stays at the top when you scroll */
 .topbar{
   position:sticky; top:0; z-index:15;
   display:flex; align-items:center; justify-content:space-between;
   padding:16px 24px;
   backdrop-filter:saturate(140%) blur(8px);
-  background:linear-gradient(135deg, rgba(245,239,255,0.9), rgba(235,223,255,0.8), rgba(179,209,255,0.7));
-  border-bottom:1px solid rgba(94,75,139,0.15);
+  background:linear-gradient(180deg,rgba(255,255,255,0.28),rgba(255,255,255,0.06));
+  border-bottom:1px solid rgba(80,60,130,0.12);
 }
 
 .brand{
   font-weight:800; font-size:56px; line-height:1;
-  text-decoration:none; 
-  background:linear-gradient(135deg, var(--deep-purple), var(--dusty-violet));
-  background-clip:text;
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  text-shadow:0 3px 14px rgba(94,75,139,0.3);
+  text-decoration:none; color:var(--ink);
+  -webkit-text-stroke:1px #5b39a6;
+  text-shadow:0 3px 14px rgba(90,60,170,0.25);
 }
 
 .top-actions{display:flex; gap:10px}
 
-/* button STYLES with smooth lavender gradients */
+/* button STYLES for everything - this makes all buttons look consistent */
 .pill{
   display:inline-block;
   padding:12px 20px;
   border-radius:999px;
-  background:linear-gradient(135deg, var(--pale-lavender), var(--primary-lavender), var(--baby-blue));
-  color:var(--white); text-decoration:none; cursor:pointer;
+  background:linear-gradient(135deg,var(--pill1),var(--pill2));
+  color:var(--pillTxt); text-decoration:none; cursor:pointer;
   font-weight:700; border:0;
-  box-shadow:0 8px 20px rgba(94,75,139,0.25);
-  text-shadow:0 1px 3px rgba(200,179,255,0.45);
+  box-shadow:0 8px 20px rgba(123,93,215,0.25);
+  text-shadow:0 1px 3px rgba(255,192,255,0.45);
   transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 
 .pill:hover{
   transform:translateY(-1px) scale(1.03); 
   filter:saturate(1.06); 
-  box-shadow:0 10px 22px rgba(94,75,139,0.33);
-  background:linear-gradient(135deg, var(--baby-blue), var(--primary-lavender), var(--soft-pink));
+  box-shadow:0 10px 22px rgba(123,93,215,0.33);
 }
 .pill:active{transform:translateY(0) scale(.99)}
 
@@ -78,19 +73,19 @@ body{
 .small-pill {
   padding: 8px 16px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
-/* GO PRO button with bright yellow gradient */
+/* GO PRO button with special swell effect */
 .go-pro-btn{
   display:inline-block;
   padding:12px 20px;
   border-radius:999px;
-  background:linear-gradient(135deg, #FFD700, #FFED4A, #FFF59D);
-  color:var(--deep-navy); text-decoration:none; cursor:pointer;
-  font-weight:800; border:0;
-  box-shadow:0 8px 20px rgba(255,215,0,0.4);
-  text-shadow:0 1px 3px rgba(255,237,74,0.6);
+  background:linear-gradient(135deg,var(--pill1),var(--pill2));
+  color:var(--pillTxt); text-decoration:none; cursor:pointer;
+  font-weight:700; border:0;
+  box-shadow:0 8px 20px rgba(123,93,215,0.25);
+  text-shadow:0 1px 3px rgba(255,192,255,0.45);
   transition:all .25s ease;
   position: relative;
 }
@@ -98,60 +93,66 @@ body{
 .go-pro-btn:hover{
   transform:translateY(-2px) scale(1.15); 
   filter:saturate(1.1) brightness(1.1); 
-  box-shadow:0 15px 35px rgba(255,215,0,0.6), 0 0 25px rgba(255,237,74,0.8);
-  background:linear-gradient(135deg, #FFED4A, #FFD700, #FFC107);
+  box-shadow:0 15px 35px rgba(123,93,215,0.4), 0 0 25px var(--glow-yellow);
+  background:linear-gradient(135deg,#ffd700,#ffb347);
+  color:#8b4513;
 }
 
 .go-pro-btn:active{transform:translateY(0) scale(1.1)}
 
-/* VISIBLE instructions with new soft colors - no more hiding! */
+/* INVISIBLE instructions until box hover - with warm colors and jiggle! */
 .glowing-text{
-  color: var(--dusty-violet) !important; 
-  font-weight: 700 !important; 
-  font-size: 15px !important; 
-  opacity: 1;
+  color: transparent !important; 
+  font-weight:700 !important; 
+  font-size:15px !important; 
+  opacity: 0;
+  transition: all 0.5s ease;
   cursor: pointer;
 }
 
-/* caring INSTRUCTION text - always visible with soft styling */
+/* caring INSTRUCTION text - completely invisible by default */
 .caring-instruction{
-  color: var(--dusty-violet); 
-  font-weight: 700; 
-  font-size: 14px; 
-  margin: 0 0 16px; 
-  text-align: center; 
-  font-style: italic;
+  color: transparent; 
+  font-weight:600; font-size:14px; 
+  margin:0 0 16px; text-align:center; font-style:italic;
+  transition: all 0.5s ease;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* SHOW instructions when hovering over the entire card - SOFTER PINK-PURPLE colors */
+.card:hover .glowing-text {
+  color: #c68fc4 !important;
   opacity: 1;
+  text-shadow: 0 0 10px rgba(198, 143, 196, 0.7), 0 0 20px rgba(210, 160, 210, 0.5), 0 0 25px rgba(220, 170, 255, 0.3);
+  transform: translateY(-2px);
+  animation: gentle-jiggle 0.6s ease-in-out;
 }
 
-/* CARD containers with smooth lavender gradients */
-.card{
-  background: linear-gradient(135deg, var(--almost-white-lilac), rgba(255,255,255,0.95), var(--pale-lavender));
-  border: 1px solid var(--baby-blue);
-  border-radius: 28px;
-  padding: 24px 26px;
-  box-shadow: 0 14px 40px rgba(94,75,139,0.12);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.card:hover .caring-instruction {
+  opacity: 1;
+  color: #b88ab8;
+  text-shadow: 0 0 8px rgba(184, 138, 184, 0.6), 0 0 15px rgba(200, 150, 220, 0.4);
+  transform: translateY(-1px);
+  animation: gentle-jiggle 0.6s ease-in-out;
 }
 
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 50px rgba(94,75,139,0.18), 0 0 30px rgba(179,209,255,0.2);
-  background: linear-gradient(135deg, var(--pale-lavender), var(--almost-white-lilac), var(--baby-blue));
+/* gentle JIGGLE animation for discovered text */
+@keyframes gentle-jiggle {
+  0% { transform: translateY(-1px) rotate(0deg); }
+  25% { transform: translateY(-2px) rotate(-1deg); }
+  50% { transform: translateY(-1px) rotate(1deg); }
+  75% { transform: translateY(-2px) rotate(-0.5deg); }
+  100% { transform: translateY(-1px) rotate(0deg); }
 }
 
-/* mai WELCOME message with gradient */
+/* mai WELCOME message */
 .mai-welcome{
-  background: linear-gradient(135deg, var(--almost-white-lilac), var(--pale-lavender)); 
-  border: 1px solid var(--baby-blue); 
-  border-radius: 12px;
-  padding: 12px 16px; 
-  margin: 8px 0; 
-  color: var(--deep-purple); 
-  font-size: 14px;
-  font-weight: 700;
+  background:#f8f5ff; border:1px solid #e0d4ff; border-radius:12px;
+  padding:12px 16px; margin:8px 0; color:#5a4fcf; font-size:14px;
 }
-/* MAIN layout grid */
+
+/* MAIN layout grid - this controls where everything goes on the page */
 .shell{
   max-width:1180px;
   margin:24px auto 80px;
@@ -164,52 +165,47 @@ body{
   gap:26px;
 }
 
+/* CARD containers - now JUMP UP when hovered to reveal instructions! */
+.card{
+  background:var(--glass);
+  border:1px solid var(--edge);
+  border-radius:28px;
+  padding:24px 26px;
+  box-shadow:0 14px 40px rgba(75,55,140,0.18);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 50px rgba(75,55,140,0.25), 0 0 30px rgba(200,150,255,0.15);
+}
 .left{grid-area:left}
 .right{grid-area:right}
 .full{grid-area:full}
 
-.title{
-  margin:0 0 18px; 
-  font-weight:700; 
-  font-size:40px; 
-  letter-spacing:.2px;
-  color: var(--deep-purple);
-}
+.title{margin:0 0 18px; font-weight:800; font-size:40px; letter-spacing:.2px}
+.soft{ text-shadow:0 1px 0 var(--halo), 0 2px 10px var(--halo) }
+.muted{color:#4e3f7a}
 
-.soft{ 
-  text-shadow:0 1px 0 var(--pale-lavender), 0 2px 10px rgba(200,179,255,0.3);
-}
-
-.muted{
-  color: var(--dusty-violet);
-}
-
-/* QUIZ visualization circle with enhanced gradient */
+/* QUIZ visualization circle - back to original purple colors, smaller size */
 .viz-wrap{
-  position:relative; height:430px; 
-  background: linear-gradient(135deg, var(--almost-white-lilac), var(--pale-lavender)); 
-  border-radius:22px;
-  border:1px solid var(--baby-blue);
+  position:relative; height:430px; background:#fff; border-radius:22px;
+  border:1px dashed rgba(120,90,200,0.18);
   display:flex; align-items:center; justify-content:center; overflow:hidden;
 }
 
 .viz-circle{
   width:200px; height:200px; border-radius:50%;
-  background:linear-gradient(135deg, var(--pale-lavender), var(--primary-lavender), var(--baby-blue));
+  background:radial-gradient(circle at 35% 25%, #e8c8ff, #b79dff);
   display:flex; align-items:center; justify-content:center;
-  box-shadow:inset 0 10px 40px rgba(94,75,139,0.25), 0 10px 24px rgba(179,209,255,0.2);
+  box-shadow:inset 0 10px 40px rgba(90,60,170,0.25), 0 10px 24px rgba(100,70,180,0.18);
 }
 
 .center-text{ 
-  color: var(--white); 
-  font-weight: 800; 
-  font-size: 20px; 
-  text-align: center; 
-  padding: 0 18px;
-  text-shadow: 0 2px 4px rgba(94,75,139,0.3);
+  color:#fff; font-weight:800; font-size:20px; text-align:center; padding:0 18px;
 }
 
-/* quiz BUTTONS with smooth gradients */
+/* quiz BUTTONS positioned around smaller circle - ENLARGE instead of move */
 .orbit{ 
   position:absolute; transform:translate(-50%,-50%); white-space:nowrap;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -221,11 +217,10 @@ body{
   top:  calc(var(--cy) + sin(var(--deg)) * var(--R));
 }
 
-/* ENLARGE quiz buttons on hover */
+/* ENLARGE quiz buttons on hover instead of moving */
 .viz-wrap .orbit:hover {
   transform: translate(-50%, -50%) scale(1.15);
-  box-shadow: 0 12px 28px rgba(94,75,139,0.3), 0 0 20px var(--soft-sky);
-  background: linear-gradient(135deg, var(--soft-sky), var(--baby-blue), var(--primary-lavender));
+  box-shadow: 0 12px 28px rgba(123,93,215,0.35), 0 0 20px rgba(200,150,255,0.2);
   z-index: 5;
 }
 
@@ -237,13 +232,13 @@ body{
 .rem-list{display:flex; flex-direction:column; gap:10px; margin:14px 0}
 .cta{margin-top:8px}
 
-/* recommendations LIST styling with new colors */
+/* recommendations LIST styling */
 .recommendations-list {
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid var(--pale-lavender);
+  border: 1px solid var(--edge);
   border-radius: 12px;
-  background: var(--almost-white-lilac);
+  background: rgba(255, 255, 255, 0.9);
   padding: 10px;
 }
 
@@ -253,29 +248,27 @@ body{
   padding: 8px;
   margin: 4px 0;
   border-radius: 8px;
-  background: var(--white);
-  border: 1px solid var(--baby-blue);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(180, 161, 255, 0.3);
   transition: all 0.2s ease;
 }
 
 .recommendation-item:hover {
-  background: var(--pale-lavender);
-  border-color: var(--primary-lavender);
+  background: rgba(244, 194, 255, 0.2);
+  border-color: var(--pill1);
 }
 
 .recommendation-item input[type="checkbox"] {
   margin: 0;
   margin-top: 2px;
   transform: scale(1.2);
-  accent-color: var(--primary-lavender);
+  accent-color: var(--pill2);
 }
 
 .recommendation-item label {
   line-height: 1.4;
   word-wrap: break-word;
   flex: 1;
-  color: var(--soft-charcoal);
-  font-weight: 700;
 }
 
 /* Custom SCROLLBAR for recommendations */
@@ -284,50 +277,41 @@ body{
 }
 
 .recommendations-list::-webkit-scrollbar-track {
-  background: rgba(235,223,255,0.5);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 3px;
 }
 
 .recommendations-list::-webkit-scrollbar-thumb {
-  background: var(--primary-lavender);
+  background: var(--pill2);
   border-radius: 3px;
 }
 
 .recommendations-list::-webkit-scrollbar-thumb:hover {
-  background: var(--deep-purple);
+  background: var(--pill1);
 }
 
-/* CHAT interface with new colors */
+/* CHAT interface */
 .chat-box{display:flex; flex-direction:column; gap:14px}
 
 .chat-feed{
-  height:240px; 
-  background: var(--almost-white-lilac); 
-  border: 1px solid var(--pale-lavender); 
-  border-radius: 16px; 
-  padding: 14px; 
-  overflow: auto;
+  height:240px; background:#fff; border:1px solid rgba(80,60,130,0.12); 
+  border-radius:16px; padding:14px; overflow:auto;
 }
 
 .chat-input{display:flex; gap:10px}
 
 .chat-input input{
-  flex:1; height:46px; border-radius:999px; 
-  border: 1px solid var(--pale-lavender);
-  padding: 0 16px; 
-  font-weight: 700; 
-  color: var(--soft-charcoal);
-  background: linear-gradient(180deg, var(--white), var(--almost-white-lilac)); 
-  outline: none;
-  font-family: 'Sorts Mill Goudy', Georgia, serif;
+  flex:1; height:46px; border-radius:999px; border:1px solid rgba(80,60,130,0.12);
+  padding:0 16px; font-weight:700; color:var(--ink-soft);
+  background:linear-gradient(180deg,#fff, #fbf8ff); outline:none;
 }
 
-/* CALENDAR modal styles with new colors */
+/* CALENDAR modal styles */
 .calendar-modal {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(30, 30, 47, 0.8);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -335,14 +319,14 @@ body{
 }
 
 .calendar-modal-content {
-  background: linear-gradient(135deg, var(--almost-white-lilac), var(--white));
-  border: 2px solid var(--pale-lavender);
+  background: var(--glass);
+  border: 2px solid var(--edge);
   border-radius: 20px;
   width: 90%;
   max-width: 500px;
   max-height: 80%;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(94, 75, 139, 0.4);
+  box-shadow: 0 20px 60px rgba(75, 55, 140, 0.4);
 }
 
 .calendar-modal-header {
@@ -350,13 +334,13 @@ body{
   justify-content: space-between;
   align-items: center;
   padding: 20px 25px;
-  border-bottom: 1px solid var(--pale-lavender);
-  background: var(--almost-white-lilac);
+  border-bottom: 1px solid var(--edge);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .calendar-modal-header h3 {
   margin: 0;
-  color: var(--deep-purple);
+  color: var(--ink);
   font-weight: 700;
 }
 
@@ -364,7 +348,7 @@ body{
   background: none;
   border: none;
   font-size: 24px;
-  color: var(--dusty-violet);
+  color: var(--ink-soft);
   cursor: pointer;
   padding: 5px;
   border-radius: 50%;
@@ -372,20 +356,19 @@ body{
 }
 
 .modal-close:hover {
-  background: var(--pale-lavender);
-  color: var(--deep-purple);
+  background: rgba(79, 56, 140, 0.1);
+  color: var(--ink);
 }
 
 .calendar-modal-body {
   padding: 25px;
-  color: var(--soft-charcoal);
+  color: var(--ink-soft);
   line-height: 1.5;
-  font-weight: 700;
 }
 
 .selected-items-preview {
-  background: var(--almost-white-lilac);
-  border: 1px solid var(--pale-lavender);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--edge);
   border-radius: 12px;
   padding: 15px;
   margin: 15px 0;
@@ -393,7 +376,7 @@ body{
 
 .selected-items-preview h4 {
   margin: 0 0 10px;
-  color: var(--deep-purple);
+  color: var(--ink);
   font-size: 16px;
 }
 
@@ -404,15 +387,15 @@ body{
 
 .selected-items-preview li {
   margin: 5px 0;
-  color: var(--soft-charcoal);
+  color: var(--ink-soft);
 }
 
-/* QUIZ modal styles with new lavender theme */
+/* QUIZ modal styles - the popup windows for taking quizzes */
 .quiz-modal {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(30, 30, 47, 0.8);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -428,15 +411,15 @@ body{
 }
 
 .quiz-book {
-  background: linear-gradient(135deg, var(--almost-white-lilac), var(--white));
-  border: 2px solid var(--pale-lavender);
+  background: var(--glass);
+  border: 2px solid var(--edge);
   border-radius: 20px;
   width: 90%;
   max-width: 600px;
   height: 80%;
   max-height: 500px;
   padding: 40px;
-  box-shadow: 0 20px 60px rgba(94, 75, 139, 0.3);
+  box-shadow: 0 20px 60px rgba(75, 55, 140, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -468,20 +451,19 @@ body{
 }
 
 .quiz-question h2 {
-  color: var(--deep-purple);
+  color: var(--ink);
   font-size: 24px;
   margin-bottom: 20px;
   font-weight: 700;
 }
 
 .quiz-question p {
-  color: var(--soft-charcoal);
+  color: var(--ink-soft);
   font-size: 18px;
   line-height: 1.5;
-  font-weight: 700;
 }
 
-/* QUIZ options with new colors and invisible scrollbars */
+/* QUIZ options - scrollbars TRULY INVISIBLE until side hover */
 .quiz-options {
   display: flex;
   flex-direction: column;
@@ -504,33 +486,45 @@ body{
   background: transparent;
 }
 
-/* show SCROLLBAR when hovering */
+/* HOVER zone on right side to reveal scrollbar */
+.quiz-options::before {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  width: 15px;
+  z-index: 10;
+  background: transparent;
+}
+
+/* show SCROLLBAR when hovering the right edge */
 .quiz-options:hover::-webkit-scrollbar {
   width: 8px;
 }
 
 .quiz-options:hover::-webkit-scrollbar-track {
-  background: var(--pale-lavender);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
 
 .quiz-options:hover::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--baby-blue), var(--primary-lavender));
+  background: linear-gradient(135deg, var(--pill1), var(--pill2));
   border-radius: 4px;
 }
 
 .quiz-options:hover::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--primary-lavender), var(--deep-purple));
+  background: linear-gradient(135deg, #e8b3ff, #9d87ff);
 }
 
-/* scroll INDICATOR */
+/* scroll INDICATOR that appears when hovering */
 .quiz-options::after {
   content: "scroll ↕";
   position: absolute;
   right: -5px;
   top: 50%;
   transform: translateY(-50%);
-  background: linear-gradient(135deg, var(--baby-blue), var(--primary-lavender));
+  background: linear-gradient(135deg, var(--pill1), var(--pill2));
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
@@ -542,30 +536,31 @@ body{
   z-index: 10;
 }
 
+/* show scroll indicator on hover */
 .quiz-options:hover::after {
   opacity: 0.9;
 }
 
 .quiz-option {
   padding: 15px 20px;
-  border: 2px solid var(--pale-lavender);
+  border: 2px solid var(--edge);
   border-radius: 15px;
-  background: var(--almost-white-lilac);
+  background: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: all 0.3s ease;
-  font-weight: 700;
-  color: var(--soft-charcoal);
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .quiz-option:hover {
-  border-color: var(--primary-lavender);
-  background: var(--baby-blue);
+  border-color: var(--pill1);
+  background: rgba(244, 194, 255, 0.3);
   transform: translateY(-2px);
 }
 
 .quiz-option.selected {
-  border-color: var(--deep-purple);
-  background: var(--primary-lavender);
+  border-color: var(--pill2);
+  background: var(--pill1);
   color: white;
 }
 
@@ -576,15 +571,15 @@ body{
 }
 
 .quiz-progress {
-  color: var(--dusty-violet);
-  font-weight: 700;
+  color: var(--ink-soft);
+  font-weight: 600;
 }
 
 .quiz-btn {
   padding: 12px 24px;
   border: none;
   border-radius: 25px;
-  background: linear-gradient(135deg, var(--baby-blue), var(--primary-lavender));
+  background: linear-gradient(135deg, var(--pill1), var(--pill2));
   color: white;
   font-weight: 700;
   cursor: pointer;
@@ -593,7 +588,7 @@ body{
 
 .quiz-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(94, 75, 139, 0.3);
+  box-shadow: 0 5px 15px rgba(123, 93, 215, 0.3);
 }
 
 .quiz-btn:disabled {
@@ -609,7 +604,7 @@ body{
   background: none;
   border: none;
   font-size: 24px;
-  color: var(--dusty-violet);
+  color: var(--ink-soft);
   cursor: pointer;
   padding: 5px;
   border-radius: 50%;
@@ -617,11 +612,11 @@ body{
 }
 
 .quiz-close:hover {
-  background: var(--pale-lavender);
-  color: var(--deep-purple);
+  background: rgba(79, 56, 140, 0.1);
+  color: var(--ink);
 }
 
-/* RESPONSIVE breakpoint with updated styling */
+/* RESPONSIVE breakpoint - makes it work on phones and tablets */
 @media (max-width: 980px){
   .shell{
     grid-template-columns:1fr; 
