@@ -12,7 +12,7 @@
   <header class="topbar">
     <a class="brand" href="index.html">MAI</a>
     <nav class="top-actions">
-      <!-- NEW: avatar + greeting -->
+      <!-- Avatar + greeting -->
       <img id="navAvatar" class="nav-avatar" alt="" />
       <span id="navGreeting" class="nav-greeting"></span>
 
@@ -137,12 +137,77 @@
     const DEFAULT_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     // const DEFAULT_TZ = 'America/Chicago';
 
-    // === user helpers ===
+    // ===== ID & display helpers =====
     function getUsername() {
       return localStorage.getItem('username') || '';
     }
 
-    // NEW: fetch profile (name/email/picture) and show greeting in navbar
+    // Make a nice short first name from name/email/userId
+    function getShortName() {
+      const displayName = (localStorage.getItem('display_name') || '').trim();
+      const email = (localStorage.getItem('email') || '').trim();
+      const username = getUsername();
+
+      // Helper to TitleCase a token
+      const title = s => s ? (s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()) : '';
+
+      if (displayName) {
+        // Take the first word of the display name
+        return title(displayName.split(/\s+/)[0]);
+      }
+      if (email && email.includes('@')) {
+        // Use local-part before @, split on . _ - and spaces, take the first piece
+        const local = email.split('@')[0].replace(/[._-]+/g, ' ').trim();
+        const token = local.split(/\s+/)[0];
+        return title(token);
+      }
+      // Fallback to username (token id)
+      return username || 'Friend';
+    }
+
+    function getDisplayName() {
+      // Full name or email if you ever need it somewhere else
+      return (
+        localStorage.getItem('display_name') ||
+        localStorage.getItem('email') ||
+        getUsername() ||
+        'Guest'
+      );
+    }
+
+    // Update the “hey …” bubble and the chat welcome line with short name
+    function renderWelcomeTexts() {
+      const user = getUsername();
+      const shortName = getShortName();
+      const center = document.getElementById('centerLabel');
+      const welcome = document.getElementById('welcomeMessage');
+
+      if (user) {
+        if (center) center.textContent = `hey ${shortName}!`;
+        if (welcome) {
+          welcome.innerHTML =
+            `<strong>MAI:</strong> Welcome back, ${shortName}! I'm here whenever you need to talk. ` +
+            `What's been on your mind lately? 💜`;
+        }
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+      } else {
+        if (center) center.textContent = 'Register or Log in';
+        if (welcome) {
+          welcome.innerHTML =
+            `<strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? ` +
+            `Want to talk out your upcoming week? Let's talk it out here 💜`;
+        }
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+      }
+    }
+
+    // Navbar greeting + avatar (uses short first name)
     async function updateNavbarGreeting() {
       const el = document.getElementById('navGreeting');
       const av = document.getElementById('navAvatar');
@@ -151,62 +216,42 @@
 
       if (!userId) {
         el.textContent = '';
-        av.style.display = 'none';
+        if (av) av.style.display = 'none';
+        renderWelcomeTexts();
         return;
       }
+
       try {
         const r = await fetch(`${BACKEND}/auth/me?user_id=${encodeURIComponent(userId)}`);
         const data = await r.json();
 
-        if (data.name) localStorage.setItem('display_name', data.name);
-        if (data.email) localStorage.setItem('email', data.email);
+        if (data.name)    localStorage.setItem('display_name', data.name);
+        if (data.email)   localStorage.setItem('email', data.email);
         if (data.picture) localStorage.setItem('avatar', data.picture);
 
-        const display = data.name || data.email || userId;
-        el.textContent = `Hello, ${display}`;
-        if (data.picture) {
-          av.src = data.picture;
-          av.alt = display;
-          av.style.display = 'inline-block';
-        } else {
-          av.style.display = 'none';
+        const shortName = getShortName();
+        el.textContent = `Hello, ${shortName}`;
+        if (av) {
+          if (data.picture) { av.src = data.picture; av.alt = shortName; av.style.display = 'inline-block'; }
+          else { av.style.display = 'none'; }
         }
-        document.getElementById('loginBtn').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'inline-block';
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
       } catch {
-        const display = localStorage.getItem('display_name') || localStorage.getItem('email') || userId;
-        if (display) el.textContent = `Hello, ${display}`;
+        const shortName = getShortName();
+        el.textContent = `Hello, ${shortName}`;
         const pic = localStorage.getItem('avatar');
-        if (pic) { av.src = pic; av.alt = display; av.style.display = 'inline-block'; }
-      }
-    }
-
-    function loadUserInterface() {
-      const user = getUsername();
-
-      if (user) {
-        document.getElementById('centerLabel').textContent = `hey ${user}!`;
-        document.getElementById('loginBtn').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'inline-block';
-        document.getElementById('welcomeMessage').innerHTML =
-          `<strong>MAI:</strong> Welcome back, ${user}! I'm here whenever you need to talk. What's been on your mind lately? 💜`;
-      } else {
-        document.getElementById('loginBtn').style.display = 'inline-block';
-        document.getElementById('logoutBtn').style.display = 'none';
-        document.getElementById('welcomeMessage').innerHTML =
-          `<strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜`;
+        if (av && pic) { av.src = pic; av.alt = shortName; av.style.display = 'inline-block'; }
       }
 
-      // quiz button labels
-      const personality = localStorage.getItem('quiz_personality') || 'Personality';
-      const stress = localStorage.getItem('quiz_stress') || 'Stress & Anxiety';
-      const love = localStorage.getItem('quiz_love') || 'Love Language';
-      const q21 = localStorage.getItem('quiz_21') || '21 Questions';
-      btnPersonality.textContent = personality;
-      btnStress.textContent = stress;
-      btnLove.textContent = love;
-      btn21.textContent = q21;
+      // Ensure the chat UI uses the latest short name
+      renderWelcomeTexts();
     }
+
+    // Simple wrapper (kept for compatibility)
+    function loadUserInterface() { renderWelcomeTexts(); }
 
     function handleLogout() {
       if (confirm('Are you sure you want to log out?')) {
@@ -214,15 +259,19 @@
         localStorage.removeItem('email');
         localStorage.removeItem('display_name');
         localStorage.removeItem('avatar');
-        loadUserInterface();
+        renderWelcomeTexts();
         updateNavbarGreeting();
         alert('Logged out successfully!');
-        chatFeed.innerHTML = `
-          <div class="mai-welcome">
-            <strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜
-          </div>
-        `;
-        document.getElementById('googleStatus').textContent = 'Not connected';
+        const chatFeed = document.getElementById('chatFeed');
+        if (chatFeed) {
+          chatFeed.innerHTML = `
+            <div class="mai-welcome">
+              <strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜
+            </div>
+          `;
+        }
+        const status = document.getElementById('googleStatus');
+        if (status) status.textContent = 'Not connected';
       }
     }
 
@@ -270,6 +319,7 @@
     }
 
     function appendChatMessage(message, type = 'normal') {
+      const chatFeed = document.getElementById('chatFeed');
       const div = document.createElement('div');
       div.textContent = message;
       div.style.margin = '8px 0';
@@ -491,14 +541,14 @@
         window.history.replaceState({}, "", url.toString());
       }
 
-      loadUserInterface();
-      updateNavbarGreeting();   // <-- greet with Google profile
+      loadUserInterface();     // render with whatever we have locally
+      updateNavbarGreeting();  // fetch profile -> update navbar and chat welcome (short first name)
       checkGoogleStatus();
       initCalendarFormDefaults();
       wireReminderPresetButtons();
       wireCalendarForm();
 
-      // small footer widget
+      // footer widget
       const el = document.getElementById("usernameDisplay");
       const uid = localStorage.getItem("username") || "Guest";
       if (el) el.textContent = uid;
