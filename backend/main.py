@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api import auth as auth_routes
 from api import calendar as calendar_routes
-# from api import chat as chat_routes  # keep commented for now
+from api import chat as chat_routes  # keep commented for now
 
 app = FastAPI(title="MAI Backend")
 
@@ -31,7 +31,7 @@ app.add_middleware(
 
 app.include_router(auth_routes.router)
 app.include_router(calendar_routes.router)
-# app.include_router(chat_routes.router)
+app.include_router(chat_routes.router)
 
 @app.get("/")
 def root():
