@@ -2,12 +2,14 @@
 import os
 from typing import Optional
 from fastapi import APIRouter, Request, HTTPException, Query
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.responses import RedirectResponse
+
 from services.gcal_oauth import (
     generate_auth_url,
     exchange_code_for_tokens,
     is_connected,
     revoke,
+    get_user_profile,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -19,28 +21,13 @@ def _ensure_user_id(path_id: Optional[str], query_id: Optional[str]) -> str:
     return uid
 
 def _final_frontend_redirect(user_id: str) -> str:
-    """
-    Builds a robust redirect target that works whether your app is served as:
-      - http://127.0.0.1:5500/                  (index at "/")
-      - http://127.0.0.1:5500/index.html        (explicit index)
-      - http://127.0.0.1:5500/frontend/index.html (served from repo root)
-    Configure via:
-      FRONTEND_URL         -> base origin + optional subpath (e.g., http://127.0.0.1:5500 or http://127.0.0.1:5500/frontend)
-      FRONTEND_INDEX_PATH  -> "" (default, means "/"), or "/index.html"
-                              or "/frontend/index.html" if needed.
-    """
     base = os.getenv("FRONTEND_URL", "http://127.0.0.1:5500").rstrip("/")
-    index_path = os.getenv("FRONTEND_INDEX_PATH", "").strip()  # "", "/index.html", "/frontend/index.html", etc.
-
-    # Normalize index path
+    index_path = os.getenv("FRONTEND_INDEX_PATH", "").strip()
     if index_path and not index_path.startswith("/"):
         index_path = "/" + index_path
-
-    # If no index path provided, redirect to "/" (most static servers map this to index.html)
     path = index_path or "/"
     return f"{base}{path}?user_id={user_id}"
 
-# --- Login: path or query ---
 @router.get("/login/{user_id}")
 async def auth_login_path(user_id: str):
     try:
@@ -56,7 +43,6 @@ async def auth_login_query(user_id: Optional[str] = Query(default=None)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start Google sign-in: {e}")
 
-# --- Callback: store tokens, then redirect to your frontend ---
 @router.get("/callback")
 async def auth_callback(request: Request):
     code = request.query_params.get("code")
@@ -69,7 +55,6 @@ async def auth_callback(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Token exchange failed: {e}")
 
-# --- Status: path or query ---
 @router.get("/status/{user_id}")
 async def auth_status_path(user_id: str):
     return {"connected": is_connected(user_id)}
@@ -78,6 +63,15 @@ async def auth_status_path(user_id: str):
 async def auth_status_query(user_id: Optional[str] = Query(default=None)):
     uid = _ensure_user_id(None, user_id)
     return {"connected": is_connected(uid)}
+
+@router.get("/me/{user_id}")
+async def auth_me_path(user_id: str):
+    return get_user_profile(user_id)
+
+@router.get("/me")
+async def auth_me_query(user_id: Optional[str] = Query(default=None)):
+    uid = _ensure_user_id(None, user_id)
+    return get_user_profile(uid)
 
 @router.post("/revoke/{user_id}")
 async def auth_revoke(user_id: str):

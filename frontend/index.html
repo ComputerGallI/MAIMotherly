@@ -12,6 +12,10 @@
   <header class="topbar">
     <a class="brand" href="index.html">MAI</a>
     <nav class="top-actions">
+      <!-- NEW: avatar + greeting -->
+      <img id="navAvatar" class="nav-avatar" alt="" />
+      <span id="navGreeting" class="nav-greeting"></span>
+
       <a class="pill" id="loginBtn" href="login.html">Login</a>
       <button class="pill" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
       <a class="pill" id="profileBtn" href="profile.html">Profile</a>
@@ -54,7 +58,7 @@
       <!-- Quick add keeps your original 1-day flow -->
       <button class="cta pill soft" id="addCalBtn" onclick="addWellnessReminder()">Quick Add (1 day)</button>
 
-      <!-- NEW: Custom Calendar Event -->
+      <!-- Custom Calendar Event -->
       <details style="margin-top:16px;">
         <summary class="pill soft" style="cursor:pointer; display:inline-block;">Custom Calendar Event</summary>
         <form id="calendarForm" style="margin-top:12px;">
@@ -131,12 +135,50 @@
 
     // ---- Global timezone (auto). To force one for everyone, change the line below. ----
     const DEFAULT_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-    // Example to force one globally:
     // const DEFAULT_TZ = 'America/Chicago';
 
     // === user helpers ===
     function getUsername() {
       return localStorage.getItem('username') || '';
+    }
+
+    // NEW: fetch profile (name/email/picture) and show greeting in navbar
+    async function updateNavbarGreeting() {
+      const el = document.getElementById('navGreeting');
+      const av = document.getElementById('navAvatar');
+      const userId = getUsername();
+      if (!el) return;
+
+      if (!userId) {
+        el.textContent = '';
+        av.style.display = 'none';
+        return;
+      }
+      try {
+        const r = await fetch(`${BACKEND}/auth/me?user_id=${encodeURIComponent(userId)}`);
+        const data = await r.json();
+
+        if (data.name) localStorage.setItem('display_name', data.name);
+        if (data.email) localStorage.setItem('email', data.email);
+        if (data.picture) localStorage.setItem('avatar', data.picture);
+
+        const display = data.name || data.email || userId;
+        el.textContent = `Hello, ${display}`;
+        if (data.picture) {
+          av.src = data.picture;
+          av.alt = display;
+          av.style.display = 'inline-block';
+        } else {
+          av.style.display = 'none';
+        }
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+      } catch {
+        const display = localStorage.getItem('display_name') || localStorage.getItem('email') || userId;
+        if (display) el.textContent = `Hello, ${display}`;
+        const pic = localStorage.getItem('avatar');
+        if (pic) { av.src = pic; av.alt = display; av.style.display = 'inline-block'; }
+      }
     }
 
     function loadUserInterface() {
@@ -170,7 +212,10 @@
       if (confirm('Are you sure you want to log out?')) {
         localStorage.removeItem('username');
         localStorage.removeItem('email');
+        localStorage.removeItem('display_name');
+        localStorage.removeItem('avatar');
         loadUserInterface();
+        updateNavbarGreeting();
         alert('Logged out successfully!');
         chatFeed.innerHTML = `
           <div class="mai-welcome">
@@ -267,7 +312,7 @@
 
     async function checkGoogleStatus() {
       const user = getUsername();
-      if (!user) { alert('Please log in first.'); return; }
+      if (!user) { return; }
       try {
         const r = await fetch(`${BACKEND}/auth/status?user_id=${encodeURIComponent(user)}`);
         const j = await r.json();
@@ -296,7 +341,7 @@
         summary: 'MAI wellness check-in',
         start_iso: start.toISOString().slice(0, 19),
         end_iso: end.toISOString().slice(0, 19),
-        timezone: DEFAULT_TZ,      // <-- use global default
+        timezone: DEFAULT_TZ,
         description: 'Quick check-in: breathing exercise + 2 wins from yesterday',
         location: '',
         attendees: [],
@@ -394,7 +439,7 @@
         let mins = parseInt(remMins.value, 10);
         if (Number.isNaN(hrs) || hrs < 0) hrs = 0;
         if (Number.isNaN(mins) || mins < 0) mins = 0;
-        mins = Math.min(mins, 59); // clamp 0..59
+        mins = Math.min(mins, 59);
         const remindMinutes = Math.max(0, hrs * 60 + mins);
 
         if (!summary || !start || !end) { msgEl.textContent = 'Please fill Title, Start and End.'; return; }
@@ -404,7 +449,7 @@
           summary,
           start_iso: toIso(start),
           end_iso: toIso(end),
-          timezone: DEFAULT_TZ,      // <-- global default used here
+          timezone: DEFAULT_TZ,
           description: desc,
           location: loc,
           attendees,
@@ -447,12 +492,13 @@
       }
 
       loadUserInterface();
+      updateNavbarGreeting();   // <-- greet with Google profile
       checkGoogleStatus();
       initCalendarFormDefaults();
       wireReminderPresetButtons();
       wireCalendarForm();
 
-      // footer widget
+      // small footer widget
       const el = document.getElementById("usernameDisplay");
       const uid = localStorage.getItem("username") || "Guest";
       if (el) el.textContent = uid;

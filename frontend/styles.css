@@ -377,3 +377,21 @@ body{
     top: 30px; left: 30px; right: 30px; bottom: 30px;
   }
 }
+
+/* Navbar greeting + avatar */
+.nav-greeting {
+  margin-right: 12px;
+  color: #5a5a5a;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.nav-avatar {
+  display: none;       
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.6);
+}

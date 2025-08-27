@@ -1,58 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAI – Profile</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAI • Profile</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="index.html">MAI</a>
     <nav class="top-actions">
-      <a class="pill" href="login.html">Login</a>
+      <img id="navAvatar" class="nav-avatar" alt="" />
+      <span id="navGreeting" class="nav-greeting"></span>
+      <a class="pill" id="loginBtn" href="login.html">Login</a>
+      <button class="pill" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+      <a class="pill" id="profileBtn" href="profile.html">Profile</a>
+      <button class="pill go-pro-btn" onclick="location.href='premium.html'">GO PRO ✨</button>
     </nav>
   </header>
 
-  <section class="card" style="max-width:980px;margin:24px auto;">
-    <h2 class="title soft">Your Quiz Results</h2>
-    <div id="rows"></div>
-  </section>
+  <main class="shell">
+    <section class="card full" style="max-width:720px;margin-inline:auto;">
+      <h2 class="title soft">Your Profile</h2>
+      <div style="display:flex;gap:16px;align-items:center;">
+        <img id="pfAvatar" class="nav-avatar" style="width:64px;height:64px;" alt="">
+        <div>
+          <div><strong>Name:</strong> <span id="pfName">—</span></div>
+          <div><strong>Email:</strong> <span id="pfEmail">—</span></div>
+          <div><strong>User ID:</strong> <span id="pfUser">—</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <script>
-    // create result row for each quiz
-    function createRow(label, storageKey, dateKey){
-      const result = localStorage.getItem(storageKey)
-      const dateTaken = localStorage.getItem(dateKey)
-      
-      if(!result) return ''
-      
-      // google search link for learning more
-      const searchUrl = 'https://www.google.com/search?q='+encodeURIComponent(result+' meaning wellness tips')
-      
-      return `
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #eee;border-radius:16px;padding:14px 16px;margin:10px 0;background:#fff;">
-        <div>
-          <div style="font-weight:800">${label}: ${result}</div>
-          <div style="opacity:.8">taken: ${dateTaken||'unknown date'}</div>
-        </div>
-        <a class="pill" href="${searchUrl}" target="_blank" rel="noopener">Learn More</a>
-      </div>`
+    const BACKEND = 'http://127.0.0.1:8000';
+    function getUsername(){ return localStorage.getItem('username') || ''; }
+
+    async function updateNavbarGreeting() {
+      const el = document.getElementById('navGreeting');
+      const av = document.getElementById('navAvatar');
+      const userId = getUsername();
+      if (!userId) { el.textContent=''; av.style.display='none'; return; }
+      try {
+        const r = await fetch(`${BACKEND}/auth/me?user_id=${encodeURIComponent(userId)}`);
+        const data = await r.json();
+        if (data.name) localStorage.setItem('display_name', data.name);
+        if (data.email) localStorage.setItem('email', data.email);
+        if (data.picture) localStorage.setItem('avatar', data.picture);
+        const display = data.name || data.email || userId;
+        el.textContent = `Hello, ${display}`;
+        if (data.picture) { av.src = data.picture; av.alt = display; av.style.display='inline-block'; }
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+      } catch {
+        const display = localStorage.getItem('display_name') || localStorage.getItem('email') || userId;
+        el.textContent = `Hello, ${display}`;
+        const pic = localStorage.getItem('avatar');
+        if (pic) { av.src=pic; av.alt=display; av.style.display='inline-block'; }
+      }
     }
 
-    // build all result rows
-    function loadResults(){
-      const html = 
-        createRow('Personality Type','quiz_personality','quiz_personality_date') +
-        createRow('Stress Level','quiz_stress','quiz_stress_date') +
-        createRow('Love Language','quiz_love','quiz_love_date') +
-        createRow('Lifestyle','quiz_21','quiz_21_date')
-      
-      document.getElementById('rows').innerHTML = html || '<p class="muted">no quiz results yet - take some quizzes first!</p>'
+    function handleLogout(){
+      localStorage.removeItem('username');
+      localStorage.removeItem('email');
+      localStorage.removeItem('display_name');
+      localStorage.removeItem('avatar');
+      location.href = 'index.html';
     }
 
-    loadResults()
+    async function loadProfile() {
+      const user = getUsername();
+      if (!user) return;
+      try {
+        const r = await fetch(`${BACKEND}/auth/me?user_id=${encodeURIComponent(user)}`);
+        const data = await r.json();
+        document.getElementById('pfUser').textContent = user;
+        document.getElementById('pfName').textContent = data.name || '—';
+        document.getElementById('pfEmail').textContent = data.email || '—';
+        const img = document.getElementById('pfAvatar');
+        if (data.picture) { img.src = data.picture; img.alt = data.name || data.email || user; }
+      } catch {}
+    }
+
+    window.addEventListener('load', () => {
+      // capture ?user_id= after OAuth
+      const params = new URLSearchParams(window.location.search);
+      const returned = params.get('user_id');
+      if (returned && returned.trim()) {
+        localStorage.setItem('username', returned.trim());
+        const url = new URL(window.location.href);
+        url.searchParams.delete('user_id');
+        window.history.replaceState({}, '', url.toString());
+      }
+      updateNavbarGreeting();
+      loadProfile();
+    });
   </script>
 </body>
 </html>
