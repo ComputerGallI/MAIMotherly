@@ -1,8 +1,23 @@
+# Core web framework
 fastapi
-uvicorn
-sentence-transformers
-transformers
-faiss-cpu
-numpy
-pydantic
+uvicorn[standard]
+
+# Data validation
+pydantic>=2
 python-dotenv
+
+# Google OAuth + Calendar
+google-auth
+google-auth-oauthlib
+google-api-python-client
+
+# Google Gemini
+google-generativeai
+
+# RAG (retrieval + generation) extras
+transformers
+sentence-transformers
+faiss-cpu
+
+# File watching for hot reload
+watchfiles

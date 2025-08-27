@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MAI</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
 
   <header class="topbar">
@@ -29,21 +31,34 @@
           <span class="center-text soft" id="centerLabel">Register or Log in</span>
         </div>
 
-        <!-- quiz buttons positioned around the circle -->
-        <button class="orbit pill soft" style="--deg:10deg;"  data-target="quizzes/quiz_personality.html" id="btnPersonality">Personality</button>
-        <button class="orbit pill soft" style="--deg:190deg;" data-target="quizzes/quiz_stress.html"       id="btnStress">Stress & Anxiety</button>
-        <button class="orbit pill soft" style="--deg:350deg;" data-target="quizzes/quiz_love.html"         id="btnLove">Love Language</button>
-        <button class="orbit pill soft" style="--deg:95deg;"  data-target="quizzes/quiz_21.html"           id="btn21">21 Questions</button>
+        <!-- quiz buttons -->
+        <button class="orbit pill soft" style="--deg:10deg;" data-target="quizzes/quiz_personality.html"
+          id="btnPersonality">Personality</button>
+        <button class="orbit pill soft" style="--deg:190deg;" data-target="quizzes/quiz_stress.html"
+          id="btnStress">Stress & Anxiety</button>
+        <button class="orbit pill soft" style="--deg:350deg;" data-target="quizzes/quiz_love.html" id="btnLove">Love
+          Language</button>
+        <button class="orbit pill soft" style="--deg:95deg;" data-target="quizzes/quiz_21.html" id="btn21">21
+          Questions</button>
       </div>
     </section>
 
-    <!-- wellness reminders -->
+    <!-- wellness reminders + google connect -->
     <section class="card right">
       <h2 class="title soft">Reminders</h2>
       <p class="caring-instruction glowing-text">Fueled by your personal quiz results and our conversations</p>
+
+      <div style="display:flex;gap:8px;align-items:center;margin:8px 0 14px;">
+        <button class="pill" id="connectGoogleBtn" onclick="connectGoogle()">Connect Google</button>
+        <button class="pill" id="checkStatusBtn" onclick="checkGoogleStatus()">Check Status</button>
+        <span id="googleStatus" class="muted">Not connected</span>
+      </div>
+
       <p class="muted" id="remindersEmpty">No reminders yet</p>
       <div id="reminderList" class="rem-list"></div>
-      <button class="cta pill soft" id="addCalBtn" onclick="addWellnessReminder()">Add Reminders to your Calendar</button>
+
+      <button class="cta pill soft" id="addCalBtn" onclick="addWellnessReminder()">Add Reminder to your
+        Calendar</button>
     </section>
 
     <!-- mai chat interface -->
@@ -53,7 +68,8 @@
       <div class="chat-box">
         <div class="chat-feed" id="chatFeed">
           <div class="mai-welcome" id="welcomeMessage">
-            <strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜
+            <strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out
+            your upcoming week? Let's talk it out here 💜
           </div>
         </div>
         <div class="chat-input">
@@ -65,263 +81,257 @@
   </main>
 
   <script>
-    // load user data and update UI
-    function loadUserInterface(){
-      const user = localStorage.getItem('username')
-      
-      if (user) {
-        // user is logged in
-        document.getElementById('centerLabel').textContent = `hey ${user}!`
-        
-        // show logout button, hide login button
-        document.getElementById('loginBtn').style.display = 'none'
-        document.getElementById('logoutBtn').style.display = 'inline-block'
-        
-        // update welcome message to be more personal
-        document.getElementById('welcomeMessage').innerHTML = 
-          `<strong>MAI:</strong> Welcome back, ${user}! I'm here whenever you need to talk. What's been on your mind lately? 💜`
-        
-      } else {
-        // user is not logged in
-        document.getElementById('loginBtn').style.display = 'inline-block'
-        document.getElementById('logoutBtn').style.display = 'none'
-        
-        // keep default welcome message
-        document.getElementById('welcomeMessage').innerHTML = 
-          `<strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜`
-      }
+    const BACKEND = 'http://127.0.0.1:8000';
 
-      // update quiz buttons with results
-      const personality = localStorage.getItem('quiz_personality') || 'Personality'
-      const stress = localStorage.getItem('quiz_stress') || 'Stress & Anxiety'  
-      const love = localStorage.getItem('quiz_love') || 'Love Language'
-      const questions21 = localStorage.getItem('quiz_21') || '21 Questions'
-      
-      document.getElementById('btnPersonality').textContent = personality
-      document.getElementById('btnStress').textContent = stress
-      document.getElementById('btnLove').textContent = love
-      document.getElementById('btn21').textContent = questions21
+    function getUsername() {
+      return localStorage.getItem('username') || '';
     }
 
-    // logout functionality
+    function loadUserInterface() {
+      const user = getUsername();
+
+      if (user) {
+        document.getElementById('centerLabel').textContent = `hey ${user}!`;
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+        document.getElementById('welcomeMessage').innerHTML =
+          `<strong>MAI:</strong> Welcome back, ${user}! I'm here whenever you need to talk. What's been on your mind lately? 💜`;
+      } else {
+        document.getElementById('loginBtn').style.display = 'inline-block';
+        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('welcomeMessage').innerHTML =
+          `<strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜`;
+      }
+
+      // quiz buttons labels from localStorage
+      const personality = localStorage.getItem('quiz_personality') || 'Personality';
+      const stress = localStorage.getItem('quiz_stress') || 'Stress & Anxiety';
+      const love = localStorage.getItem('quiz_love') || 'Love Language';
+      const questions21 = localStorage.getItem('quiz_21') || '21 Questions';
+
+      document.getElementById('btnPersonality').textContent = personality;
+      document.getElementById('btnStress').textContent = stress;
+      document.getElementById('btnLove').textContent = love;
+      document.getElementById('btn21').textContent = questions21;
+    }
+
     function handleLogout() {
-      // confirm logout
       if (confirm('Are you sure you want to log out?')) {
-        // clear all user data
-        localStorage.removeItem('username')
-        localStorage.removeItem('email')
-        
-        // update UI immediately
-        loadUserInterface()
-        
-        // show success message
-        alert('Logged out successfully!')
-        
-        // clear chat history
+        localStorage.removeItem('username');
+        localStorage.removeItem('email');
+        loadUserInterface();
+        alert('Logged out successfully!');
         document.getElementById('chatFeed').innerHTML = `
           <div class="mai-welcome">
             <strong>MAI:</strong> Talk to me about anything... Stress at work? Relationship issues? Want to talk out your upcoming week? Let's talk it out here 💜
           </div>
-        `
+        `;
+        document.getElementById('googleStatus').textContent = 'Not connected';
       }
     }
 
-    // go to premium page
-    function goToPremium() {
-      window.location.href = 'premium.html'
-    }
+    function goToPremium() { window.location.href = 'premium.html'; }
 
-    // quiz button navigation
+    // quiz nav
     document.querySelectorAll('.orbit').forEach(button => {
       button.addEventListener('click', () => {
-        window.location.href = button.dataset.target
-      })
-    })
+        window.location.href = button.dataset.target;
+      });
+    });
 
-    // send chat message
+    // === CHAT ===
     async function sendMessage() {
-      const textInput = document.getElementById('chatText')
-      const message = textInput.value.trim()
-      
-      if (!message) return
-      
-      // add user message to chat
-      appendChatMessage('You: ' + message)
-      textInput.value = ''
-      
-      // get user context
-      const username = localStorage.getItem('username') || ''
-      const personality = localStorage.getItem('quiz_personality') || ''
-      const stress = localStorage.getItem('quiz_stress') || ''
-      const love = localStorage.getItem('quiz_love') || ''
-      const quiz21 = localStorage.getItem('quiz_21') || ''
-      const quizSummary = `${personality}, ${stress}, ${love}, ${quiz21}`.replace(/^,+|,+$/g, '')
-      
+      const input = document.getElementById('chatText');
+      const message = input.value.trim();
+      if (!message) return;
+
+      appendChatMessage('You: ' + message);
+      input.value = '';
+
+      const username = getUsername();
+      const personality = localStorage.getItem('quiz_personality') || '';
+      const stress = localStorage.getItem('quiz_stress') || '';
+      const love = localStorage.getItem('quiz_love') || '';
+      const quiz21 = localStorage.getItem('quiz_21') || '';
+      const quizSummary = [personality, stress, love, quiz21].filter(Boolean).join(', ');
+
       try {
-        // call backend API (which calls FastAPI)
-        const response = await fetch('http://localhost:5000/api/chat', {
+        const resp = await fetch(`${BACKEND}/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             user_input: message,
-            username: username,
-            quiz_summary: quizSummary
+            quiz_summary: quizSummary,
+            subscription_tier: 'free'
           })
-        })
-        
-        const data = await response.json()
-        const aiResponse = data.response || 'Tell me more about that. I\'m here to listen.'
-        
-        // add AI response to chat
-        appendChatMessage('MAI: ' + aiResponse)
-        
-        // show suggestions if available
-        if (data.suggestions && data.suggestions.length > 0) {
-          const suggestionText = 'Suggestions: ' + data.suggestions.join(', ')
-          appendChatMessage(suggestionText, 'suggestion')
+        });
+        const data = await resp.json();
+        const aiResponse = data.response || "Tell me more about that. I'm here to listen.";
+
+        appendChatMessage('MAI: ' + aiResponse);
+
+        if (Array.isArray(data.suggestions) && data.suggestions.length) {
+          appendChatMessage('Suggestions: ' + data.suggestions.join(', '), 'suggestion');
         }
-        
-        // suggest calendar reminder for certain keywords
-        if (message.toLowerCase().includes('remind') || message.toLowerCase().includes('forget')) {
-          setTimeout(() => {
-            appendChatMessage('MAI: Would you like me to add a wellness reminder to your calendar? Click the button above!')
-          }, 1000)
-        }
-        
-      } catch (error) {
-        console.error('Chat error:', error)
-        appendChatMessage('MAI: I\'m having trouble connecting right now, but I\'m still here for you. Can you tell me more about how you\'re feeling?')
+      } catch (e) {
+        console.error(e);
+        appendChatMessage("MAI: I'm having trouble connecting right now. Can you tell me more about how you're feeling?");
       }
     }
 
-    // add message to chat feed
     function appendChatMessage(message, type = 'normal') {
-      const chatFeed = document.getElementById('chatFeed')
-      const messageDiv = document.createElement('div')
-      
-      messageDiv.textContent = message
-      messageDiv.style.margin = '8px 0'
-      messageDiv.style.padding = '8px 12px'
-      messageDiv.style.borderRadius = '12px'
-      
+      const chatFeed = document.getElementById('chatFeed');
+      const div = document.createElement('div');
+      div.textContent = message;
+      div.style.margin = '8px 0';
+      div.style.padding = '8px 12px';
+      div.style.borderRadius = '12px';
       if (message.startsWith('You:')) {
-        messageDiv.style.background = '#f0c6ff'
-        messageDiv.style.marginLeft = '20px'
-        messageDiv.style.textAlign = 'right'
+        div.style.background = '#f0c6ff';
+        div.style.marginLeft = '20px';
+        div.style.textAlign = 'right';
       } else if (type === 'suggestion') {
-        messageDiv.style.background = '#e8f4fd'
-        messageDiv.style.border = '1px solid #bee5eb'
-        messageDiv.style.fontSize = '14px'
-        messageDiv.style.fontStyle = 'italic'
+        div.style.background = '#e8f4fd';
+        div.style.border = '1px solid #bee5eb';
+        div.style.fontSize = '14px';
+        div.style.fontStyle = 'italic';
       } else {
-        messageDiv.style.background = '#fff'
-        messageDiv.style.border = '1px solid #e0e0e0'
+        div.style.background = '#fff';
+        div.style.border = '1px solid #e0e0e0';
       }
-      
-      chatFeed.appendChild(messageDiv)
-      chatFeed.scrollTop = chatFeed.scrollHeight
+      chatFeed.appendChild(div);
+      chatFeed.scrollTop = chatFeed.scrollHeight;
     }
 
-    // add wellness reminder
+    // === GOOGLE OAUTH ===
+    async function connectGoogle() {
+      const user = getUsername();
+      if (!user) { alert('Please log in (top-right) before connecting Google.'); return; }
+      try {
+        const r = await fetch(`${BACKEND}/auth/login?user_id=${encodeURIComponent(user)}`);
+        const j = await r.json();
+        if (j.auth_url) {
+          // Open Google consent in a new tab
+          window.open(j.auth_url, '_blank');
+          alert('After finishing Google consent, click "Check Status".');
+        } else {
+          alert('Could not get auth URL. Check backend logs.');
+        }
+      } catch (e) {
+        alert('Error requesting Google auth URL.');
+      }
+    }
+
+    async function checkGoogleStatus() {
+      const user = getUsername();
+      if (!user) { alert('Please log in first.'); return; }
+      try {
+        const r = await fetch(`${BACKEND}/auth/status?user_id=${encodeURIComponent(user)}`);
+        const j = await r.json();
+        document.getElementById('googleStatus').textContent = j.connected ? 'Google: Connected ✅' : 'Google: Not connected';
+      } catch (e) {
+        document.getElementById('googleStatus').textContent = 'Google: Unknown';
+      }
+    }
+
+    // === CALENDAR: create event tomorrow 10:00-10:30 (America/Chicago), reminder 1 day ===
     async function addWellnessReminder() {
-      const username = localStorage.getItem('username')
-      
-      if (!username) {
-        alert('Please log in first to add calendar reminders!')
-        return
+      const user = getUsername();
+      if (!user) { alert('Please log in first.'); return; }
+
+      // simple check connection
+      const status = await fetch(`${BACKEND}/auth/status?user_id=${encodeURIComponent(user)}`).then(r => r.json()).catch(() => ({ connected: false }));
+      if (!status.connected) {
+        alert('Please connect Google first (Connect Google → complete consent → Check Status).');
+        return;
       }
-      
-      // create reminder for tomorrow at 10 AM
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      tomorrow.setHours(10, 0, 0, 0)
-      
-      const reminderData = {
-        title: 'MAI wellness check-in',
-        description: 'Time for a quick mental health check-in. How are you feeling today?',
-        datetime: tomorrow.toISOString(),
-        username: username
-      }
+
+      const tz = 'America/Chicago';
+      const start = new Date();
+      start.setDate(start.getDate() + 1);
+      start.setHours(10, 0, 0, 0);
+      const end = new Date(start.getTime() + 30 * 60 * 1000);
+
+      const body = {
+        summary: 'MAI wellness check-in',
+        start_iso: start.toISOString().slice(0, 19),
+        end_iso: end.toISOString().slice(0, 19),
+        timezone: tz,
+        description: 'Quick check-in: breathing exercise + 2 wins from yesterday',
+        location: '',
+        attendees: [],
+        remind_minutes: 1440
+      };
 
       try {
-        const response = await fetch('http://localhost:5000/api/calendar/add-reminder', {
+        const r = await fetch(`${BACKEND}/calendar/events?user_id=${encodeURIComponent(user)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(reminderData)
-        })
-        
-        const result = await response.json()
-        
-        if (result.success) {
-          alert('Wellness reminder added to your calendar!')
-          loadReminders()
-        } else if (result.authUrl) {
-          window.open(result.authUrl, '_blank')
-          alert('Please connect your Google Calendar first, then try again')
+          body: JSON.stringify(body)
+        });
+        const j = await r.json();
+        if (j.ok) {
+          alert('Calendar event created with a 1-day reminder ✅');
         } else {
-          alert('Couldn\'t add reminder: ' + (result.error || 'Unknown error'))
+          alert('Calendar error: ' + (j.detail || j.error || 'unknown'));
         }
-      } catch (error) {
-        console.error('Calendar error:', error)
-        alert('Something went wrong with the calendar integration')
+      } catch (e) {
+        alert('Calendar request failed.');
       }
     }
 
-    // load existing reminders
-    async function loadReminders() {
-      const username = localStorage.getItem('username')
-      if (!username) return
-      
-      try {
-        const response = await fetch(`http://localhost:5000/api/calendar/reminders/${username}`)
-        const data = await response.json()
-        
-        const reminderList = document.getElementById('reminderList')
-        const emptyMsg = document.getElementById('remindersEmpty')
-        
-        if (data.reminders && data.reminders.length > 0) {
-          emptyMsg.style.display = 'none'
-          reminderList.innerHTML = ''
-          
-          data.reminders.forEach(reminder => {
-            const div = document.createElement('div')
-            div.style.cssText = 'background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin:8px 0'
-            div.innerHTML = `
-              <strong>${reminder.title}</strong><br>
-              <small>${new Date(reminder.datetime).toLocaleDateString()}</small>
-            `
-            reminderList.appendChild(div)
-          })
-        } else {
-          emptyMsg.style.display = 'block'
-          reminderList.innerHTML = ''
-        }
-      } catch (error) {
-        console.log('Couldn\'t load reminders:', error)
-      }
-    }
+    // enter to send
+    document.getElementById('chatText').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-    // enter key sends message
-    document.getElementById('chatText').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        sendMessage()
-      }
-    })
-
-    // check for calendar connection status in URL
-    const urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.get('calendar') === 'connected') {
-      alert('Calendar connected! You can now add reminders')
-      loadReminders()
-    } else if (urlParams.get('calendar') === 'error') {
-      alert('Calendar connection failed')
-    }
-
-    // initialize everything when page loads
+    // init
     window.addEventListener('load', () => {
-      loadUserInterface()
-      loadReminders()
-    })
+      loadUserInterface();
+      checkGoogleStatus(); // on load, try to show connection status if any
+    });
   </script>
+  <!-- Display logged-in username -->
+  <div style="margin-top:1rem;font-weight:600;">
+    Logged in as: <span id="usernameDisplay">Guest</span>
+    <span id="googleConnected" style="margin-left:8px;font-weight:400;"></span>
+  </div>
+
+  <script>
+    // 1) Capture ?user_id=... from the redirect and persist it
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const returned = params.get("user_id");
+      if (returned && returned.trim()) {
+        localStorage.setItem("username", returned.trim());
+        // Clean the URL so the param disappears
+        const url = new URL(window.location.href);
+        url.searchParams.delete("user_id");
+        window.history.replaceState({}, "", url.toString());
+      }
+    })();
+
+    // 2) Show the username on the page (fallback to any existing value)
+    (function () {
+      const el = document.getElementById("usernameDisplay");
+      const uid = localStorage.getItem("username") || "Guest";
+      if (el) el.textContent = uid;
+    })();
+
+    // 3) (Optional) Ping the backend to show Google connection status
+    (async function () {
+      const statusEl = document.getElementById("googleConnected");
+      const uid = localStorage.getItem("username");
+      if (!uid || !statusEl) return;
+
+      try {
+        const r = await fetch(`http://127.0.0.1:8000/auth/status?user_id=${encodeURIComponent(uid)}`);
+        const data = await r.json();
+        statusEl.textContent = data.connected ? "• Google connected ✅" : "• Not connected";
+      } catch (e) {
+        statusEl.textContent = "• Status unavailable";
+      }
+    })();
+  </script>
+
 </body>
+
 </html>

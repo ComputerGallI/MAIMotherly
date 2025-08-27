@@ -1,26 +1,28 @@
-# backend/api/calendar.py
-from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query
+# backend/api/google_calendar.py
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import List, Optional
+
+# Use the service wrapper, not a relative import
 from services.google_calendar import create_event, list_upcoming_events
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
 class EventIn(BaseModel):
+    user_id: str
     summary: str
-    start_iso: str   # "YYYY-MM-DDTHH:MM:SS"
-    end_iso: str     # "YYYY-MM-DDTHH:MM:SS"
+    start_iso: str   # e.g., "2025-08-27T10:00:00"
+    end_iso: str     # e.g., "2025-08-27T11:00:00"
     timezone: str = "UTC"
     description: str = ""
     location: str = ""
     attendees: Optional[List[str]] = None
     remind_minutes: int = 1440
 
-# Matches frontend call: POST /calendar/events?user_id=...
-@router.post("/events")
-async def create_event_query(user_id: str = Query(...), body: EventIn = None):
+@router.post("/create")
+async def create_event_route(body: EventIn):
     res = create_event(
-        user_id=user_id,
+        user_id=body.user_id,
         summary=body.summary,
         start_iso=body.start_iso,
         end_iso=body.end_iso,
@@ -34,9 +36,8 @@ async def create_event_query(user_id: str = Query(...), body: EventIn = None):
         raise HTTPException(status_code=400, detail=res["error"])
     return res
 
-# Optional: list upcoming events
 @router.get("/list/{user_id}")
-async def list_events(user_id: str, max_results: int = 10):
+async def list_events_route(user_id: str, max_results: int = 10):
     res = list_upcoming_events(user_id, max_results=max_results)
     if "error" in res:
         raise HTTPException(status_code=400, detail=res["error"])

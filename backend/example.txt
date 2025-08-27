@@ -1,0 +1,8 @@
+{
+  "response": "Big weeks can feel overwhelming. Trouble sleeping often reflects daytime stress. Try a calming bedtime routine without screens and practice slow breathing: in for 4, hold for 4, out for 6.",
+  "suggestions": [
+    "Try deep breathing",
+    "Practice positive visualization",
+    "Take breaks"
+  ]
+}
