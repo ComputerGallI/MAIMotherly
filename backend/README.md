@@ -1,138 +1,160 @@
 # MAI Backend (FastAPI)
-## Summary
-This is the FastAPI backend for **MAI**.  
-It supports:
-- Chat generation using a local knowledge corpus
-- Gemini API integration
-- Google Login (OAuth) and Google Calendar integration
 
+Summary of Backend
 
-## Folder Structure
+## Overview
+FastAPI backend for **MAI** with:
+- Empathetic chat generation (graceful fallbacks if models/indexes missing)
+- Google OAuth login (profile/email) with **scope normalization**
+- Google Calendar event creation with **custom reminder minutes**
+- Open CORS for local HTML/JS/CSS frontends
 
+## Project Layout
+```
 backend/
-- api/
-  - auth.py → Google Login / OAuth endpoints (uses services/google_auth.py)
-  - calendar.py → Calendar endpoints (uses services/google_calendar.py)
-  - chat.py → Chat endpoints: /health, /generate, /debug/*
-- artifacts/ 
-  - knowledge_corpus.pkl → REQUIRED. Knowledge base of guidance/advice entries.
-  - faiss_index.bin → OPTIONAL but recommended. FAISS vector index for semantic retrieval.
-  - config.json → OPTIONAL. Metadata (date, corpus size, categories, embedding dimension, etc.).
-  - retriever_model/ → OPTIONAL. Saved SentenceTransformer directory (enables local embedding on server if present).
-  - generator_model/ → OPTIONAL. Saved seq2seq model (e.g., BART) for local text generation.
-  - generator_tokenizer/ → OPTIONAL. Tokenizer directory for the generator model.
-- modelsAI/
-  - model_loader.py → Loads the knowledge corpus
-  - search_engine.py → Search and response logic
-- pydantic/
-  - schema.py → Pydantic request/response models
-- services/
-  - gemini.py → Gemini API client
-  - google_auth.py → Google OAuth helper
-  - google_calendar.py → Google Calendar helper
-- main.py → FastAPI entry point: sets up CORS and mounts routers
-- requirements.txt → Python dependencies
+├─ api/
+│  ├─ auth.py               # Google OAuth endpoints (gcal_oauth)
+│  ├─ calendar.py           # Calendar endpoints
+│  └─ chat.py               # Chat endpoints: /health, /generate, /debug/*
+├─ artifacts/
+│  ├─ knowledge_corpus.pkl  # REQUIRED (chat works with fallback if missing)
+│  ├─ faiss_index.bin       # OPTIONAL (semantic search)
+│  ├─ config.json           # OPTIONAL
+│  ├─ retriever_model/      # OPTIONAL (SentenceTransformer)
+│  ├─ generator_model/      # OPTIONAL (seq2seq model)
+│  └─ generator_tokenizer/  # OPTIONAL
+├─ modelsAI/
+│  ├─ model_loader.py
+│  └─ search_engine.py
+├─ pydantic/
+│  └─ schema.py
+├─ services/
+│  ├─ gcal_oauth.py
+│  └─ google_calendar.py
+├─ main.py
+└─ requirements.txt
+```
 
-
-
-## How Things Connect
-
-- **main.py** starts the FastAPI app, enables CORS, and includes routers from `api/`.
-- **api/chat.py**  
-  - `/health` → service status and model info  
-  - `/generate` → chat endpoint (uses `modelsAI/model_loader.py`, `modelsAI/search_engine.py`, and `pydantic/schema.py`)  
-  - `/debug/corpus` and `/debug/search/{query}` → developer helpers
-- **api/auth.py** → routes for Google Login (uses `services/google_auth.py`)  
-- **api/calendar.py** → routes for Google Calendar (uses `services/google_calendar.py`)  
-- **services/gemini.py** → stub for Gemini API integration
-
-
+## Prerequisites
+- Python 3.11+
+- (Recommended) virtualenv
 
 ## Setup
+### 1) Install deps
+```bash
+cd backend
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-1. Install dependencies:
-   ```bash
-   cd backend
-   python -m venv .venv
-   source .venv/bin/activate   # Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+### 2) Artifacts
+Place your corpus at:
+```
+backend/artifacts/knowledge_corpus.pkl
+```
+Optional accelerators auto-detected if present.
 
-2. **Artifacts**
-    - TODO: Place the trained corpus here:
-     ```
-     backend/artifacts/knowledge_corpus.pkl
-     ```
-    - Path at Enviroment Variables
-     ```bash
-     export ARTIFACTS_PATH=./backend/artifacts
-     ```
+### 3) Environment (`backend/.env`)
+Start from `.env.template` and fill in:
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_REDIRECT_URI` → `http://127.0.0.1:8000/auth/callback`
+- (Optional) `FRONTEND_URL` + `FRONTEND_INDEX_PATH` for redirect after OAuth
+- (Optional) `GEMINI_API_KEY`
 
-3. **Environment variables**
-- **Artifacts**
-  - `ARTIFACTS_PATH=`
+**Default scopes** (normalized internally): `openid userinfo.email userinfo.profile calendar.events`
 
-- **Gemini**
-  - `GEMINI_API_KEY`
+### 4) Google Cloud Console
+- OAuth 2.0 Web Client → **Authorized redirect URI**: `http://127.0.0.1:8000/auth/callback`
+- Enable **Google Calendar API**
+- OAuth consent screen: **Testing**, add your user as **Test user**
 
-- **Google OAuth**
-  - `GOOGLE_CLIENT_ID`
-  - `GOOGLE_CLIENT_SECRET`
-  - `GOOGLE_REDIRECT_URI=http://localhost:8000/auth/callback`
-
-- **Google Calendar**
-  - `GOOGLE_CALENDAR_SCOPES=https://www.googleapis.com/auth/calendar.events`
-
-  
-4. **Run the server**\
-  On windows PowerShell:
-    ```bash
-    python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
-    ```
-    Other:
-      ```bash
-      uvicorn main:app --reload --host 0.0.0.0 --port 8000
-      ```
-5. **Run the tests**\
+### 5) Run
+```bash
+#Clear Cache (Prevent so many bugs)
+Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+# Windows
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+# macOS/Linux
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+### 6) **Run the tests**
 Make sure that the server is running before in another terminal.\
   On windows PowerShell:
-    ```bash
-    python -m pytest -q
-    ```
-    Other
-    ```bash
-    pytest -q
-    ```
-## Current Endpoints
+  ```bash
+  python -m pytest -q
+  ```
+  Other
+  ```bash
+  pytest -q
+  ```
 
-- `GET /health` → Returns service status and model info
+## Endpoints
 
-- `POST /generate` → Generates a chat reply  
-  - **Request body:**
-    ```json
-    {
-      "user_input": "I'm anxious about a presentation",
-      "quiz_summary": "",
-      "subscription_tier": "free"
-    }
-    ```
-  - **Response body:**
-    ```json
-    {
-      "response": "I understand that nervousness before important events. Try taking deep breaths...",
-      "suggestions": ["Try deep breathing", "Practice positive visualization"]
-    }
-    ```
+### Chat
+- `GET /health`
+- `POST /generate`
+```json
+{
+  "user_input": "I'm anxious about a presentation",
+  "quiz_summary": "",
+  "subscription_tier": "free"
+}
+```
+Response:
+```json
+{
+  "response": "I hear you—presentations can be stressful...",
+  "suggestions": ["Try deep breathing", "Visualize the first 60s going well"]
+}
+```
 
-- `GET /debug/corpus` → Returns a sample of the loaded corpus  
+### Auth
+- `GET /auth/login?user_id=YOU` → returns `auth_url`
+- `GET /auth/callback?...` → exchanges code and
+  - redirects to your frontend (`FRONTEND_URL + FRONTEND_INDEX_PATH?user_id=...`) **if** FRONTEND_URL is set
+  - otherwise returns JSON `{"ok":true,"user_id":"..."}`
+- `GET /auth/status?user_id=YOU` → `{"connected": true|false}`
+- `GET /auth/me?user_id=YOU` → `{"user_id","name","email","picture","connected"}`
+- `POST /auth/revoke/YOU` → clears in-memory token
 
-- `GET /debug/search/{query}` → Returns top matches for the given query  
+### Calendar
+- `POST /calendar/events?user_id=YOU`
+```json
+{
+  "summary": "MAI wellness check-in",
+  "start_iso": "2025-09-01T10:00:00",
+  "end_iso": "2025-09-01T10:30:00",
+  "timezone": "America/Chicago",
+  "description": "Breathing + 2 wins",
+  "location": "",
+  "attendees": ["friend@example.com"],
+  "remind_minutes": 60
+}
+```
+- `GET /calendar/upcoming?user_id=YOU&max_results=10`
 
-## Notes
 
-- The frontend can call FastAPI directly (`http://localhost:8000`)   
 
-- If the knowledge corpus is missing, the chat falls back to a generic supportive response.
+## Frontend Integration (Local)
 
-- `Template.ENV` contains a template to add the respective credentials. Note its name must be update to `.ENV` so it works.
+- Open `auth_url` from `/auth/login?user_id=YOU` in a new tab.
+- After consent:
+  - If `FRONTEND_URL` is set, you’ll be redirected back to your frontend with `?user_id=...`
+  - Else the callback returns JSON; store the `user_id` in `localStorage`
+- Show profile with `/auth/me` and create calendar events with `/calendar/events`.
+- Chat via `/generate`.
 
+
+## Troubleshooting
+
+- **redirect_uri_mismatch (400):** Make sure the OAuth client has `http://127.0.0.1:8000/auth/callback`.
+- **access_denied (403):** Add your Google account as a **Test user**.
+- **Calendar API not enabled:** Enable it in **APIs & Services**.
+- **Scope mismatch:** Restart backend, `POST /auth/revoke/YOU`, re-consent.
+- **Chat 404:** Ensure `main.py` includes the chat router.
+
+---
