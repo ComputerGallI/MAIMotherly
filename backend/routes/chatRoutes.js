@@ -2,7 +2,7 @@ const express = require('express')
 const axios = require('axios')
 const r = express.Router()
 
-// chat endpoint that calls FastAPI
+// Chat endpoint that calls FastAPI for AI processing
 r.post('/', async (req, res) => {
   try {
     console.log('Chat request received:', req.body)
@@ -22,7 +22,7 @@ r.post('/', async (req, res) => {
       subscription_tier: "free"
     })
 
-    // Call FastAPI
+    // Call FastAPI service for AI processing
     const fastApiUrl = process.env.FASTAPI_URL || 'http://127.0.0.1:8000'
     const fastApiResponse = await axios.post(`${fastApiUrl}/generate`, {
       user_input: user_input.trim(),
@@ -52,7 +52,7 @@ r.post('/', async (req, res) => {
   } catch (error) {
     console.error('Chat error:', error.message)
     
-    // Provide specific error info
+    // Provide specific error information for debugging
     let errorResponse = "I'm having trouble accessing my knowledge right now, but I'm still here to listen. "
     
     if (error.code === 'ECONNREFUSED') {

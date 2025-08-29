@@ -1,11 +1,20 @@
+require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
-const cors = require('cors')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
-require('dotenv').config()
+const cors = require('cors')
+const path = require('path')
+
+// Import routes
+const userRoutes = require('./routes/userRoutes')
+const chatRoutes = require('./routes/chatRoutes')
+const calendarRoutes = require('./routes/calendarRoutes')
+const analyticsRoutes = require('./routes/analyticsRoutes')
+const reminderRoutes = require('./routes/reminderRoutes')
 
 const app = express()
+const PORT = process.env.PORT || 5000
 
 // Middleware
 app.use(cors({
@@ -14,8 +23,9 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(express.static(path.join(__dirname, '../frontend')))
 
-// Session configuration
+// Session configuration for Google OAuth
 app.use(session({
   secret: process.env.JWT_SECRET || 'mai-secret-key-change-this',
   resave: false,
@@ -24,26 +34,32 @@ app.use(session({
     mongoUrl: process.env.MONGO_URI
   }),
   cookie: {
-    secure: false, // set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
   }
 }))
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('database connected'))
-  .catch(err => console.log('database connection failed:', err.message))
+mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI, {
+  dbName: process.env.DB_NAME || 'maimotherly',
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('📁 Database connected'))
+.catch(err => console.error('❌ Database connection failed:', err))
 
-// Import routes
-const userRoutes = require('./routes/userRoutes')
-const chatRoutes = require('./routes/chatRoutes')
-const calendarRoutes = require('./routes/calendarRoutes')
-
-// Use routes
+// Routes
 app.use('/api/users', userRoutes)
 app.use('/api/chat', chatRoutes)
 app.use('/api/calendar', calendarRoutes)
+app.use('/api/analytics', analyticsRoutes)
+app.use('/api/reminders', reminderRoutes)
+
+// Serve frontend
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'))
+})
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -55,9 +71,12 @@ app.get('/health', (req, res) => {
 })
 
 // Error handling middleware
-app.use((error, req, res, next) => {
-  console.error('Server error:', error)
-  res.status(500).json({ error: 'Internal server error' })
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.stack)
+  res.status(500).json({
+    success: false,
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+  })
 })
 
 // 404 handler
@@ -65,10 +84,16 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' })
 })
 
-const PORT = process.env.PORT || 5000
-
+// Start server
 app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`)
+  console.log(`🚀 MAI server running on port ${PORT}`)
+  console.log(`Frontend: http://localhost:${PORT}`)
+  console.log(`API: http://localhost:${PORT}/api`)
+  console.log(`💡 Make sure FastAPI is running on port 8000 for AI processing`)
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Development mode - detailed errors enabled')
+  }
 })
 
 module.exports = app

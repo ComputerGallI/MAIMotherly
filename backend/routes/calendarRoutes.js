@@ -1,16 +1,16 @@
-// google calendar stuff for mai - enhanced for recommendations
+// Google calendar integration for MAI - enhanced for recommendations
 const express = require('express')
 const { google } = require('googleapis')
 const r = express.Router()
 
-// connect to google apis
+// Connect to Google APIs
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   process.env.GOOGLE_REDIRECT_URI
 )
 
-// send user to google login page
+// Send user to Google login page
 r.get('/auth', (req, res) => {
   const username = req.query.username || 'guest'
   const returnType = req.query.return || 'basic'
@@ -18,19 +18,19 @@ r.get('/auth', (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: ['https://www.googleapis.com/auth/calendar'],
-    state: JSON.stringify({ username, returnType }) // encode extra info
+    state: JSON.stringify({ username, returnType }) // encode extra info for the callback
   })
   
   console.log(`Redirecting ${username} to Google auth for ${returnType}`)
   res.redirect(authUrl)
 })
 
-// google sends user back here after login
+// Google sends user back here after login
 r.get('/callback', async (req, res) => {
   const { code, state } = req.query
   
   try {
-    // parse state information
+    // Parse state information
     let stateData = { username: 'guest', returnType: 'basic' }
     try {
       stateData = JSON.parse(state)
@@ -40,23 +40,23 @@ r.get('/callback', async (req, res) => {
     
     console.log('Processing calendar callback for:', stateData)
     
-    // swap code for actual token
+    // Exchange code for access token
     const { tokens } = await oauth2Client.getToken(code)
     oauth2Client.setCredentials(tokens)
     
-    // save user's tokens (in real app you'd save to database)
+    // Save user's tokens (in real app you'd save to database)
     req.session = req.session || {}
     req.session.googleTokens = tokens
     req.session.username = stateData.username
     
     console.log('Calendar tokens saved for user:', stateData.username)
     
-    // redirect based on return type
+    // Redirect based on return type
     if (stateData.returnType === 'calendar_add') {
-      // redirect back to frontend with special flag for adding pending items
+      // Redirect back to frontend with special flag for adding pending items
       res.redirect('http://localhost:5500?calendar=connected&action=add_pending')
     } else {
-      // standard calendar connection
+      // Standard calendar connection
       res.redirect('http://localhost:5500?calendar=connected')
     }
     
@@ -66,13 +66,13 @@ r.get('/callback', async (req, res) => {
   }
 })
 
-// add single or multiple reminders to calendar
+// Add single or multiple reminders to calendar
 r.post('/add-reminder', async (req, res) => {
   const { title, description, datetime, username, items } = req.body
   
   console.log('Add reminder request:', { title, items: items?.length || 'single', username })
   
-  // make sure they're logged in first
+  // Make sure they're logged in with Google first
   if (!req.session?.googleTokens) {
     console.log('No Google tokens found, redirecting to auth')
     return res.json({ 
@@ -82,20 +82,20 @@ r.post('/add-reminder', async (req, res) => {
   }
   
   try {
-    // set up calendar connection
+    // Set up calendar connection
     oauth2Client.setCredentials(req.session.googleTokens)
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
     
     const results = []
     
-    // handle multiple items (from recommendations)
+    // Handle multiple items (from AI recommendations)
     if (items && Array.isArray(items)) {
       console.log(`Adding ${items.length} recommendation items to calendar`)
       
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
         
-        // create event for each recommendation
+        // Create event for each recommendation - spread over consecutive days
         const eventTime = new Date()
         eventTime.setDate(eventTime.getDate() + i + 1) // spread over consecutive days
         eventTime.setHours(10, 0, 0, 0) // 10 AM each day
@@ -161,7 +161,7 @@ r.post('/add-reminder', async (req, res) => {
       })
       
     } else {
-      // handle single reminder (original functionality)
+      // Handle single reminder (original functionality)
       console.log('Adding single reminder to calendar')
       
       const event = {
@@ -207,7 +207,7 @@ r.post('/add-reminder', async (req, res) => {
   }
 })
 
-// add multiple recommendations endpoint
+// Add multiple recommendations endpoint
 r.post('/add-recommendations', async (req, res) => {
   const { recommendations, username } = req.body
   
@@ -217,7 +217,7 @@ r.post('/add-recommendations', async (req, res) => {
   
   console.log(`Adding ${recommendations.length} recommendations for ${username}`)
   
-  // make sure they're logged in first
+  // Make sure they're logged in first
   if (!req.session?.googleTokens) {
     return res.json({ 
       success: false, 
@@ -236,7 +236,7 @@ r.post('/add-recommendations', async (req, res) => {
     for (let i = 0; i < recommendations.length; i++) {
       const recommendation = recommendations[i]
       
-      // schedule each recommendation on consecutive days
+      // Schedule each recommendation on consecutive days
       const eventDate = new Date(baseDate)
       eventDate.setDate(eventDate.getDate() + i)
       eventDate.setHours(10, 0, 0, 0) // 10 AM
@@ -307,7 +307,7 @@ r.post('/add-recommendations', async (req, res) => {
   }
 })
 
-// check what reminders they have coming up
+// Check what reminders they have coming up
 r.get('/reminders/:username', async (req, res) => {
   if (!req.session?.googleTokens) {
     return res.json({ reminders: [], needsAuth: true })
@@ -317,7 +317,7 @@ r.get('/reminders/:username', async (req, res) => {
     oauth2Client.setCredentials(req.session.googleTokens)
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
     
-    // look for events in next 2 weeks
+    // Look for events in next 2 weeks
     const now = new Date()
     const twoWeeksFromNow = new Date(now.getTime() + 14*24*60*60*1000)
     
@@ -325,7 +325,7 @@ r.get('/reminders/:username', async (req, res) => {
       calendarId: 'primary',
       timeMin: now.toISOString(),
       timeMax: twoWeeksFromNow.toISOString(),
-      q: 'MAI', // only mai events
+      q: 'MAI', // only MAI events
       singleEvents: true,
       orderBy: 'startTime'
     })
@@ -349,7 +349,7 @@ r.get('/reminders/:username', async (req, res) => {
   }
 })
 
-// check calendar connection status
+// Check calendar connection status
 r.get('/status/:username', async (req, res) => {
   const hasTokens = !!req.session?.googleTokens
   
