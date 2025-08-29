@@ -12,87 +12,348 @@
     <a class="brand" href="index.html">MAI</a>
   </header>
 
-  <section class="card" style="max-width:560px;margin:40px auto;">
-    <h2 class="title soft">Login or Register</h2>
-
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <input id="u" placeholder="username"/>
-      <input id="p" type="password" placeholder="password"/>
-      <input id="e" placeholder="email (register only)"/>
-      <div style="display:flex;gap:8px;">
-        <button class="pill" id="doLogin">Login</button>
-        <button class="pill" id="doRegister">Register</button>
+  <!-- Google Login Modal -->
+  <div id="googleLoginModal" class="google-modal" style="display: none;">
+    <div class="google-modal-content">
+      <div class="google-modal-header">
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIyLjU2IDEyLjI1QzIyLjU2IDExLjQ3IDIyLjQ5IDEwLjcyIDIyLjM2IDEwSDEyVjE0LjI2SDE3LjkyQzE3LjY2IDE1LjYgMTYuOTkgMTYuNzQgMTUuOTIgMTcuNVYyMC4yNkgxOS40MkMyMS4zMSAxOC41NCAyMi41NiAxNS41MyAyMi41NiAxMi4yNVoiIGZpbGw9IiM0Mjg1RjQiLz4KPHBhdGggZD0iTTEyIDI0QzE1LjI0IDI0IDE3LjkyIDIyLjkyIDE5LjQyIDIwLjI2TDE1LjkyIDE3LjVDMTQuOCAxOC4yIDEzLjMgMTguNyAxMiAxOC43QzguODYgMTguNyA2LjIzIDE2Ljk1IDUuMjIgMTQuMzlMMy43NSAxNS43OUM1LjMgMTguOTggOC40NyAyMiAxMiAyMloiIGZpbGw9IiMzNEE4NTMiLz4KPHBhdGggZD0iTTUuMjIgMTQuMzlDNC44OSAxMy40MiA0LjcyIDEyLjM3IDQuNzIgMTEuMjVDNC43MiAxMC4xMyA0Ljg5IDkuMDggNS4yMiA4LjExTDMuNzUgNi43MkMzLjE1IDcuOTIgMi44IDkuMjcgMi44IDEwLjcyQzIuOCAxMS43NCAzLjE1IDEyLjc2IDMuNzUgMTMuODlMNS4yMiAxNC4zOVoiIGZpbGw9IiNGQkJDMDUiLz4KPHBhdGggZD0iTTEyIDUuM0MxMy42NSA1LjMgMTUuMTUgNS44NyAxNi4yNiA2LjkzTDE5LjQyIDMuNzdDMTcuOTIgMi40MiAxNS4yNCAxLjUgMTIgMS41QzguNDcgMS41IDUuMyA0LjUyIDMuNzUgNy44MUw1LjIyIDkuMkM2LjIzIDYuNjQgOC44NiA1LjMgMTIgNS4zWiIgZmlsbD0iI0VBNDMzNSIvPgo8L3N2Zz4K" alt="Google" style="width: 20px; height: 20px;">
+        <span style="margin-left: 10px; font-size: 16px; color: #5f6368;">Sign in with Google</span>
+        <button class="google-modal-close" onclick="closeGoogleModal()">&times;</button>
       </div>
-      <p class="muted">demo users: IndieMovies / 12345!  &nbsp; | &nbsp; Ryanator / 12345!</p>
+      <div class="google-modal-body">
+        <div class="google-account-selection">
+          <h3 style="color: #202124; font-size: 24px; font-weight: 400; margin: 0 0 20px;">Choose an account</h3>
+          <p style="color: #5f6368; font-size: 14px; margin-bottom: 20px;">to continue to MAI</p>
+          
+          <div class="google-account-option" onclick="selectGoogleAccount('IndieMovies')">
+            <div class="google-account-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);">IM</div>
+            <div class="google-account-info">
+              <div class="google-account-name">IndieMovies</div>
+              <div class="google-account-email">indiemovies@gmail.com</div>
+            </div>
+          </div>
+          
+          <div class="google-account-option" onclick="selectGoogleAccount('Ryanator')">
+            <div class="google-account-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">R</div>
+            <div class="google-account-info">
+              <div class="google-account-name">Ryanator</div>
+              <div class="google-account-email">ryanator@gmail.com</div>
+            </div>
+          </div>
+          
+          <div class="google-use-another" onclick="alert('Demo: This would open the full Google account selection')">
+            <span style="color: #1a73e8; font-size: 14px; cursor: pointer;">Use another account</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="card" style="max-width:560px;margin:40px auto;">
+    <h2 class="title soft">Welcome to MAI</h2>
+    <p style="text-align: center; color: #6a4c93; margin-bottom: 30px;">Your personal mental health assistant</p>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <!-- Regular Login Form -->
+      <div style="border-bottom: 1px solid #e0d4ff; padding-bottom: 20px; margin-bottom: 10px;">
+        <h3 style="color: #5a4fcf; font-size: 18px; margin-bottom: 15px;">Create Account or Sign In</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <input id="u" placeholder="Username"/>
+          <input id="p" type="password" placeholder="Password"/>
+          <input id="e" placeholder="Email (for new accounts)"/>
+          <div style="display:flex;gap:8px;">
+            <button class="pill" id="doLogin">Sign In</button>
+            <button class="pill" id="doRegister">Create Account</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Google Login Button -->
+      <div style="text-align: center;">
+        <p style="color: #6a4c93; font-size: 14px; margin-bottom: 15px;">Or continue with your Google account</p>
+        <button class="google-sign-in-btn" onclick="showGoogleLogin()">
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIyLjU2IDEyLjI1QzIyLjU2IDExLjQ3IDIyLjQ5IDEwLjcyIDIyLjM2IDEwSDEyVjE0LjI2SDE3LjkyQzE3LjY2IDE1LjYgMTYuOTkgMTYuNzQgMTUuOTIgMTcuNVYyMC4yNkgxOS40MkMyMS4zMSAxOC41NCAyMi41NiAxNS41MyAyMi41NiAxMi4yNVoiIGZpbGw9IiM0Mjg1RjQiLz4KPHBhdGggZD0iTTEyIDI0QzE1LjI0IDI0IDE3LjkyIDIyLjkyIDE5LjQyIDIwLjI2TDE1LjkyIDE3LjVDMTQuOCAxOC4yIDEzLjMgMTguNyAxMiAxOC43QzguODYgMTguNyA2LjIzIDE2Ljk1IDUuMjIgMTQuMzlMMy43NSAxNS43OUM1LjMgMTguOTggOC40NyAyMiAxMiAyMloiIGZpbGw9IiMzNEE4NTMiLz4KPHBhdGggZD0iTTUuMjIgMTQuMzlDNC44OSAxMy40MiA0LjcyIDEyLjM3IDQuNzIgMTEuMjVDNC43MiAxMC4xMyA0Ljg5IDkuMDggNS4yMiA4LjExTDMuNzUgNi43MkMzLjE1IDcuOTIgMi44IDkuMjcgMi44IDEwLjcyQzIuOCAxMS43NCAzLjE1IDEyLjc2IDMuNzUgMTMuODlMNS4yMiAxNC4zOVoiIGZpbGw9IiNGQkJDMDUiLz4KPHBhdGggZD0iTTEyIDUuM0MxMy42NSA1LjMgMTUuMTUgNS44NyAxNi4yNiA2LjkzTDE5LjQyIDMuNzdDMTcuOTIgMi40MiAxNS4yNCAxLjUgMTIgMS41QzguNDcgMS41IDUuMyA0LjUyIDMuNzUgNy44MUw1LjIyIDkuMkM2LjIzIDYuNjQgOC44NiA1LjMgMTIgNS4zWiIgZmlsbD0iI0VBNDMzNSIvPgo8L3N2Zz4K" alt="Google">
+          Sign in with Google
+        </button>
+      </div>
     </div>
   </section>
 
   <script>
-    // register new user
-    document.getElementById('doRegister').onclick = async ()=>{
-      const username = document.getElementById('u').value.trim()
-      const password = document.getElementById('p').value.trim()
-      const email    = document.getElementById('e').value.trim()
+    // Show Google login modal
+    function showGoogleLogin() {
+      document.getElementById('googleLoginModal').style.display = 'flex';
+      // Add entrance animation
+      setTimeout(() => {
+        document.querySelector('.google-modal-content').style.transform = 'scale(1)';
+        document.querySelector('.google-modal-content').style.opacity = '1';
+      }, 10);
+    }
+
+    // Close Google login modal
+    function closeGoogleModal() {
+      const modal = document.getElementById('googleLoginModal');
+      document.querySelector('.google-modal-content').style.transform = 'scale(0.9)';
+      document.querySelector('.google-modal-content').style.opacity = '0';
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 200);
+    }
+
+    // Select Google account for demo
+    function selectGoogleAccount(username) {
+      // Simulate Google authentication loading
+      const modal = document.querySelector('.google-modal-body');
+      modal.innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+          <div class="google-loading-spinner"></div>
+          <p style="color: #5f6368; margin-top: 20px;">Signing you in...</p>
+        </div>
+      `;
       
-      if(!username || !password){ 
-        alert('need username + password'); return 
+      // Simulate delay and complete login
+      setTimeout(() => {
+        localStorage.setItem('username', username);
+        localStorage.setItem('email', username === 'IndieMovies' ? 'indiemovies@gmail.com' : 'ryanator@gmail.com');
+        localStorage.setItem('googleConnected', 'true');
+        
+        // Set demo quiz results
+        if (username === 'IndieMovies') {
+          localStorage.setItem('quiz_personality', 'INFP - The Mediator - Poetic, kind and altruistic people, always eager to help');
+          localStorage.setItem('quiz_stress', 'Moderate Stress (8/20)');
+          localStorage.setItem('quiz_love', 'Words of Affirmation');
+          localStorage.setItem('quiz_21', 'The Thoughtful Analyst');
+        } else {
+          localStorage.setItem('quiz_personality', 'ENFP - The Campaigner - Enthusiastic, creative, and sociable free spirits');
+          localStorage.setItem('quiz_stress', 'Moderate Stress (10/20)');
+          localStorage.setItem('quiz_love', 'Physical Touch');
+          localStorage.setItem('quiz_21', 'The Creative Explorer');
+        }
+        
+        alert('Successfully signed in with Google!');
+        location.href = 'index.html';
+      }, 2000);
+    }
+
+    // Regular login functionality
+    document.getElementById('doLogin').onclick = async () => {
+      const username = document.getElementById('u').value.trim();
+      const password = document.getElementById('p').value.trim();
+      
+      if (!username || !password) { 
+        alert('Please enter both username and password'); 
+        return; 
       }
       
-      try{
-        const r = await fetch('http://localhost:5000/api/users/register',{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({username,password,email})
-        })
-        const data = await r.json()
+      try {
+        const r = await fetch('http://localhost:5000/api/users/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username, password})
+        });
+        const data = await r.json();
         
-        if(data && data.ok){
-          localStorage.setItem('username', username)
-          localStorage.setItem('email', email||'')
-          alert('registered successfully!')
-          location.href = 'index.html'
-        }else {
-          alert('could not register - username might be taken')
+        if (data && data.username) {
+          localStorage.setItem('username', data.username);
+          localStorage.setItem('email', data.email || '');
+          localStorage.setItem('googleConnected', 'true'); // Simulate Google connection
+          alert('Logged in successfully!');
+          location.href = 'index.html';
+        } else {
+          alert('Invalid username or password');
         }
-      }catch(e){ 
-        alert('registration error - check if backend is running') 
+      } catch (e) { 
+        alert('Login error - check if backend is running');
       }
     }
 
-    // login existing user
-    document.getElementById('doLogin').onclick = async ()=>{
-      const username = document.getElementById('u').value.trim()
-      const password = document.getElementById('p').value.trim()
+    // Register functionality
+    document.getElementById('doRegister').onclick = async () => {
+      const username = document.getElementById('u').value.trim();
+      const password = document.getElementById('p').value.trim();
+      const email = document.getElementById('e').value.trim();
       
-      if(!username || !password){ 
-        alert('need username + password'); return 
+      if (!username || !password) { 
+        alert('Please enter username and password'); 
+        return; 
       }
       
-      try{
-        const r = await fetch('http://localhost:5000/api/users/login',{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({username,password})
-        })
-        const data = await r.json()
+      try {
+        const r = await fetch('http://localhost:5000/api/users/register', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username, password, email})
+        });
+        const data = await r.json();
         
-        if(data && data.username){
-          localStorage.setItem('username', data.username)
-          localStorage.setItem('email', data.email||'')
-          alert('logged in!')
-          location.href = 'index.html'
-        }else {
-          alert('invalid username or password')
+        if (data && data.ok) {
+          localStorage.setItem('username', username);
+          localStorage.setItem('email', email || '');
+          localStorage.setItem('googleConnected', 'true'); // Simulate Google connection
+          alert('Account created successfully!');
+          location.href = 'index.html';
+        } else {
+          alert('Could not create account - username might be taken');
         }
-      }catch(e){ 
-        alert('login error - check if backend is running') 
+      } catch (e) { 
+        alert('Registration error - check if backend is running'); 
       }
     }
 
-    // enter key submits
+    // Enter key submits
     document.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
-        document.getElementById('doLogin').click()
+        document.getElementById('doLogin').click();
       }
-    })
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('googleLoginModal');
+      if (event.target === modal) {
+        closeGoogleModal();
+      }
+    }
   </script>
+
+  <style>
+    /* Google Sign-In Button */
+    .google-sign-in-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 12px 24px;
+      border: 1px solid #dadce0;
+      border-radius: 24px;
+      background: white;
+      color: #3c4043;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      font-family: 'Roboto', sans-serif;
+      width: 100%;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    .google-sign-in-btn:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      background: #f8f9fa;
+    }
+
+    /* Google Modal */
+    .google-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .google-modal-content {
+      background: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 0.2s ease;
+    }
+
+    .google-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px;
+      border-bottom: 1px solid #e8eaed;
+    }
+
+    .google-modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #5f6368;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background-color 0.2s ease;
+    }
+
+    .google-modal-close:hover {
+      background: #f1f3f4;
+    }
+
+    .google-modal-body {
+      padding: 0 24px 24px;
+    }
+
+    .google-account-option {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .google-account-option:hover {
+      background: #f8f9fa;
+      border-color: #d2e3fc;
+    }
+
+    .google-account-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 500;
+      margin-right: 12px;
+    }
+
+    .google-account-name {
+      font-size: 16px;
+      color: #202124;
+      font-weight: 400;
+    }
+
+    .google-account-email {
+      font-size: 14px;
+      color: #5f6368;
+    }
+
+    .google-use-another {
+      text-align: center;
+      padding: 16px;
+      border-top: 1px solid #e8eaed;
+      margin-top: 16px;
+    }
+
+    .google-loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #4285f4;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </body>
 </html>

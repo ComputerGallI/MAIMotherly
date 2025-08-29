@@ -3,56 +3,313 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MAI – Profile</title>
+  <title>MAI – Your Profile & Insights</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="index.html">MAI</a>
     <nav class="top-actions">
-      <a class="pill" href="login.html">Login</a>
+      <a class="pill" href="index.html">Back to MAI</a>
+      <button class="pill" onclick="handleLogout()">Logout</button>
     </nav>
   </header>
 
-  <section class="card" style="max-width:980px;margin:24px auto;">
-    <h2 class="title soft">Your Quiz Results</h2>
-    <div id="rows"></div>
-  </section>
+  <main class="profile-container-compact">
+    <!-- Header Section -->
+    <section class="profile-header-compact">
+      <div class="profile-info">
+        <div class="profile-avatar-small" id="profileAvatar">M</div>
+        <div>
+          <h1 id="profileName">Your Profile</h1>
+          <p id="profileStats">Google Connected ✓ • Quiz Results Complete</p>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="pill small-pill" onclick="exportData()">Export</button>
+      </div>
+    </section>
+
+    <!-- Condensed Grid -->
+    <div class="compact-grid">
+      
+      <!-- Quiz Results Summary -->
+      <section class="compact-card">
+        <h3>Quiz Summary</h3>
+        <div class="quiz-mini-grid">
+          <div class="quiz-mini-item">
+            <div class="personality-badge-small" id="personalityBadge">INFP</div>
+            <span id="personalityName">Mediator</span>
+          </div>
+          <div class="quiz-mini-item">
+            <canvas id="stressChart" width="60" height="60"></canvas>
+            <span id="stressLevel">Moderate</span>
+          </div>
+          <div class="quiz-mini-item">
+            <div class="love-icon-small" id="loveIcon">💬</div>
+            <span id="loveLangName">Words</span>
+          </div>
+          <div class="quiz-mini-item">
+            <div class="archetype-icon-small" id="archetypeIcon">🧠</div>
+            <span id="archetypeName">Analyst</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Wellness Trend -->
+      <section class="compact-card">
+        <h3>Wellness Trend</h3>
+        <canvas id="wellnessChart" width="200" height="100"></canvas>
+        <div class="mini-metrics">
+          <span><strong id="totalChats">12</strong> Chats</span>
+          <span><strong id="completedActions">8</strong> Actions</span>
+        </div>
+      </section>
+
+      <!-- Recent Recommendations -->
+      <section class="compact-card">
+        <h3>Top Recommendations</h3>
+        <div id="profileRecommendations" class="compact-recommendations">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Conversation Themes -->
+      <section class="compact-card">
+        <h3>Key Themes</h3>
+        <div class="theme-bubbles-compact" id="themeBubbles">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Goals Progress -->
+      <section class="compact-card">
+        <h3>Goals Progress</h3>
+        <div id="goalsList" class="goals-compact">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- AI Insight Highlight -->
+      <section class="compact-card insight-highlight">
+        <h3>Key Insight</h3>
+        <div id="topInsight" class="top-insight">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </section>
+
+    </div>
+  </main>
 
   <script>
-    // create result row for each quiz
-    function createRow(label, storageKey, dateKey){
-      const result = localStorage.getItem(storageKey)
-      const dateTaken = localStorage.getItem(dateKey)
+    let currentUser = '';
+    let stressChart, wellnessChart;
+
+    // Load user profile data
+    function loadProfile() {
+      currentUser = localStorage.getItem('username') || 'User';
       
-      if(!result) return ''
+      if (!currentUser || currentUser === 'User') {
+        alert('Please log in to view your profile');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Update header
+      document.getElementById('profileName').textContent = `${currentUser}'s Profile`;
+      document.getElementById('profileAvatar').textContent = currentUser.charAt(0).toUpperCase();
       
-      // google search link for learning more
-      const searchUrl = 'https://www.google.com/search?q='+encodeURIComponent(result+' meaning wellness tips')
+      // Set avatar color based on username
+      const avatarColors = {
+        'IndieMovies': 'linear-gradient(135deg, #667eea, #764ba2)',
+        'Ryanator': 'linear-gradient(135deg, #f093fb, #f5576c)'
+      };
+      document.getElementById('profileAvatar').style.background = avatarColors[currentUser] || 'linear-gradient(135deg, #C8B3FF, #B3D1FF)';
+
+      loadQuizResults();
+      loadRecommendations();
+      loadThemes();
+      loadGoals();
+      loadTopInsight();
+      createCompactCharts();
+    }
+
+    // Load quiz results - condensed version
+    function loadQuizResults() {
+      const personality = localStorage.getItem('quiz_personality') || '';
       
-      return `
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #eee;border-radius:16px;padding:14px 16px;margin:10px 0;background:#fff;">
-        <div>
-          <div style="font-weight:800">${label}: ${result}</div>
-          <div style="opacity:.8">taken: ${dateTaken||'unknown date'}</div>
+      if (personality.includes('INFP')) {
+        document.getElementById('personalityBadge').textContent = 'INFP';
+        document.getElementById('personalityName').textContent = 'Mediator';
+      } else if (personality.includes('ENFP')) {
+        document.getElementById('personalityBadge').textContent = 'ENFP';
+        document.getElementById('personalityName').textContent = 'Campaigner';
+      }
+
+      // Love language
+      const love = localStorage.getItem('quiz_love') || 'Words of Affirmation';
+      const loveIcons = {
+        'Words of Affirmation': '💬',
+        'Physical Touch': '🤗',
+        'Quality Time': '⏰',
+        'Acts of Service': '🤝',
+        'Receiving Gifts': '🎁'
+      };
+      
+      document.getElementById('loveIcon').textContent = loveIcons[love] || '💬';
+      document.getElementById('loveLangName').textContent = love.split(' ')[0];
+
+      // Archetype
+      document.getElementById('archetypeIcon').textContent = currentUser === 'IndieMovies' ? '🧠' : '🎨';
+      document.getElementById('archetypeName').textContent = currentUser === 'IndieMovies' ? 'Analyst' : 'Explorer';
+
+      // Stress level
+      document.getElementById('stressLevel').textContent = 'Moderate';
+    }
+
+    // Create compact charts
+    function createCompactCharts() {
+      // Mini stress chart
+      const stressCtx = document.getElementById('stressChart').getContext('2d');
+      const stressValue = currentUser === 'IndieMovies' ? 8 : 10;
+      
+      stressChart = new Chart(stressCtx, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [stressValue, 20 - stressValue],
+            backgroundColor: ['#ff6b6b', '#e8f4fd'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: false,
+          plugins: { legend: { display: false } },
+          cutout: '60%'
+        }
+      });
+
+      // Compact wellness chart
+      const wellnessCtx = document.getElementById('wellnessChart').getContext('2d');
+      
+      wellnessChart = new Chart(wellnessCtx, {
+        type: 'line',
+        data: {
+          labels: ['W1', 'W2', 'W3', 'W4'],
+          datasets: [{
+            data: currentUser === 'IndieMovies' ? [6, 7, 8, 8.5] : [5, 6.5, 7.5, 8],
+            borderColor: '#C8B3FF',
+            backgroundColor: 'rgba(200, 179, 255, 0.1)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 3
+          }]
+        },
+        options: {
+          responsive: false,
+          scales: {
+            x: { display: false },
+            y: { display: false, beginAtZero: true, max: 10 }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    // Load top 3 recommendations
+    function loadRecommendations() {
+      const recommendations = currentUser === 'IndieMovies' ? [
+        'Morning journaling (5 min)',
+        'Set work boundaries',
+        'Bedtime meditation'
+      ] : [
+        'Channel energy into movement',
+        'Practice grounding exercises',
+        'Structured creative time'
+      ];
+
+      const container = document.getElementById('profileRecommendations');
+      container.innerHTML = recommendations.map(rec => `
+        <div class="rec-compact">✨ ${rec}</div>
+      `).join('');
+    }
+
+    // Load condensed themes
+    function loadThemes() {
+      const themes = currentUser === 'IndieMovies' ? [
+        { name: 'Work Stress', color: '#ff9ff3' },
+        { name: 'Self-Care', color: '#C8B3FF' },
+        { name: 'Sleep', color: '#B3D1FF' }
+      ] : [
+        { name: 'Energy', color: '#f093fb' },
+        { name: 'Goals', color: '#ff8a8a' },
+        { name: 'Focus', color: '#a4dded' }
+      ];
+
+      const container = document.getElementById('themeBubbles');
+      container.innerHTML = themes.map(theme => `
+        <span class="theme-compact" style="background: ${theme.color}">${theme.name}</span>
+      `).join('');
+    }
+
+    // Load condensed goals
+    function loadGoals() {
+      const goals = currentUser === 'IndieMovies' ? [
+        { name: 'Reduce work anxiety', progress: 75 },
+        { name: 'Better sleep routine', progress: 90 }
+      ] : [
+        { name: 'Channel energy better', progress: 65 },
+        { name: 'Improve focus', progress: 80 }
+      ];
+
+      const container = document.getElementById('goalsList');
+      container.innerHTML = goals.map(goal => `
+        <div class="goal-compact">
+          <span>${goal.name}</span>
+          <div class="progress-mini">
+            <div style="width: ${goal.progress}%; background: #C8B3FF; height: 4px; border-radius: 2px;"></div>
+          </div>
+          <small>${goal.progress}%</small>
         </div>
-        <a class="pill" href="${searchUrl}" target="_blank" rel="noopener">Learn More</a>
-      </div>`
+      `).join('');
     }
 
-    // build all result rows
-    function loadResults(){
-      const html = 
-        createRow('Personality Type','quiz_personality','quiz_personality_date') +
-        createRow('Stress Level','quiz_stress','quiz_stress_date') +
-        createRow('Love Language','quiz_love','quiz_love_date') +
-        createRow('Lifestyle','quiz_21','quiz_21_date')
-      
-      document.getElementById('rows').innerHTML = html || '<p class="muted">no quiz results yet - take some quizzes first!</p>'
+    // Load single top insight
+    function loadTopInsight() {
+      const insight = currentUser === 'IndieMovies' ? {
+        title: 'Your Empathy is a Superpower',
+        content: 'Your emotional intelligence helps you build deep, meaningful relationships.',
+        action: 'Consider volunteering to channel this gift positively.'
+      } : {
+        title: 'Your Enthusiasm Inspires Others',
+        content: 'Your ENFP energy creates positive ripple effects in relationships.',
+        action: 'Lead group activities where this strength shines.'
+      };
+
+      const container = document.getElementById('topInsight');
+      container.innerHTML = `
+        <h4>${insight.title}</h4>
+        <p>${insight.content}</p>
+        <small><strong>Action:</strong> ${insight.action}</small>
+      `;
     }
 
-    loadResults()
+    // Action functions
+    function exportData() {
+      alert('Your data export is being prepared. You\'ll receive an email with your wellness insights.');
+    }
+
+    function handleLogout() {
+      if (confirm('Are you sure you want to log out?')) {
+        localStorage.clear();
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Initialize profile when page loads
+    window.addEventListener('load', loadProfile);
   </script>
 </body>
 </html>

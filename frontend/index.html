@@ -42,6 +42,11 @@
       <h2 class="title soft">Reminders</h2>
       <p class="caring-instruction glowing-text">Fueled by your personal quiz results and our conversations</p>
       
+      <!-- Google Connection Status -->
+      <div id="googleConnectionStatus" style="display: none;">
+        <div class="google-connected">Google Calendar Connected</div>
+      </div>
+      
       <!-- Current reminders -->
       <div id="currentReminders" style="margin-bottom: 20px;">
         <p class="muted" id="remindersEmpty">No reminders yet</p>
@@ -82,6 +87,63 @@
     </section>
   </main>
 
+  <!-- Fake Google Calendar Modal -->
+  <div id="googleCalendarModal" class="google-calendar-modal" style="display: none;">
+    <div class="google-calendar-content">
+      <div class="google-calendar-header">
+        <h2>Add to Calendar</h2>
+        <button class="google-calendar-close" onclick="closeGoogleCalendarModal()">&times;</button>
+      </div>
+      <div class="google-calendar-body">
+        <form id="googleCalendarForm">
+          <div class="google-form-group">
+            <label for="eventTitle">Title</label>
+            <input type="text" id="eventTitle" class="google-form-input" value="MAI Wellness Reminders" readonly>
+          </div>
+          
+          <div class="google-form-row">
+            <div class="google-form-group">
+              <label for="eventDate">Date</label>
+              <input type="date" id="eventDate" class="google-form-input">
+            </div>
+            <div class="google-form-group">
+              <label>Time</label>
+              <div class="google-time-inputs">
+                <input type="time" class="google-time-input" value="10:00">
+                <span style="color: #5f6368;">to</span>
+                <input type="time" class="google-time-input" value="10:30">
+              </div>
+            </div>
+          </div>
+
+          <div class="google-form-group">
+            <label for="eventDescription">Description</label>
+            <textarea id="eventDescription" class="google-form-input google-form-textarea" readonly></textarea>
+          </div>
+
+          <div class="google-form-group">
+            <label for="eventLocation">Location</label>
+            <input type="text" id="eventLocation" class="google-form-input" placeholder="Add location">
+          </div>
+
+          <div class="google-form-group">
+            <label for="eventNotification">Notification</label>
+            <select id="eventNotification" class="google-form-input">
+              <option value="15">15 minutes before</option>
+              <option value="30">30 minutes before</option>
+              <option value="60">1 hour before</option>
+              <option value="1440">1 day before</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="google-calendar-footer">
+        <button type="button" class="google-btn google-btn-cancel" onclick="closeGoogleCalendarModal()">Cancel</button>
+        <button type="button" class="google-btn google-btn-save" onclick="saveToGoogleCalendar()">Save</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Google Calendar Auth Modal -->
   <div id="calendarAuthModal" class="calendar-modal" style="display: none;">
     <div class="calendar-modal-content">
@@ -111,6 +173,7 @@
     // load user data and update UI
     function loadUserInterface(){
       const user = localStorage.getItem('username')
+      const isGoogleConnected = localStorage.getItem('googleConnected') === 'true'
       
       if (user) {
         // user is logged in
@@ -120,14 +183,25 @@
         document.getElementById('loginBtn').style.display = 'none'
         document.getElementById('logoutBtn').style.display = 'inline-block'
         
+        // Show Google connection status if connected
+        if (isGoogleConnected) {
+          document.getElementById('googleConnectionStatus').style.display = 'block'
+        }
+        
         // update welcome message to be more personal
         document.getElementById('welcomeMessage').innerHTML = 
           `<strong>MAI:</strong> Welcome back, ${user}! I'm here whenever you need to talk. What's been on your mind lately? 💜`
+        
+        // Load existing reminders if Google connected
+        if (isGoogleConnected) {
+          loadMockReminders(user)
+        }
         
       } else {
         // user is not logged in
         document.getElementById('loginBtn').style.display = 'inline-block'
         document.getElementById('logoutBtn').style.display = 'none'
+        document.getElementById('googleConnectionStatus').style.display = 'none'
         
         // keep default welcome message
         document.getElementById('welcomeMessage').innerHTML = 
@@ -146,11 +220,38 @@
       document.getElementById('btn21').textContent = questions21
     }
 
+    // Load mock reminders for demo
+    function loadMockReminders(user) {
+      const mockReminders = user === 'IndieMovies' ? [
+        { title: 'Morning Journaling', date: 'Tomorrow, 8:00 AM', color: '#C8B3FF' },
+        { title: 'Mindful Break', date: 'Tomorrow, 2:00 PM', color: '#B3D1FF' },
+        { title: 'Evening Reflection', date: 'Tomorrow, 8:00 PM', color: '#D5F2EA' }
+      ] : [
+        { title: 'Creative Energy Session', date: 'Tomorrow, 9:00 AM', color: '#f093fb' },
+        { title: 'Grounding Exercise', date: 'Tomorrow, 1:00 PM', color: '#ff8a8a' },
+        { title: 'Physical Movement', date: 'Tomorrow, 6:00 PM', color: '#a4dded' }
+      ];
+
+      const reminderList = document.getElementById('reminderList')
+      const emptyMsg = document.getElementById('remindersEmpty')
+      
+      if (mockReminders.length > 0) {
+        emptyMsg.style.display = 'none'
+        reminderList.innerHTML = mockReminders.map(reminder => `
+          <div style="background: ${reminder.color}; border-radius: 12px; padding: 12px; margin: 8px 0; color: white;">
+            <strong>${reminder.title}</strong><br>
+            <small>${reminder.date}</small>
+          </div>
+        `).join('')
+      }
+    }
+
     // logout functionality
     function handleLogout() {
       if (confirm('Are you sure you want to log out?')) {
         localStorage.removeItem('username')
         localStorage.removeItem('email')
+        localStorage.removeItem('googleConnected')
         loadUserInterface()
         alert('Logged out successfully!')
         
@@ -347,6 +448,7 @@
     // add selected recommendations to calendar
     function addSelectedToCalendar() {
       const username = localStorage.getItem('username')
+      const isGoogleConnected = localStorage.getItem('googleConnected') === 'true'
       
       if (!username) {
         alert('Please log in first to add calendar reminders!')
@@ -358,8 +460,76 @@
         return
       }
       
-      // Show selected items and Google auth modal
-      showCalendarAuthModal()
+      // If Google is connected, show calendar modal directly
+      if (isGoogleConnected) {
+        showGoogleCalendarModal()
+      } else {
+        // Show auth modal first
+        showCalendarAuthModal()
+      }
+    }
+
+    // Show fake Google Calendar modal
+    function showGoogleCalendarModal() {
+      const modal = document.getElementById('googleCalendarModal')
+      const selectedItems = Array.from(selectedRecommendations).map(index => currentRecommendations[index])
+      
+      // Set tomorrow's date
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      document.getElementById('eventDate').value = tomorrow.toISOString().split('T')[0]
+      
+      // Set description with selected items
+      const description = `Wellness reminders from MAI:\n\n${selectedItems.map((item, i) => `${i + 1}. ${item}`).join('\n')}\n\nGenerated based on your conversation with MAI to support your mental health and wellbeing.`
+      document.getElementById('eventDescription').value = description
+      
+      modal.style.display = 'flex'
+      
+      // Add entrance animation
+      setTimeout(() => {
+        modal.querySelector('.google-calendar-content').style.transform = 'scale(1)'
+        modal.querySelector('.google-calendar-content').style.opacity = '1'
+      }, 10)
+    }
+
+    // Close Google Calendar modal
+    function closeGoogleCalendarModal() {
+      const modal = document.getElementById('googleCalendarModal')
+      modal.querySelector('.google-calendar-content').style.transform = 'scale(0.9)'
+      modal.querySelector('.google-calendar-content').style.opacity = '0'
+      setTimeout(() => {
+        modal.style.display = 'none'
+      }, 200)
+    }
+
+    // Save to Google Calendar (fake)
+    function saveToGoogleCalendar() {
+      const selectedCount = selectedRecommendations.size
+      const eventDate = document.getElementById('eventDate').value
+      const eventTime = document.querySelector('.google-time-input').value
+      
+      // Simulate saving
+      document.querySelector('.google-calendar-body').innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+          <div style="width: 60px; height: 60px; border: 3px solid #34a853; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+          <p style="color: #5f6368; font-size: 16px;">Adding ${selectedCount} reminder${selectedCount > 1 ? 's' : ''} to your calendar...</p>
+        </div>
+      `
+      
+      // Complete the fake save
+      setTimeout(() => {
+        alert(`Successfully added ${selectedCount} wellness reminder${selectedCount > 1 ? 's' : ''} to your Google Calendar for ${eventDate} at ${eventTime}!`)
+        closeGoogleCalendarModal()
+        
+        // Clear selections
+        clearAllRecommendations()
+        
+        // Refresh mock reminders
+        const username = localStorage.getItem('username')
+        if (username) {
+          loadMockReminders(username)
+        }
+      }, 2000)
     }
 
     // show calendar authentication modal
@@ -385,14 +555,26 @@
 
     // connect to Google Calendar
     function connectGoogleCalendar() {
-      const username = localStorage.getItem('username')
-      const selectedItems = Array.from(selectedRecommendations).map(index => currentRecommendations[index])
+      // Simulate connection process
+      const modal = document.querySelector('.calendar-modal-body')
+      modal.innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+          <div style="width: 40px; height: 40px; border: 3px solid #4285f4; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+          <p style="color: #5f6368;">Connecting to Google Calendar...</p>
+        </div>
+      `
       
-      // Store selected items for after auth
-      localStorage.setItem('pendingCalendarItems', JSON.stringify(selectedItems))
-      
-      // Redirect to Google OAuth
-      window.location.href = `http://localhost:5000/api/calendar/auth?username=${username}&return=calendar_add`
+      setTimeout(() => {
+        localStorage.setItem('googleConnected', 'true')
+        closeCalendarModal()
+        alert('Google Calendar connected successfully!')
+        loadUserInterface()
+        
+        // Now show the calendar modal
+        setTimeout(() => {
+          showGoogleCalendarModal()
+        }, 500)
+      }, 1500)
     }
 
     // clear recommendations
@@ -402,40 +584,6 @@
       document.getElementById('recommendationsSection').style.display = 'none'
     }
 
-    // load existing reminders
-    async function loadReminders() {
-      const username = localStorage.getItem('username')
-      if (!username) return
-      
-      try {
-        const response = await fetch(`http://localhost:5000/api/calendar/reminders/${username}`)
-        const data = await response.json()
-        
-        const reminderList = document.getElementById('reminderList')
-        const emptyMsg = document.getElementById('remindersEmpty')
-        
-        if (data.reminders && data.reminders.length > 0) {
-          emptyMsg.style.display = 'none'
-          reminderList.innerHTML = ''
-          
-          data.reminders.forEach(reminder => {
-            const div = document.createElement('div')
-            div.style.cssText = 'background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin:8px 0'
-            div.innerHTML = `
-              <strong>${reminder.title}</strong><br>
-              <small>${new Date(reminder.datetime).toLocaleDateString()}</small>
-            `
-            reminderList.appendChild(div)
-          })
-        } else {
-          emptyMsg.style.display = 'block'
-          reminderList.innerHTML = ''
-        }
-      } catch (error) {
-        console.log('Couldn\'t load reminders:', error)
-      }
-    }
-
     // enter key sends message
     document.getElementById('chatText').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
@@ -443,76 +591,30 @@
       }
     })
 
-    // check for calendar connection status in URL
-    const urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.get('calendar') === 'connected') {
-      alert('Calendar connected! You can now add reminders')
-      loadReminders()
-      
-      // Check if we have pending calendar items to add
-      const pendingItems = localStorage.getItem('pendingCalendarItems')
-      if (pendingItems) {
-        addPendingItemsToCalendar(JSON.parse(pendingItems))
-        localStorage.removeItem('pendingCalendarItems')
-      }
-    } else if (urlParams.get('calendar') === 'error') {
-      alert('Calendar connection failed')
-    }
-
-    // add pending items to calendar after successful auth
-    async function addPendingItemsToCalendar(items) {
-      const username = localStorage.getItem('username')
-      
-      try {
-        for (const item of items) {
-          const tomorrow = new Date()
-          tomorrow.setDate(tomorrow.getDate() + 1)
-          tomorrow.setHours(10, 0, 0, 0)
-          
-          const reminderData = {
-            title: `MAI Reminder: ${item}`,
-            description: `Wellness reminder from MAI: ${item}`,
-            datetime: tomorrow.toISOString(),
-            username: username
-          }
-
-          const response = await fetch('http://localhost:5000/api/calendar/add-reminder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reminderData)
-          })
-          
-          const result = await response.json()
-          if (!result.success) {
-            console.error('Failed to add reminder:', item)
-          }
-        }
-        
-        alert(`Successfully added ${items.length} reminders to your calendar!`)
-        loadReminders()
-        
-        // Clear selected recommendations
-        clearRecommendations()
-        
-      } catch (error) {
-        console.error('Error adding reminders:', error)
-        alert('There was an error adding some reminders to your calendar.')
-      }
-    }
-
     // initialize everything when page loads
     window.addEventListener('load', () => {
       loadUserInterface()
-      loadReminders()
     })
 
-    // close modal when clicking outside
+    // close modals when clicking outside
     window.onclick = function(event) {
-      const modal = document.getElementById('calendarAuthModal')
-      if (event.target === modal) {
+      const calendarModal = document.getElementById('calendarAuthModal')
+      const googleCalendarModal = document.getElementById('googleCalendarModal')
+      
+      if (event.target === calendarModal) {
         closeCalendarModal()
+      }
+      if (event.target === googleCalendarModal) {
+        closeGoogleCalendarModal()
       }
     }
   </script>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </body>
 </html>
