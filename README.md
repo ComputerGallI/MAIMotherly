@@ -1,42 +1,41 @@
-# MAI – Motherly AI 
+ What is MAI?
+MAI stands for Motherly AI – an empathetic wellness companion that provides the caring support of a mother figure, without the generational trauma! MAI combines advanced AI with personality insights to deliver personalized mental health guidance.
+ Key Features
 
-**A warm, emotionally intelligent AI that checks in with you, listens, and gently nudges you toward wellness to give you a better outlook on your future.**
+ Intelligent Conversations: Chat with an AI that understands your personality, stress levels, and communication preferences
+ Personality Quizzes: Take assessments for MBTI personality type, stress levels, love language, and lifestyle preferences
+ Google Calendar Integration: Automatically schedule wellness reminders and self-care activities
+Premium Analytics: Advanced insights into your mental health patterns and progress
+Personalized Recommendations: AI-generated wellness suggestions based on your unique profile
 
+🚀 Quick Start
+Prerequisites
+
+Node.js 18+
+Python 3.9+
+MongoDB (local or Atlas)
+Google Cloud Platform account (for Calendar integration)
 ---
 
-## What is MAI?
-MAI stands for **Motherly AI** – an app that acts like a mom, without the generational trauma!   
-You can:
-- **Chat** with MAI about your day, finances, and anything in your life that has meaning. MAI can respond with your mental health in mind.  
-- **Take short quizzes** to help MAI understand your personality, stress level, love language, and what makes you "tick" 
-- **Get gentle reminders** like “get 30 mins of sunlight” or “schedule a massage” — and add them to your Google Calendar so you can actually implement them into your life. 
+Tech Stack
+Frontend:
 
-The goal is to  make you feel heard, understood, and supported.
+HTML5 + Modern CSS3
+Vanilla JavaScript (no frameworks)
+CSS Grid + Flexbox
+Google Fonts (Manrope)
 
----
+Backend API:
 
-## Target Audience
+Node.js + Express
+MongoDB with Mongoose ODM
+Express Sessions + MongoDB Store
+Google APIs (Calendar, OAuth2)
 
-- A kind daily check-in
-- Easy going emotional wellness tracking
-- Easy, actionable self-care reminders that make your life better. 
+AI Service:
 
----
-
-##  How MAI Grabs info
-We use **RAG (Retrieval-Augmented Generation)** with **affect computing** to give responses that feel right for you.
-
-**Tech Stack:**
-- **Frontend:** React, HTML, CSS, JavaScript
-- **Backend:** Node.js + Express
-- **AI Service:** FastAPI running BERT (retrieval) + BART (generation)
-- **Database:** MongoDB Atlas
-- **Model Training:** Google Colab with datasets from Kaggle & GoEmotions, Mental Health counseling conversations from Huggingface
-
-**Main Flow:**
-1. **User Login/Register** Info stored securely in MongoDB  
-2. **Quiz or Chat**  Quizzes saved in MongoDB or localStorage  
-3. **AI Processing** RAG pipeline retrieves and generates responses  
-4. **Reminders & Visualization**  Results shown as charts; reminders can be added to Google Calendar  
-
----
+FastAPI (Python)
+BERT (sentence-transformers)
+BART (response generation)
+FAISS (vector search)
+Google Generative AI
